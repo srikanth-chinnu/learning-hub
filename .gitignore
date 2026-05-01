@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+env/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*~
+
+# Build artifacts (intentionally NOT ignored — we ship the rendered HTML)
+# Uncomment these lines if you decide to ship sources only:
+# *.html
+# assets/style.css
+# dsa/
+# system-design/

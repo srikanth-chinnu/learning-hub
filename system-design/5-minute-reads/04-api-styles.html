@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🟢 #4 — REST vs GraphQL vs gRPC (5-min read) — Learning Hub</title>
+<link rel="stylesheet" href="../../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../../index.html" class="brand">📚 Learning Hub</a>
+  <nav class="topnav">
+    <a href="../../index.html">Home</a>
+    <a href="../../roadmap.html">Roadmap</a>
+    <a href="../../dsa/index.html">DSA</a>
+    <a href="../../system-design/index.html">System Design</a>
+  </nav>
+</header>
+<div class="layout">
+  <aside class="sidebar"><h3>System Design</h3><ul><li><a href="../index.html">System Design — Overview</a></li><li><a href="../01-beginner.html">Beginner</a></li><li><a href="../02-intermediate.html">Intermediate</a></li><li><a href="../03-advanced.html">Advanced</a></li><li><a href="../04-expert.html">Expert</a></li><li><a href="../tradeoffs-deep-dive.html">Trade-offs Deep Dive</a></li><li><a href="../books-and-courses.html">Books & Courses</a></li><li><a href="../github-repos.html">GitHub Repos</a></li><li><a href="../seminal-papers.html">Seminal Papers</a></li></ul><h3>5-Minute Reads</h3><ul class="group"><li><a href="index.html">5-Minute Reads — Index</a></li><li><a href="01-what-is-system-design.html">🟢 #1 — What is System Design? (5-min read)</a></li><li><a href="02-scalability-basics.html">🟢 #2 — Scalability: Vertical vs Horizontal (5-min read)</a></li><li><a href="03-latency-vs-throughput.html">🟢 #3 — Latency vs Throughput (5-min read)</a></li><li><a href="04-api-styles.html">🟢 #4 — REST vs GraphQL vs gRPC (5-min read)</a></li><li><a href="05-sql-vs-nosql.html">🟢 #5 — SQL vs NoSQL (5-min read)</a></li><li><a href="06-load-balancing.html">🟡 #6 — Load Balancing (5-min read)</a></li><li><a href="07-caching.html">🟡 #7 — Caching Strategies (5-min read)</a></li><li><a href="08-cdn.html">🟡 #8 — CDN: Content Delivery Networks (5-min read)</a></li><li><a href="09-database-replication.html">🟡 #9 — Database Replication (5-min read)</a></li><li><a href="10-database-sharding.html">🟡 #10 — Database Sharding (5-min read)</a></li><li><a href="11-consistent-hashing.html">🟡 #11 — Consistent Hashing (5-min read)</a></li><li><a href="12-microservices.html">🟡 #12 — Microservices vs Monolith (5-min read)</a></li><li><a href="13-message-queues.html">🟡 #13 — Message Queues & Pub/Sub (5-min read)</a></li><li><a href="14-rate-limiting.html">🟡 #14 — Rate Limiting (5-min read)</a></li><li><a href="15-cap-theorem.html">🔴 #15 — The CAP Theorem (5-min read)</a></li><li><a href="16-consistency-models.html">🔴 #16 — Consistency Models (5-min read)</a></li><li><a href="17-consensus-raft-paxos.html">🔴 #17 — Consensus: Raft & Paxos (5-min read)</a></li><li><a href="18-event-driven-and-saga.html">🔴 #18 — Event-Driven Architecture & Saga Pattern (5-min read)</a></li><li><a href="19-resilience-patterns.html">🔴 #19 — Resilience Patterns: Circuit Breaker & Bulkhead (5-min read)</a></li><li><a href="20-observability.html">🔴 #20 — Observability: Logs, Metrics, Traces (5-min read)</a></li></ul><h3>Other tracks</h3><ul><li><a href="../../roadmap.html">🗺️ Roadmap</a></li><li><a href="../../dsa/index.html">🧠 DSA</a></li></ul></aside>
+  <main class="content">
+    <div class="breadcrumb"><a href="../../index.html">Home</a> &rsaquo; <a href="../index.html">System Design</a> &rsaquo; <a href="index.html">5-Minute Reads</a> &rsaquo; 🟢 #4 — REST vs GraphQL vs gRPC (5-min read)</div>
+    <article class="md"><h1 id="4-rest-vs-graphql-vs-grpc-5-min-read">🟢 #4 — REST vs GraphQL vs gRPC (5-min read)</h1>
+<h2 id="tldr">🎯 TL;DR</h2>
+<p><strong>REST is the default web API style (simple, cacheable, ubiquitous). GraphQL solves over-fetching for client-driven UIs. gRPC is the fastest and best for microservice-to-microservice. Pick the right tool, not the trendy one.</strong></p>
+<hr>
+<h2 id="plain-english">📖 Plain English</h2>
+<p>When two computers talk to each other over the network, they need a <em>protocol</em>. Three popular choices for application APIs:</p>
+<h3 id="rest-representational-state-transfer">🌐 REST (Representational State Transfer)</h3>
+<ul>
+<li>Uses <strong>HTTP verbs</strong>: GET, POST, PUT, DELETE, PATCH</li>
+<li>Resources have URLs: <code>GET /users/42</code>, <code>POST /users</code></li>
+<li>Returns <strong>JSON</strong> (usually)</li>
+<li><strong>Stateless</strong> — each request stands alone</li>
+<li>Standard since 2000</li>
+</ul>
+<h3 id="graphql">🟪 GraphQL</h3>
+<ul>
+<li>A <strong>query language</strong> for APIs (Facebook, 2015)</li>
+<li>Client sends a query saying <em>exactly</em> what fields it wants</li>
+<li>Single endpoint (<code>/graphql</code>); server resolves the query</li>
+<li>Eliminates over-fetching (don't get 50 fields when you need 3)</li>
+</ul>
+<h3 id="grpc">🟦 gRPC</h3>
+<ul>
+<li>Google's <strong>RPC framework</strong> (2015) using HTTP/2</li>
+<li>Uses <strong>Protocol Buffers</strong> (binary, not JSON) — much faster + smaller</li>
+<li>Strongly typed schemas (<code>.proto</code> files)</li>
+<li>Built-in streaming support</li>
+</ul>
+<hr>
+<h2 id="side-by-side">📊 Side-by-Side</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th><strong>REST</strong></th>
+<th><strong>GraphQL</strong></th>
+<th><strong>gRPC</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Protocol</strong></td>
+<td>HTTP/1.1 or 2</td>
+<td>HTTP/1.1 or 2</td>
+<td>HTTP/2 (required)</td>
+</tr>
+<tr>
+<td><strong>Format</strong></td>
+<td>JSON (text)</td>
+<td>JSON (text)</td>
+<td>Protobuf (binary)</td>
+</tr>
+<tr>
+<td><strong>Performance</strong></td>
+<td>Good</td>
+<td>Good</td>
+<td>Excellent (5-10x smaller payloads)</td>
+</tr>
+<tr>
+<td><strong>Schema</strong></td>
+<td>Optional (OpenAPI)</td>
+<td>Required (built-in)</td>
+<td>Required (.proto)</td>
+</tr>
+<tr>
+<td><strong>Caching</strong></td>
+<td>Easy (HTTP cache)</td>
+<td>Hard (POST-based)</td>
+<td>Hard</td>
+</tr>
+<tr>
+<td><strong>Browser support</strong></td>
+<td>✅ Native</td>
+<td>✅ Native</td>
+<td>❌ Needs gRPC-Web proxy</td>
+</tr>
+<tr>
+<td><strong>Streaming</strong></td>
+<td>Limited (SSE/WebSockets)</td>
+<td>Subscriptions</td>
+<td>Native bidirectional</td>
+</tr>
+<tr>
+<td><strong>Tooling</strong></td>
+<td>Excellent</td>
+<td>Excellent</td>
+<td>Excellent (codegen)</td>
+</tr>
+<tr>
+<td><strong>Learning curve</strong></td>
+<td>Low</td>
+<td>Medium</td>
+<td>Medium-high</td>
+</tr>
+<tr>
+<td><strong>Best for</strong></td>
+<td>Public APIs</td>
+<td>Mobile/SPA frontends</td>
+<td>Microservices</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="when-to-use-each">🏗️ When to Use Each</h2>
+<h3 id="use-rest-when">Use REST when...</h3>
+<ul>
+<li>You're building a <strong>public API</strong> (third parties consume it)</li>
+<li>You need <strong>HTTP caching</strong> (CDN, reverse proxies)</li>
+<li>Most clients only need a few endpoints</li>
+<li>Simplicity matters more than absolute performance</li>
+</ul>
+<p><strong>Examples:</strong> Stripe API, GitHub API, Twitter API</p>
+<h3 id="use-graphql-when">Use GraphQL when...</h3>
+<ul>
+<li>A <strong>mobile app or SPA</strong> drives the API design</li>
+<li>Clients need different shapes of data per screen</li>
+<li>You're tired of <code>?fields=...</code> query strings and <code>v2/users-with-posts</code> endpoints</li>
+<li>You can invest in tooling (cache, batching, security)</li>
+</ul>
+<p><strong>Examples:</strong> Facebook, Shopify, Airbnb internal APIs</p>
+<h3 id="use-grpc-when">Use gRPC when...</h3>
+<ul>
+<li>It's <strong>service-to-service</strong> inside your datacenter</li>
+<li>You need maximum throughput / minimum latency</li>
+<li>You want strict typed contracts (great for polyglot teams)</li>
+<li>Bidirectional streaming matters (chat, telemetry, ML serving)</li>
+</ul>
+<p><strong>Examples:</strong> Google internal RPC, Kubernetes control plane, Netflix internal services</p>
+<hr>
+<h2 id="key-trade-offs">🔑 Key Trade-offs</h2>
+<table>
+<thead>
+<tr>
+<th>Concern</th>
+<th>Winner</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Smallest payload</strong></td>
+<td>gRPC (binary protobuf)</td>
+</tr>
+<tr>
+<td><strong>Easiest to debug</strong></td>
+<td>REST (curl works, JSON is readable)</td>
+</tr>
+<tr>
+<td><strong>Best frontend developer experience</strong></td>
+<td>GraphQL (query exactly what you need)</td>
+</tr>
+<tr>
+<td><strong>Most cacheable</strong></td>
+<td>REST (HTTP cache headers)</td>
+</tr>
+<tr>
+<td><strong>Best for browsers</strong></td>
+<td>REST or GraphQL (gRPC needs proxy)</td>
+</tr>
+<tr>
+<td><strong>Best schema enforcement</strong></td>
+<td>gRPC (compile-time codegen)</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="the-mixed-stack-pattern-most-companies">🚦 The "Mixed Stack" Pattern (Most Companies)</h2>
+<p>In practice, modern systems use <strong>all three</strong>:</p>
+<div class="codehilite"><pre><span></span><code><span class="k">[Browser/Mobile] → [REST or GraphQL Gateway] → [gRPC] → [microservices]</span>
+<span class="w">                          </span><span class="na">↑                       ↑</span>
+<span class="w">                  </span><span class="na">External-facing,         Internal, fastest</span>
+<span class="w">                  </span><span class="na">cacheable, simple        possible RPC</span>
+</code></pre></div>
+
+<ul>
+<li>Mobile/web hits <strong>GraphQL</strong> (great DX, custom queries per screen)</li>
+<li>Internal services talk via <strong>gRPC</strong> (fast, typed)</li>
+<li>Public/partner APIs use <strong>REST</strong> (simple, broadly compatible)</li>
+</ul>
+<hr>
+<h2 id="dig-deeper">🔗 Dig Deeper</h2>
+<ul>
+<li>📺 <a href="https://www.youtube.com/@ByteByteGo">ByteByteGo: SOAP vs REST vs GraphQL vs gRPC</a></li>
+<li>📘 <a href="https://github.com/karanpratapsingh/system-design">karanpratapsingh/system-design — Chapter III: REST/GraphQL/gRPC</a></li>
+<li>📘 <a href="https://github.com/donnemartin/system-design-primer">donnemartin/system-design-primer — Communication section</a></li>
+</ul>
+<hr>
+<p>← <a href="./README.md">Back to 5-min reads index</a></p></article>
+    <nav class="prevnext"><a class="prev" href="03-latency-vs-throughput.html"><div class="label">← Previous</div><div class="title">🟢 #3 — Latency vs Throughput (5-min read)</div></a><a class="next" href="05-sql-vs-nosql.html"><div class="label">Next →</div><div class="title">🟢 #5 — SQL vs NoSQL (5-min read)</div></a></nav>
+  </main>
+</div>
+<footer class="foot">
+  <span>Generated from local .md files. Edit sources, then run <code>python build.py</code>.</span>
+</footer>
+</body>
+</html>

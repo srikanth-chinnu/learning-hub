@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Learning Hub — Learning Hub</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="index.html" class="brand">📚 Learning Hub</a>
+  <nav class="topnav">
+    <a href="index.html">Home</a>
+    <a href="roadmap.html">Roadmap</a>
+    <a href="dsa/index.html">DSA</a>
+    <a href="system-design/index.html">System Design</a>
+  </nav>
+</header>
+<div class="layout">
+  <aside class="sidebar">
+    <h3>Learning Hub</h3>
+    <ul>
+      <li><a href="index.html" class="active">🏠 Home</a></li>
+      <li><a href="roadmap.html">🗺️ Roadmap</a></li>
+    </ul>
+    <h3>Tracks</h3>
+    <ul>
+      <li><a href="dsa/index.html">🧠 DSA &amp; Problem Solving</a></li>
+      <li><a href="system-design/index.html">🏗️ System Design</a></li>
+    </ul>
+    <h3>Quick links</h3>
+    <ul>
+      <li><a href="system-design/5-minute-reads/index.html">⏱️ 5-Minute Reads (System Design)</a></li>
+      <li><a href="system-design/tradeoffs-deep-dive.html">⚖️ Trade-offs Deep Dive</a></li>
+    </ul>
+    </aside>
+  <main class="content">
+    <div class="breadcrumb">Home</div>
+    <article class="md">
+    <div class="hero">
+      <h1>📚 Learning Hub</h1>
+      <p>Two tracks. One discipline. Everything you need to go from beginner to expert in <strong>data structures &amp; problem solving</strong> and <strong>system design</strong>.</p>
+    </div>
+
+    <h2>Start here</h2>
+    <div class="cards">
+      <div class="card">
+        <h3>🗺️ The Roadmap</h3>
+        <p>4-phase plan with milestones, kill-switches, and what to <em>stop</em> doing. Read this first.</p>
+        <a href="roadmap.html">Open roadmap →</a>
+      </div>
+      <div class="card">
+        <h3>🧠 DSA &amp; Problem Solving</h3>
+        <p>77 five-minute reads across Beginner → Intermediate → Advanced → Expert + Meta skills. Code in Python &amp; C++.</p>
+        <a href="dsa/index.html">Start DSA →</a>
+      </div>
+      <div class="card">
+        <h3>🏗️ System Design</h3>
+        <p>Foundations, scaling, distributed systems, expert patterns. Plus 20 focused 5-minute reads.</p>
+        <a href="system-design/index.html">Start system design →</a>
+      </div>
+    </div>
+
+    <h2>Quick reference</h2>
+    <div class="cards">
+      <div class="card">
+        <h3>⏱️ 5-Minute Reads (System Design)</h3>
+        <p>20 bite-sized topics — caching, consistent hashing, CAP, consensus, observability, and more.</p>
+        <a href="system-design/5-minute-reads/index.html">Open →</a>
+      </div>
+      <div class="card">
+        <h3>⚖️ Trade-offs Deep Dive</h3>
+        <p>The tax sheet for every architecture decision. CAP, latency vs. throughput, sync vs. async, monolith vs. microservices.</p>
+        <a href="system-design/tradeoffs-deep-dive.html">Open →</a>
+      </div>
+      <div class="card">
+        <h3>📚 Books, Courses &amp; Papers</h3>
+        <p>Curated reading list — DDIA, Kleppmann's papers, Raft, Dynamo, MapReduce, etc.</p>
+        <a href="system-design/books-and-courses.html">Open →</a>
+      </div>
+    </div>
+
+    <h2>Track levels at a glance</h2>
+    <table>
+      <thead><tr><th>Tier</th><th>DSA</th><th>System Design</th></tr></thead>
+      <tbody>
+        <tr><td><span class="tag tier1">Beginner</span></td><td>Big-O, arrays, hashing, two pointers, sliding window, recursion</td><td>What is system design, scalability basics, latency, APIs</td></tr>
+        <tr><td><span class="tag tier2">Intermediate</span></td><td>Trees, graphs, heaps, DSU, tries, intervals, monotonic stacks</td><td>Caching, sharding, replication, consistent hashing, microservices</td></tr>
+        <tr><td><span class="tag tier3">Advanced</span></td><td>DP families, Dijkstra, segment trees, KMP, MST</td><td>CAP, consistency models, message queues, rate limiting</td></tr>
+        <tr><td><span class="tag tier4">Expert</span></td><td>HLD, suffix structures, FFT, MCMF, persistent segtree, 2-SAT</td><td>Consensus (Raft/Paxos), event-driven + saga, resilience, observability</td></tr>
+      </tbody>
+    </table>
+
+    <h2>How to use this hub</h2>
+    <ol>
+      <li><strong>Read the roadmap.</strong> Don't skip it. It tells you what NOT to do, which is more valuable than what to do.</li>
+      <li><strong>Pick one tier per track.</strong> Mixing levels is how people stay stuck.</li>
+      <li><strong>One topic = one solved problem (DSA) or one design walkthrough (system design).</strong> Reading without doing is entertainment.</li>
+      <li><strong>Track in a spreadsheet.</strong> The roadmap explains why this is non-optional.</li>
+    </ol>
+
+    <h2>Edit &amp; rebuild</h2>
+    <p>All sources are markdown files. Edit the <code>.md</code> in either:</p>
+    <ul>
+      <li><code>C:\Users\smudili\Documents\system-design-learning</code></li>
+      <li><code>C:\Users\smudili\.copilot\session-state\7a4bac2b-6e57-404c-b633-f638cacb3ddf\research</code></li>
+    </ul>
+    <p>Then run: <code>python C:\Users\smudili\Documents\learning-hub\build.py</code></p>
+    </article>
+    <nav class="prevnext"><span></span><a class="next" href="roadmap.html"><div class="label">Next →</div><div class="title">Roadmap</div></a></nav>
+  </main>
+</div>
+<footer class="foot">
+  <span>Generated from local .md files. Edit sources, then run <code>python build.py</code>.</span>
+</footer>
+</body>
+</html>

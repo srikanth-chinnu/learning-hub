@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔴 #16 — Consistency Models (5-min read) — Learning Hub</title>
+<link rel="stylesheet" href="../../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../../index.html" class="brand">📚 Learning Hub</a>
+  <nav class="topnav">
+    <a href="../../index.html">Home</a>
+    <a href="../../roadmap.html">Roadmap</a>
+    <a href="../../dsa/index.html">DSA</a>
+    <a href="../../system-design/index.html">System Design</a>
+  </nav>
+</header>
+<div class="layout">
+  <aside class="sidebar"><h3>System Design</h3><ul><li><a href="../index.html">System Design — Overview</a></li><li><a href="../01-beginner.html">Beginner</a></li><li><a href="../02-intermediate.html">Intermediate</a></li><li><a href="../03-advanced.html">Advanced</a></li><li><a href="../04-expert.html">Expert</a></li><li><a href="../tradeoffs-deep-dive.html">Trade-offs Deep Dive</a></li><li><a href="../books-and-courses.html">Books & Courses</a></li><li><a href="../github-repos.html">GitHub Repos</a></li><li><a href="../seminal-papers.html">Seminal Papers</a></li></ul><h3>5-Minute Reads</h3><ul class="group"><li><a href="index.html">5-Minute Reads — Index</a></li><li><a href="01-what-is-system-design.html">🟢 #1 — What is System Design? (5-min read)</a></li><li><a href="02-scalability-basics.html">🟢 #2 — Scalability: Vertical vs Horizontal (5-min read)</a></li><li><a href="03-latency-vs-throughput.html">🟢 #3 — Latency vs Throughput (5-min read)</a></li><li><a href="04-api-styles.html">🟢 #4 — REST vs GraphQL vs gRPC (5-min read)</a></li><li><a href="05-sql-vs-nosql.html">🟢 #5 — SQL vs NoSQL (5-min read)</a></li><li><a href="06-load-balancing.html">🟡 #6 — Load Balancing (5-min read)</a></li><li><a href="07-caching.html">🟡 #7 — Caching Strategies (5-min read)</a></li><li><a href="08-cdn.html">🟡 #8 — CDN: Content Delivery Networks (5-min read)</a></li><li><a href="09-database-replication.html">🟡 #9 — Database Replication (5-min read)</a></li><li><a href="10-database-sharding.html">🟡 #10 — Database Sharding (5-min read)</a></li><li><a href="11-consistent-hashing.html">🟡 #11 — Consistent Hashing (5-min read)</a></li><li><a href="12-microservices.html">🟡 #12 — Microservices vs Monolith (5-min read)</a></li><li><a href="13-message-queues.html">🟡 #13 — Message Queues & Pub/Sub (5-min read)</a></li><li><a href="14-rate-limiting.html">🟡 #14 — Rate Limiting (5-min read)</a></li><li><a href="15-cap-theorem.html">🔴 #15 — The CAP Theorem (5-min read)</a></li><li><a href="16-consistency-models.html">🔴 #16 — Consistency Models (5-min read)</a></li><li><a href="17-consensus-raft-paxos.html">🔴 #17 — Consensus: Raft & Paxos (5-min read)</a></li><li><a href="18-event-driven-and-saga.html">🔴 #18 — Event-Driven Architecture & Saga Pattern (5-min read)</a></li><li><a href="19-resilience-patterns.html">🔴 #19 — Resilience Patterns: Circuit Breaker & Bulkhead (5-min read)</a></li><li><a href="20-observability.html">🔴 #20 — Observability: Logs, Metrics, Traces (5-min read)</a></li></ul><h3>Other tracks</h3><ul><li><a href="../../roadmap.html">🗺️ Roadmap</a></li><li><a href="../../dsa/index.html">🧠 DSA</a></li></ul></aside>
+  <main class="content">
+    <div class="breadcrumb"><a href="../../index.html">Home</a> &rsaquo; <a href="../index.html">System Design</a> &rsaquo; <a href="index.html">5-Minute Reads</a> &rsaquo; 🔴 #16 — Consistency Models (5-min read)</div>
+    <article class="md"><h1 id="16-consistency-models-5-min-read">🔴 #16 — Consistency Models (5-min read)</h1>
+<h2 id="tldr">🎯 TL;DR</h2>
+<p><strong>"Consistency" isn't binary — it's a spectrum from "everyone sees the same thing immediately" to "eventually maybe." Pick the weakest model that meets your requirements; weaker = faster, more available.</strong></p>
+<hr>
+<h2 id="plain-english">📖 Plain English</h2>
+<p>When two people read the same data on different servers, what should they see?</p>
+<ul>
+<li><strong>Same answer, always, immediately?</strong> That's <em>strong</em> consistency. Slow, expensive.</li>
+<li><strong>Same answer eventually?</strong> That's <em>eventual</em> consistency. Fast, cheap, but you might briefly see different things.</li>
+</ul>
+<p>In between are dozens of useful guarantees with funny names. The trick is to pick the <strong>weakest</strong> one that still meets your business needs.</p>
+<hr>
+<h2 id="the-consistency-spectrum-strongest-weakest">📊 The Consistency Spectrum (strongest → weakest)</h2>
+<h3 id="1-linearizability-the-gold-standard">1. Linearizability ★ (the gold standard)</h3>
+<ul>
+<li>All operations appear to happen in a single, real-time order</li>
+<li>A read after a write sees the write</li>
+<li>Looks like one perfect single-machine</li>
+<li><strong>Cost:</strong> Slow, requires coordination (Paxos/Raft)</li>
+<li><strong>Examples:</strong> etcd, ZooKeeper, Spanner, HBase</li>
+</ul>
+<h3 id="2-sequential-consistency">2. Sequential Consistency</h3>
+<ul>
+<li>All operations appear in <em>some</em> order, same to all observers</li>
+<li>Real-time isn't required (can reorder slightly)</li>
+<li><strong>Cost:</strong> Less than linearizability</li>
+<li><strong>Examples:</strong> Some NoSQL configurations</li>
+</ul>
+<h3 id="3-causal-consistency">3. Causal Consistency</h3>
+<ul>
+<li>"Cause comes before effect" — you'll see operations in causal order</li>
+<li>Two unrelated ops can appear in different orders to different observers</li>
+<li><strong>Cost:</strong> Affordable; great for messaging</li>
+<li><strong>Examples:</strong> Comment threads, chat apps (you see your reply after the original)</li>
+</ul>
+<h3 id="4-read-your-writes">4. Read Your Writes</h3>
+<ul>
+<li>After you write, <strong>you</strong> read your own writes (others may not yet)</li>
+<li>"Just-posted comment shows up for me, but maybe not for others for 5s"</li>
+<li><strong>Cost:</strong> Cheap; common UX expectation</li>
+<li><strong>Examples:</strong> Social media, content management</li>
+</ul>
+<h3 id="5-monotonic-reads">5. Monotonic Reads</h3>
+<ul>
+<li>Once you've seen value V, future reads return V or newer (never go backward)</li>
+<li>"Inbox count won't appear to decrease and then re-increase"</li>
+<li><strong>Cost:</strong> Cheap (sticky session per user)</li>
+<li><strong>Examples:</strong> Counters, notifications</li>
+</ul>
+<h3 id="6-eventual-consistency-the-bottom">6. Eventual Consistency (the bottom)</h3>
+<ul>
+<li>"Given enough time and no new writes, all replicas converge"</li>
+<li>No guarantee of <em>when</em> — could be ms, could be minutes</li>
+<li><strong>Cost:</strong> Cheapest; maximum availability/throughput</li>
+<li><strong>Examples:</strong> DNS, Amazon S3, social media likes counter</li>
+</ul>
+<hr>
+<h2 id="real-world-examples">🏗️ Real-World Examples</h2>
+<table>
+<thead>
+<tr>
+<th>Need</th>
+<th>Model</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bank transfer</td>
+<td><strong>Linearizable</strong></td>
+<td>Money cannot be wrong, ever</td>
+</tr>
+<tr>
+<td>Distributed lock</td>
+<td><strong>Linearizable</strong></td>
+<td>Only one holder ever</td>
+</tr>
+<tr>
+<td>Username availability</td>
+<td><strong>Linearizable</strong></td>
+<td>Two people can't claim same name</td>
+</tr>
+<tr>
+<td>Comment thread (replies in order)</td>
+<td><strong>Causal</strong></td>
+<td>Cause/effect must be visible</td>
+</tr>
+<tr>
+<td>User's "just posted" content</td>
+<td><strong>Read Your Writes</strong></td>
+<td>Don't lie to the user</td>
+</tr>
+<tr>
+<td>Like count on a post</td>
+<td><strong>Eventual</strong></td>
+<td>Off-by-one is fine for UX</td>
+</tr>
+<tr>
+<td>DNS records</td>
+<td><strong>Eventual</strong></td>
+<td>TTL-based; convergence is the point</td>
+</tr>
+<tr>
+<td>Inventory counter</td>
+<td><strong>Linearizable or near</strong></td>
+<td>Don't oversell</td>
+</tr>
+<tr>
+<td>Shopping cart</td>
+<td><strong>Causal + CRDT merging</strong></td>
+<td>Concurrent edits should reconcile</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="how-systems-achieve-these">⚙️ How Systems Achieve These</h2>
+<table>
+<thead>
+<tr>
+<th>Mechanism</th>
+<th>Provides</th>
+<th>Used in</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Single-master replication</strong></td>
+<td>Linearizable on the master</td>
+<td>PostgreSQL, MySQL primary</td>
+</tr>
+<tr>
+<td><strong>Quorum (R + W &gt; N)</strong></td>
+<td>Tunable, often linearizable</td>
+<td>Cassandra, DynamoDB</td>
+</tr>
+<tr>
+<td><strong>Consensus protocols</strong> (Raft, Paxos)</td>
+<td>Linearizable</td>
+<td>etcd, Spanner, CockroachDB</td>
+</tr>
+<tr>
+<td><strong>Vector clocks / version vectors</strong></td>
+<td>Causal</td>
+<td>Riak, DynamoDB internals</td>
+</tr>
+<tr>
+<td><strong>CRDTs (Conflict-Free Replicated Data Types)</strong></td>
+<td>Eventual + auto-merge</td>
+<td>Redis, Riak, Yjs (collab editors)</td>
+</tr>
+<tr>
+<td><strong>Read repair / anti-entropy</strong></td>
+<td>Eventual convergence</td>
+<td>Cassandra, DynamoDB</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="the-pragmatic-decision-tree">🚦 The Pragmatic Decision Tree</h2>
+<div class="codehilite"><pre><span></span><code><span class="s">&quot;If two ops conflict, can the system pick the wrong one?&quot;</span>
+└─ <span class="n">NO</span> → <span class="n">Linearizable</span> (<span class="k">use</span> <span class="n">Spanner</span><span class="o">/</span><span class="n">Postgres</span><span class="o">/</span><span class="n">etcd</span>)
+└─ <span class="n">YES</span>, <span class="k">with</span> <span class="n">limits</span> → 
+    <span class="s">&quot;Must users see their own writes?&quot;</span>
+    └─ <span class="n">YES</span> → <span class="n">Read</span> <span class="n">Your</span> <span class="n">Writes</span> (<span class="n">most</span> <span class="n">apps</span> <span class="k">need</span> <span class="n">this</span>)
+    └─ <span class="s">&quot;Must order be preserved within a chain?&quot;</span>
+        └─ <span class="n">YES</span> → <span class="n">Causal</span>
+        └─ <span class="n">NO</span>  → <span class="n">Eventual</span> (<span class="n">cheapest</span>, <span class="n">fastest</span>)
+</code></pre></div>
+
+<hr>
+<h2 id="real-cassandra-tunable-consistency">🎯 Real Cassandra Tunable Consistency</h2>
+<p>This is <strong>the</strong> classic example of consistency-as-knobs:</p>
+<div class="codehilite"><pre><span></span><code>Total replicas N = 3
+
+Read consistency:        Write consistency:
+ONE     → 1 replica      ONE      → 1 replica  
+QUORUM  → 2 replicas     QUORUM   → 2 replicas  
+ALL     → 3 replicas     ALL      → 3 replicas
+</code></pre></div>
+
+<p>Rule: <strong><code>R + W &gt; N</code> ⇒ strong consistency</strong> (overlapping reads/writes).</p>
+<ul>
+<li>Want low latency? <code>R=1, W=1</code> → <code>1+1=2 &lt; 3</code> → eventual consistency</li>
+<li>Want correctness? <code>R=2, W=2</code> → <code>2+2=4 &gt; 3</code> → strong consistency (any two replicas overlap)</li>
+</ul>
+<p>You choose <strong>per query</strong>.</p>
+<hr>
+<h2 id="common-misconceptions">⚠️ Common Misconceptions</h2>
+<ol>
+<li><strong>"NoSQL = eventual consistency"</strong> — Wrong. Most NoSQL DBs offer strong consistency as an option (DynamoDB, Cassandra, MongoDB).</li>
+<li><strong>"Strong consistency = no bugs"</strong> — You still need to handle concurrency <em>correctly</em>. Strong consistency just removes one class of issues.</li>
+<li><strong>"Eventual = a few seconds"</strong> — Could be ms or hours. Without a bound, "eventual" is dangerous.</li>
+<li><strong>"Linearizable is the only safe choice"</strong> — Many apps work fine on causal or read-your-writes. Don't over-pay.</li>
+</ol>
+<hr>
+<h2 id="dig-deeper">🔗 Dig Deeper</h2>
+<ul>
+<li>📘 <em>Designing Data-Intensive Applications</em> — Chapter 9: Consistency and Consensus ★★★</li>
+<li>📘 <a href="https://jepsen.io/consistency">Jepsen Consistency Models</a> ★ — clearest visualization on the web</li>
+<li>📘 <a href="http://www.bailis.org/papers/hat-vldb2014.pdf">Peter Bailis — Highly Available Transactions</a></li>
+<li>📘 Vogels, "Eventually Consistent" — <code>papers-we-love</code> repo</li>
+</ul>
+<hr>
+<p>← <a href="./README.md">Back to 5-min reads index</a></p></article>
+    <nav class="prevnext"><a class="prev" href="15-cap-theorem.html"><div class="label">← Previous</div><div class="title">🔴 #15 — The CAP Theorem (5-min read)</div></a><a class="next" href="17-consensus-raft-paxos.html"><div class="label">Next →</div><div class="title">🔴 #17 — Consensus: Raft & Paxos (5-min read)</div></a></nav>
+  </main>
+</div>
+<footer class="foot">
+  <span>Generated from local .md files. Edit sources, then run <code>python build.py</code>.</span>
+</footer>
+</body>
+</html>

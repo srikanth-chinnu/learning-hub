@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🟡 #6 — Load Balancing (5-min read) — Learning Hub</title>
+<link rel="stylesheet" href="../../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../../index.html" class="brand">📚 Learning Hub</a>
+  <nav class="topnav">
+    <a href="../../index.html">Home</a>
+    <a href="../../roadmap.html">Roadmap</a>
+    <a href="../../dsa/index.html">DSA</a>
+    <a href="../../system-design/index.html">System Design</a>
+  </nav>
+</header>
+<div class="layout">
+  <aside class="sidebar"><h3>System Design</h3><ul><li><a href="../index.html">System Design — Overview</a></li><li><a href="../01-beginner.html">Beginner</a></li><li><a href="../02-intermediate.html">Intermediate</a></li><li><a href="../03-advanced.html">Advanced</a></li><li><a href="../04-expert.html">Expert</a></li><li><a href="../tradeoffs-deep-dive.html">Trade-offs Deep Dive</a></li><li><a href="../books-and-courses.html">Books & Courses</a></li><li><a href="../github-repos.html">GitHub Repos</a></li><li><a href="../seminal-papers.html">Seminal Papers</a></li></ul><h3>5-Minute Reads</h3><ul class="group"><li><a href="index.html">5-Minute Reads — Index</a></li><li><a href="01-what-is-system-design.html">🟢 #1 — What is System Design? (5-min read)</a></li><li><a href="02-scalability-basics.html">🟢 #2 — Scalability: Vertical vs Horizontal (5-min read)</a></li><li><a href="03-latency-vs-throughput.html">🟢 #3 — Latency vs Throughput (5-min read)</a></li><li><a href="04-api-styles.html">🟢 #4 — REST vs GraphQL vs gRPC (5-min read)</a></li><li><a href="05-sql-vs-nosql.html">🟢 #5 — SQL vs NoSQL (5-min read)</a></li><li><a href="06-load-balancing.html">🟡 #6 — Load Balancing (5-min read)</a></li><li><a href="07-caching.html">🟡 #7 — Caching Strategies (5-min read)</a></li><li><a href="08-cdn.html">🟡 #8 — CDN: Content Delivery Networks (5-min read)</a></li><li><a href="09-database-replication.html">🟡 #9 — Database Replication (5-min read)</a></li><li><a href="10-database-sharding.html">🟡 #10 — Database Sharding (5-min read)</a></li><li><a href="11-consistent-hashing.html">🟡 #11 — Consistent Hashing (5-min read)</a></li><li><a href="12-microservices.html">🟡 #12 — Microservices vs Monolith (5-min read)</a></li><li><a href="13-message-queues.html">🟡 #13 — Message Queues & Pub/Sub (5-min read)</a></li><li><a href="14-rate-limiting.html">🟡 #14 — Rate Limiting (5-min read)</a></li><li><a href="15-cap-theorem.html">🔴 #15 — The CAP Theorem (5-min read)</a></li><li><a href="16-consistency-models.html">🔴 #16 — Consistency Models (5-min read)</a></li><li><a href="17-consensus-raft-paxos.html">🔴 #17 — Consensus: Raft & Paxos (5-min read)</a></li><li><a href="18-event-driven-and-saga.html">🔴 #18 — Event-Driven Architecture & Saga Pattern (5-min read)</a></li><li><a href="19-resilience-patterns.html">🔴 #19 — Resilience Patterns: Circuit Breaker & Bulkhead (5-min read)</a></li><li><a href="20-observability.html">🔴 #20 — Observability: Logs, Metrics, Traces (5-min read)</a></li></ul><h3>Other tracks</h3><ul><li><a href="../../roadmap.html">🗺️ Roadmap</a></li><li><a href="../../dsa/index.html">🧠 DSA</a></li></ul></aside>
+  <main class="content">
+    <div class="breadcrumb"><a href="../../index.html">Home</a> &rsaquo; <a href="../index.html">System Design</a> &rsaquo; <a href="index.html">5-Minute Reads</a> &rsaquo; 🟡 #6 — Load Balancing (5-min read)</div>
+    <article class="md"><h1 id="6-load-balancing-5-min-read">🟡 #6 — Load Balancing (5-min read)</h1>
+<h2 id="tldr">🎯 TL;DR</h2>
+<p><strong>A load balancer (LB) is a traffic cop sitting between users and your servers. It distributes requests so no one server gets overwhelmed and your system survives if a server dies. The "L4 vs L7" distinction matters more than the algorithm.</strong></p>
+<hr>
+<h2 id="plain-english">📖 Plain English</h2>
+<p>You have 10 backend servers. A user sends a request. Where does it go?</p>
+<p>A <strong>load balancer</strong> picks one. That's it. It's a piece of software (NGINX, HAProxy) or a managed service (AWS ALB, Cloudflare) that sits in front, accepts requests, and routes them.</p>
+<div class="codehilite"><pre><span></span><code><span class="w">                 </span><span class="err">┌──────►</span><span class="w"> </span><span class="n">Server</span><span class="w"> </span><span class="mi">1</span>
+<span class="o">[</span><span class="n">User</span><span class="o">]</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="o">[</span><span class="n">LB</span><span class="o">]</span><span class="w"> </span><span class="err">───┼──────►</span><span class="w"> </span><span class="n">Server</span><span class="w"> </span><span class="mi">2</span>
+<span class="w">                 </span><span class="err">└──────►</span><span class="w"> </span><span class="n">Server</span><span class="w"> </span><span class="mi">3</span>
+</code></pre></div>
+
+<p>If Server 2 dies, the LB <strong>stops sending traffic</strong> there. From the user's point of view, nothing happened.</p>
+<hr>
+<h2 id="load-balancing-algorithms">🔀 Load Balancing Algorithms</h2>
+<table>
+<thead>
+<tr>
+<th>Algorithm</th>
+<th>How it works</th>
+<th>Best for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Round Robin</strong></td>
+<td>1 → 2 → 3 → 1 → 2 → 3 ...</td>
+<td>Identical servers, similar request weights</td>
+</tr>
+<tr>
+<td><strong>Weighted Round Robin</strong></td>
+<td>Bigger servers get more traffic</td>
+<td>Heterogeneous hardware</td>
+</tr>
+<tr>
+<td><strong>Least Connections</strong></td>
+<td>Send to whoever has fewest active requests</td>
+<td>Long-running connections (streaming, WebSockets)</td>
+</tr>
+<tr>
+<td><strong>IP Hash</strong></td>
+<td><code>hash(client_ip) % N</code> always picks same server</td>
+<td>Sticky sessions without cookies</td>
+</tr>
+<tr>
+<td><strong>Least Response Time</strong></td>
+<td>Send to the fastest-responding server</td>
+<td>Latency-sensitive workloads</td>
+</tr>
+<tr>
+<td><strong>Random</strong></td>
+<td>Just pick one randomly</td>
+<td>Simplest, surprisingly effective</td>
+</tr>
+<tr>
+<td><strong>Power of 2 Choices</strong></td>
+<td>Pick 2 random, send to whichever is less loaded</td>
+<td>Best in practice — used by Twitter, Netflix</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Pro tip:</strong> Don't agonize over the algorithm. Round Robin or "Power of 2 Choices" is correct 95% of the time.</p>
+<hr>
+<h2 id="layer-4-vs-layer-7-the-critical-distinction">🏗️ Layer 4 vs Layer 7 — THE Critical Distinction</h2>
+<p>This is what interviewers actually ask about.</p>
+<h3 id="l4-transport-layer">L4 (Transport Layer)</h3>
+<ul>
+<li>Routes based on <strong>TCP/UDP info only</strong>: source/destination IP, port</li>
+<li><strong>Cannot read</strong> the request content</li>
+<li>Extremely fast (handles millions of connections)</li>
+<li><strong>Use when:</strong> Pure performance matters, raw TCP traffic, gaming servers</li>
+</ul>
+<h3 id="l7-application-layer">L7 (Application Layer)</h3>
+<ul>
+<li>Reads the <strong>full HTTP request</strong>: URL path, headers, cookies, body</li>
+<li>Can route <code>/api/*</code> to API servers, <code>/images/*</code> to image servers</li>
+<li>Can do SSL termination, compression, retries, header rewriting</li>
+<li><strong>Use when:</strong> HTTP traffic with content-based routing needs</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th></th>
+<th><strong>L4</strong></th>
+<th><strong>L7</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Speed</td>
+<td>Faster</td>
+<td>Slower (parses HTTP)</td>
+</tr>
+<tr>
+<td>Inspect content?</td>
+<td>❌ No</td>
+<td>✅ Yes</td>
+</tr>
+<tr>
+<td>SSL termination</td>
+<td>❌ No</td>
+<td>✅ Yes</td>
+</tr>
+<tr>
+<td>Path routing (<code>/api/v1</code>)</td>
+<td>❌ No</td>
+<td>✅ Yes</td>
+</tr>
+<tr>
+<td>Examples</td>
+<td>AWS NLB, HAProxy TCP, Envoy L4</td>
+<td>NGINX, AWS ALB, Cloudflare, Envoy L7</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Rule of thumb:</strong> If you're routing HTTP, use L7. Otherwise L4.</p>
+<hr>
+<h2 id="health-checks-the-unsung-hero">🩺 Health Checks (the unsung hero)</h2>
+<p>Every LB constantly pings backends:
+- <strong>Active health check:</strong> LB sends <code>GET /health</code> every 5s. If 3 fail → mark unhealthy.
+- <strong>Passive health check:</strong> LB watches for failures during real requests.</p>
+<p><strong>Without health checks, an LB will happily send traffic to a dead server.</strong> Always configure them.</p>
+<hr>
+<h2 id="active-active-vs-active-passive">🪞 Active-Active vs Active-Passive</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th><strong>Active-Active</strong></th>
+<th><strong>Active-Passive</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>All LBs serve traffic</td>
+<td>✅</td>
+<td>❌ Only primary serves</td>
+</tr>
+<tr>
+<td>Failover</td>
+<td>Instant (DNS)</td>
+<td>Failover script swaps</td>
+</tr>
+<tr>
+<td>Cost</td>
+<td>Higher (use both)</td>
+<td>Lower (idle backup)</td>
+</tr>
+<tr>
+<td>Use case</td>
+<td>High traffic, geo-distribution</td>
+<td>Compliance, simpler ops</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="where-to-place-load-balancers">🚦 Where to Place Load Balancers</h2>
+<div class="codehilite"><pre><span></span><code><span class="p">[</span><span class="n">DNS</span><span class="w"> </span><span class="n">Round</span><span class="o">-</span><span class="n">Robin</span><span class="p">]</span><span class="w">            </span><span class="err">←</span><span class="w"> </span><span class="n">geographic</span><span class="w"> </span><span class="n">distribution</span>
+<span class="w">        </span><span class="err">│</span>
+<span class="w">   </span><span class="p">[</span><span class="n">L4</span><span class="w"> </span><span class="n">LB</span><span class="w"> </span><span class="n">at</span><span class="w"> </span><span class="n">edge</span><span class="p">]</span><span class="w">            </span><span class="err">←</span><span class="w"> </span><span class="n">absorbs</span><span class="w"> </span><span class="n">DDoS</span><span class="p">,</span><span class="w"> </span><span class="n">raw</span><span class="w"> </span><span class="n">TCP</span>
+<span class="w">        </span><span class="err">│</span>
+<span class="w">   </span><span class="p">[</span><span class="n">L7</span><span class="w"> </span><span class="n">LB</span><span class="w"> </span><span class="n">cluster</span><span class="p">]</span><span class="w">            </span><span class="err">←</span><span class="w"> </span><span class="n">HTTP</span><span class="w"> </span><span class="n">routing</span><span class="p">,</span><span class="w"> </span><span class="n">TLS</span><span class="w"> </span><span class="n">termination</span>
+<span class="w">        </span><span class="err">│</span>
+<span class="w">   </span><span class="p">[</span><span class="n">Application</span><span class="w"> </span><span class="n">servers</span><span class="p">]</span><span class="w">      </span><span class="err">←</span><span class="w"> </span><span class="n">stateless</span><span class="p">,</span><span class="w"> </span><span class="n">behind</span><span class="w"> </span><span class="n">LB</span>
+<span class="w">        </span><span class="err">│</span>
+<span class="w">   </span><span class="p">[</span><span class="n">Database</span><span class="w"> </span><span class="n">with</span><span class="w"> </span><span class="n">replicas</span><span class="p">]</span><span class="w">   </span><span class="err">←</span><span class="w"> </span><span class="n">primary</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">read</span><span class="w"> </span><span class="n">replicas</span>
+</code></pre></div>
+
+<p>This is roughly the architecture of every large web service.</p>
+<hr>
+<h2 id="common-pitfalls">⚠️ Common Pitfalls</h2>
+<ol>
+<li><strong>Sticky sessions everywhere</strong> — Defeats the point of stateless services. If you need them, store sessions in Redis instead.</li>
+<li><strong>No health checks</strong> — LB will gleefully send traffic to dead servers.</li>
+<li><strong>Ignoring connection draining</strong> — When you remove a server, in-flight requests should finish gracefully. Configure draining timeout.</li>
+<li><strong>Load balancer = single point of failure</strong> — Use at least 2 LBs in HA mode (or managed service like AWS ALB which handles this).</li>
+<li><strong>Hashing on user_id without virtual nodes</strong> — Adding/removing servers reshuffles everything. Use <a href="./11-consistent-hashing.md">Consistent Hashing</a> instead.</li>
+</ol>
+<hr>
+<h2 id="dig-deeper">🔗 Dig Deeper</h2>
+<ul>
+<li>📘 <a href="https://github.com/karanpratapsingh/system-design">karanpratapsingh/system-design — Load Balancing chapter</a></li>
+<li>📺 <a href="https://www.youtube.com/@ByteByteGo">ByteByteGo: Top 6 Load Balancing Algorithms</a></li>
+<li>📘 <a href="https://github.com/donnemartin/system-design-primer">donnemartin/system-design-primer — Load balancer + Reverse proxy sections</a></li>
+</ul>
+<hr>
+<p>← <a href="./README.md">Back to 5-min reads index</a></p></article>
+    <nav class="prevnext"><a class="prev" href="05-sql-vs-nosql.html"><div class="label">← Previous</div><div class="title">🟢 #5 — SQL vs NoSQL (5-min read)</div></a><a class="next" href="07-caching.html"><div class="label">Next →</div><div class="title">🟡 #7 — Caching Strategies (5-min read)</div></a></nav>
+  </main>
+</div>
+<footer class="foot">
+  <span>Generated from local .md files. Edit sources, then run <code>python build.py</code>.</span>
+</footer>
+</body>
+</html>

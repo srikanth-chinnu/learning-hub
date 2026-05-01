@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔴 #17 — Consensus: Raft & Paxos (5-min read) — Learning Hub</title>
+<link rel="stylesheet" href="../../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../../index.html" class="brand">📚 Learning Hub</a>
+  <nav class="topnav">
+    <a href="../../index.html">Home</a>
+    <a href="../../roadmap.html">Roadmap</a>
+    <a href="../../dsa/index.html">DSA</a>
+    <a href="../../system-design/index.html">System Design</a>
+  </nav>
+</header>
+<div class="layout">
+  <aside class="sidebar"><h3>System Design</h3><ul><li><a href="../index.html">System Design — Overview</a></li><li><a href="../01-beginner.html">Beginner</a></li><li><a href="../02-intermediate.html">Intermediate</a></li><li><a href="../03-advanced.html">Advanced</a></li><li><a href="../04-expert.html">Expert</a></li><li><a href="../tradeoffs-deep-dive.html">Trade-offs Deep Dive</a></li><li><a href="../books-and-courses.html">Books & Courses</a></li><li><a href="../github-repos.html">GitHub Repos</a></li><li><a href="../seminal-papers.html">Seminal Papers</a></li></ul><h3>5-Minute Reads</h3><ul class="group"><li><a href="index.html">5-Minute Reads — Index</a></li><li><a href="01-what-is-system-design.html">🟢 #1 — What is System Design? (5-min read)</a></li><li><a href="02-scalability-basics.html">🟢 #2 — Scalability: Vertical vs Horizontal (5-min read)</a></li><li><a href="03-latency-vs-throughput.html">🟢 #3 — Latency vs Throughput (5-min read)</a></li><li><a href="04-api-styles.html">🟢 #4 — REST vs GraphQL vs gRPC (5-min read)</a></li><li><a href="05-sql-vs-nosql.html">🟢 #5 — SQL vs NoSQL (5-min read)</a></li><li><a href="06-load-balancing.html">🟡 #6 — Load Balancing (5-min read)</a></li><li><a href="07-caching.html">🟡 #7 — Caching Strategies (5-min read)</a></li><li><a href="08-cdn.html">🟡 #8 — CDN: Content Delivery Networks (5-min read)</a></li><li><a href="09-database-replication.html">🟡 #9 — Database Replication (5-min read)</a></li><li><a href="10-database-sharding.html">🟡 #10 — Database Sharding (5-min read)</a></li><li><a href="11-consistent-hashing.html">🟡 #11 — Consistent Hashing (5-min read)</a></li><li><a href="12-microservices.html">🟡 #12 — Microservices vs Monolith (5-min read)</a></li><li><a href="13-message-queues.html">🟡 #13 — Message Queues & Pub/Sub (5-min read)</a></li><li><a href="14-rate-limiting.html">🟡 #14 — Rate Limiting (5-min read)</a></li><li><a href="15-cap-theorem.html">🔴 #15 — The CAP Theorem (5-min read)</a></li><li><a href="16-consistency-models.html">🔴 #16 — Consistency Models (5-min read)</a></li><li><a href="17-consensus-raft-paxos.html">🔴 #17 — Consensus: Raft & Paxos (5-min read)</a></li><li><a href="18-event-driven-and-saga.html">🔴 #18 — Event-Driven Architecture & Saga Pattern (5-min read)</a></li><li><a href="19-resilience-patterns.html">🔴 #19 — Resilience Patterns: Circuit Breaker & Bulkhead (5-min read)</a></li><li><a href="20-observability.html">🔴 #20 — Observability: Logs, Metrics, Traces (5-min read)</a></li></ul><h3>Other tracks</h3><ul><li><a href="../../roadmap.html">🗺️ Roadmap</a></li><li><a href="../../dsa/index.html">🧠 DSA</a></li></ul></aside>
+  <main class="content">
+    <div class="breadcrumb"><a href="../../index.html">Home</a> &rsaquo; <a href="../index.html">System Design</a> &rsaquo; <a href="index.html">5-Minute Reads</a> &rsaquo; 🔴 #17 — Consensus: Raft & Paxos (5-min read)</div>
+    <article class="md"><h1 id="17-consensus-raft-paxos-5-min-read">🔴 #17 — Consensus: Raft &amp; Paxos (5-min read)</h1>
+<h2 id="tldr">🎯 TL;DR</h2>
+<p><strong>Consensus algorithms let a group of computers agree on a value despite failures and network drops. Raft is the modern, understandable version. Paxos is the older, more famous, harder one. Without consensus, distributed systems can't safely pick a leader, lock anything, or agree on order.</strong></p>
+<hr>
+<h2 id="plain-english">📖 Plain English</h2>
+<p>You have 5 servers. They need to agree: "what's the next entry in our log?"</p>
+<ul>
+<li>They can't all write the same thing because they don't trust each other to be alive</li>
+<li>Some might be down</li>
+<li>The network is unreliable; messages can be delayed or dropped</li>
+</ul>
+<p><strong>Consensus</strong> is the algorithm that gets them to safely agree, even with failures.</p>
+<p>This is the <strong>secret sauce</strong> behind:
+- Distributed locks (etcd, ZooKeeper)
+- Distributed databases that need correctness (Spanner, CockroachDB)
+- Kubernetes' control plane
+- Service discovery (Consul)</p>
+<p>Without consensus, you can't safely have a "leader" or a single source of truth in a distributed system.</p>
+<hr>
+<h2 id="paxos-the-original">🎩 Paxos — The Original</h2>
+<p>Invented by Leslie Lamport (1998).[^1]</p>
+<p><strong>Phases:</strong> Prepare → Promise → Accept → Accepted</p>
+<p>The famous quote about Paxos: <em>"It's the only consensus protocol... and nobody understands it."</em> Even Google's engineers struggled with it. So in 2014, Stanford's Diego Ongaro and John Ousterhout wrote a new one designed for <strong>understandability</strong>.</p>
+<hr>
+<h2 id="raft-the-modern-choice">🛡️ Raft — The Modern Choice</h2>
+<p><a href="https://raft.github.io/">Raft</a> (2014) does the same job as Paxos but is <em>much</em> easier to learn.[^2]</p>
+<h3 id="the-big-idea">The Big Idea</h3>
+<p>A cluster has 3 or 5 (odd number) servers. <strong>One is the leader; the rest are followers.</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">[Follower] ←—— heartbeats ——— [LEADER] ——— heartbeats ——→ [Follower]</span>
+<span class="w">                                  </span><span class="na">│</span>
+<span class="w">                                  </span><span class="na">▼</span>
+<span class="w">                              </span><span class="na">writes go</span>
+<span class="w">                              </span><span class="na">through here</span>
+</code></pre></div>
+
+<ul>
+<li><strong>Leader handles all writes.</strong> Replicates them to followers.</li>
+<li><strong>A write is "committed"</strong> once a majority (e.g., 3 of 5) confirms.</li>
+<li><strong>If leader dies</strong>, followers detect missed heartbeats, vote for a new leader.</li>
+<li><strong>Split-brain prevention:</strong> A server only votes for one leader per term; majority required.</li>
+</ul>
+<h3 id="the-three-sub-problems-raft-solves">The Three Sub-Problems Raft Solves</h3>
+<ol>
+<li><strong>Leader election</strong> — pick one leader at a time</li>
+<li><strong>Log replication</strong> — leader pushes log entries to followers</li>
+<li><strong>Safety</strong> — never apply two different values for the same log slot</li>
+</ol>
+<hr>
+<h2 id="how-leader-election-works">🗳️ How Leader Election Works</h2>
+<div class="codehilite"><pre><span></span><code><span class="mf">1.</span><span class="w"> </span><span class="n">All</span><span class="w"> </span><span class="n">servers</span><span class="w"> </span><span class="n">start</span><span class="w"> </span><span class="n">as</span><span class="w"> </span><span class="n">followers</span><span class="mf">.</span>
+<span class="mf">2.</span><span class="w"> </span><span class="n">Each</span><span class="w"> </span><span class="n">follower</span><span class="w"> </span><span class="n">has</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">random</span><span class="w"> </span><span class="s">&quot;election timeout&quot;</span><span class="w"> </span><span class="p">(</span><span class="mf">150</span><span class="o">-</span><span class="mf">300</span><span class="n">ms</span><span class="p">)</span><span class="mf">.</span>
+<span class="mf">3.</span><span class="w"> </span><span class="kr">If</span><span class="w"> </span><span class="n">timeout</span><span class="w"> </span><span class="nb">exp</span><span class="n">ires</span><span class="w"> </span><span class="n">without</span><span class="w"> </span><span class="n">hearing</span><span class="w"> </span><span class="n">from</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">leader</span><span class="p">,</span><span class="w"> </span><span class="n">follower</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="n">candidate</span><span class="mf">.</span>
+<span class="mf">4.</span><span class="w"> </span><span class="n">Candidate</span><span class="w"> </span><span class="n">increments</span><span class="w"> </span><span class="n">its</span><span class="w"> </span><span class="n">term</span><span class="p">,</span><span class="w"> </span><span class="n">votes</span><span class="w"> </span><span class="kr">for</span><span class="w"> </span><span class="n">itself</span><span class="p">,</span><span class="w"> </span><span class="n">asks</span><span class="w"> </span><span class="n">all</span><span class="w"> </span><span class="n">others</span><span class="w"> </span><span class="kr">for</span><span class="w"> </span><span class="n">votes</span><span class="mf">.</span>
+<span class="mf">5.</span><span class="w"> </span><span class="n">Server</span><span class="w"> </span><span class="n">votes</span><span class="w"> </span><span class="kr">if</span><span class="p">:</span><span class="w"> </span><span class="n">hasn</span><span class="err">&#39;</span><span class="n">t</span><span class="w"> </span><span class="n">voted</span><span class="w"> </span><span class="n">yet</span><span class="w"> </span><span class="n">this</span><span class="w"> </span><span class="n">term</span><span class="w"> </span><span class="ow">AND</span><span class="w"> </span><span class="n">candidate</span><span class="err">&#39;</span><span class="n">s</span><span class="w"> </span><span class="nb">log</span><span class="w"> </span><span class="n">is</span><span class="w"> </span><span class="n">up</span><span class="o">-</span><span class="kr">to</span><span class="o">-</span><span class="n">date</span><span class="mf">.</span>
+<span class="mf">6.</span><span class="w"> </span><span class="kr">If</span><span class="w"> </span><span class="n">candidate</span><span class="w"> </span><span class="kr">get</span><span class="n">s</span><span class="w"> </span><span class="n">majority</span><span class="w"> </span><span class="n">votes</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="n">becomes</span><span class="w"> </span><span class="n">leader</span><span class="mf">.</span><span class="w"> </span><span class="n">Sends</span><span class="w"> </span><span class="n">heartbeats</span><span class="mf">.</span>
+<span class="mf">7.</span><span class="w"> </span><span class="kr">If</span><span class="w"> </span><span class="n">split</span><span class="w"> </span><span class="n">vote</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="kr">wait</span><span class="w"> </span><span class="n">random</span><span class="w"> </span><span class="n">time</span><span class="p">,</span><span class="w"> </span><span class="n">retry</span><span class="mf">.</span>
+</code></pre></div>
+
+<p>The key insight: <strong>majority quorums + odd cluster size + randomized timeouts</strong> = no two leaders simultaneously, and elections converge fast.</p>
+<hr>
+<h2 id="how-log-replication-works">📦 How Log Replication Works</h2>
+<div class="codehilite"><pre><span></span><code><span class="mf">1.</span><span class="w"> </span><span class="n">Client</span><span class="w"> </span><span class="n">sends</span><span class="w"> </span><span class="s">&quot;x = 5&quot;</span><span class="w"> </span><span class="kr">to</span><span class="w"> </span><span class="n">leader</span><span class="mf">.</span>
+<span class="mf">2.</span><span class="w"> </span><span class="n">Leader</span><span class="w"> </span><span class="n">appends</span><span class="w"> </span><span class="kr">to</span><span class="w"> </span><span class="n">its</span><span class="w"> </span><span class="n">local</span><span class="w"> </span><span class="nb">log</span><span class="mf">.</span>
+<span class="mf">3.</span><span class="w"> </span><span class="n">Leader</span><span class="w"> </span><span class="n">sends</span><span class="w"> </span><span class="kr">to</span><span class="w"> </span><span class="n">all</span><span class="w"> </span><span class="n">followers</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;append &#39;x = 5&#39; at index 47, term 3&quot;</span><span class="mf">.</span>
+<span class="mf">4.</span><span class="w"> </span><span class="n">Followers</span><span class="w"> </span><span class="n">append</span><span class="p">;</span><span class="w"> </span><span class="n">reply</span><span class="w"> </span><span class="s">&quot;ok&quot;</span><span class="mf">.</span>
+<span class="mf">5.</span><span class="w"> </span><span class="kr">On</span><span class="n">ce</span><span class="w"> </span><span class="n">majority</span><span class="w"> </span><span class="n">replies</span><span class="p">,</span><span class="w"> </span><span class="n">leader</span><span class="w"> </span><span class="n">marks</span><span class="w"> </span><span class="n">index</span><span class="w"> </span><span class="mf">47</span><span class="w"> </span><span class="n">as</span><span class="w"> </span><span class="s">&quot;committed&quot;</span><span class="mf">.</span>
+<span class="mf">6.</span><span class="w"> </span><span class="n">Leader</span><span class="w"> </span><span class="n">applies</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">5</span><span class="w"> </span><span class="kr">to</span><span class="w"> </span><span class="n">its</span><span class="w"> </span><span class="n">state</span><span class="w"> </span><span class="n">machine</span><span class="p">;</span><span class="w"> </span><span class="n">tells</span><span class="w"> </span><span class="n">client</span><span class="w"> </span><span class="s">&quot;done&quot;</span><span class="mf">.</span>
+<span class="mf">7.</span><span class="w"> </span><span class="n">Followers</span><span class="w"> </span><span class="n">also</span><span class="w"> </span><span class="n">apply</span><span class="w"> </span><span class="kr">on</span><span class="n">ce</span><span class="w"> </span><span class="n">they</span><span class="w"> </span><span class="n">hear</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">commit</span><span class="w"> </span><span class="n">index</span><span class="mf">.</span>
+</code></pre></div>
+
+<p>The committed log is identical across all servers.</p>
+<hr>
+<h2 id="where-raft-is-used">🤝 Where Raft is Used</h2>
+<table>
+<thead>
+<tr>
+<th>System</th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>etcd</strong> (Kubernetes' brain)</td>
+<td>Stores cluster state via Raft</td>
+</tr>
+<tr>
+<td><strong>Consul</strong></td>
+<td>Service discovery, configuration</td>
+</tr>
+<tr>
+<td><strong>CockroachDB</strong></td>
+<td>Each range of data uses Raft</td>
+</tr>
+<tr>
+<td><strong>TiKV</strong> (TiDB's storage)</td>
+<td>Raft per partition</td>
+</tr>
+<tr>
+<td><strong>MongoDB Replica Set</strong></td>
+<td>Heavily inspired by Raft</td>
+</tr>
+<tr>
+<td><strong>Kafka KRaft</strong></td>
+<td>Kafka's metadata layer (replacing ZooKeeper)</td>
+</tr>
+</tbody>
+</table>
+<p>If you've used Kubernetes, you've used Raft (via etcd).</p>
+<hr>
+<h2 id="where-paxos-is-used">📚 Where Paxos is Used</h2>
+<table>
+<thead>
+<tr>
+<th>System</th>
+<th>Variant</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Google Spanner</strong></td>
+<td>Multi-Paxos</td>
+</tr>
+<tr>
+<td><strong>Google Chubby</strong></td>
+<td>The OG Paxos service (basis for ZooKeeper)</td>
+</tr>
+<tr>
+<td><strong>Apache ZooKeeper</strong></td>
+<td>ZAB (Zookeeper Atomic Broadcast — a Paxos variant)</td>
+</tr>
+<tr>
+<td><strong>Apache Cassandra</strong></td>
+<td>Paxos for lightweight transactions</td>
+</tr>
+</tbody>
+</table>
+<p>Modern teams writing new systems usually pick Raft. Old systems and high-end databases (Spanner) often use Paxos variants for historical and performance reasons.</p>
+<hr>
+<h2 id="raft-vs-paxos">⚖️ Raft vs Paxos</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th><strong>Raft</strong></th>
+<th><strong>Paxos</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Year</td>
+<td>2014</td>
+<td>1998</td>
+</tr>
+<tr>
+<td>Designed for</td>
+<td>Understandability</td>
+<td>Theoretical minimality</td>
+</tr>
+<tr>
+<td>Leader role</td>
+<td>Strong, single leader</td>
+<td>Multi-leader (Multi-Paxos)</td>
+</tr>
+<tr>
+<td>Learning curve</td>
+<td>Days</td>
+<td>Weeks</td>
+</tr>
+<tr>
+<td>Production implementations</td>
+<td>Many (etcd, CockroachDB)</td>
+<td>Many (Spanner, Chubby)</td>
+</tr>
+<tr>
+<td>Performance</td>
+<td>Comparable</td>
+<td>Comparable</td>
+</tr>
+</tbody>
+</table>
+<p><strong>For learning and most new systems: Raft.</strong></p>
+<hr>
+<h2 id="why-you-need-odd-numbers">⚠️ Why You Need Odd Numbers</h2>
+<p>Cluster sizes: 3, 5, 7. Why not 4?</p>
+<ul>
+<li>4-node cluster: majority = 3</li>
+<li>5-node cluster: majority = 3</li>
+<li>Both tolerate 2 failures... wait, no:</li>
+<li>4-node: tolerates 1 failure (need 3 of 4 alive)</li>
+<li>5-node: tolerates 2 failures (need 3 of 5 alive)</li>
+<li><strong>5 nodes ⟹ better fault tolerance than 4</strong> with same majority size</li>
+</ul>
+<p>Odd numbers maximize fault tolerance per node.</p>
+<hr>
+<h2 id="when-you-need-consensus">🚦 When You Need Consensus</h2>
+<p>✅ Picking a primary database
+✅ Distributed locks ("only one person can edit this resource")
+✅ Strict ordering of events (financial transactions)
+✅ Service discovery / configuration that must be correct
+✅ Any system where "two truths" is catastrophic</p>
+<p>❌ Most application data — eventual consistency is fine
+❌ Logs / metrics — at-least-once delivery suffices
+❌ Caches — staleness is fine</p>
+<p><strong>Don't run consensus everywhere.</strong> It's expensive (multiple round trips per write).</p>
+<hr>
+<h2 id="dig-deeper">🔗 Dig Deeper</h2>
+<ul>
+<li>📘 <a href="https://raft.github.io/raft.pdf">The Raft paper (super readable!)</a></li>
+<li>🎮 <a href="https://raft.github.io/">Raft visualization (raft.github.io)</a> — interactive simulation</li>
+<li>📘 <a href="https://pdos.csail.mit.edu/6.824/">MIT 6.824 lectures 5-7 — Raft deep dive</a> ★</li>
+<li>📘 <a href="https://lamport.azurewebsites.net/pubs/paxos-simple.pdf">Lamport — Paxos Made Simple</a></li>
+<li>📘 <a href="https://lamport.azurewebsites.net/pubs/lamport-paxos.pdf">Lamport — The Part-Time Parliament (original 1998 paper)</a></li>
+</ul>
+<hr>
+<h2 id="citations">📖 Citations</h2>
+<p>[^1]: Leslie Lamport, "The Part-Time Parliament," 1998. The original Paxos paper.
+[^2]: Diego Ongaro and John Ousterhout, "In Search of an Understandable Consensus Algorithm," USENIX ATC 2014.</p>
+<hr>
+<p>← <a href="./README.md">Back to 5-min reads index</a></p></article>
+    <nav class="prevnext"><a class="prev" href="16-consistency-models.html"><div class="label">← Previous</div><div class="title">🔴 #16 — Consistency Models (5-min read)</div></a><a class="next" href="18-event-driven-and-saga.html"><div class="label">Next →</div><div class="title">🔴 #18 — Event-Driven Architecture & Saga Pattern (5-min read)</div></a></nav>
+  </main>
+</div>
+<footer class="foot">
+  <span>Generated from local .md files. Edit sources, then run <code>python build.py</code>.</span>
+</footer>
+</body>
+</html>
