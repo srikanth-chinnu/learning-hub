@@ -1,26 +1,30 @@
 #!/usr/bin/env python3
 """
-build.py — Convert markdown sources to a navigable HTML site.
+build.py — Build the interactive Learning Hub (single-page app).
 
-Re-run this any time you edit the .md files under ./sources/.
+Reads markdown sources from ./sources/ and produces:
+  - content/*.html       (rendered article fragments, no shell)
+  - manifest.json        (navigation tree + anchors + ordered list)
+  - index.html           (the SPA shell)
+  - assets/style.css     (theme)
+  - assets/app.js        (router + sidebar + progress + search + TOC)
 
 Usage:
     pip install markdown pygments
     python build.py
-
-Output: ./*.html (and dsa/, system-design/ subdirs)
-Open: index.html in any browser.
 """
-import os
+import json
 import re
-import shutil
+from html.parser import HTMLParser
 from pathlib import Path
+
 import markdown
+
 
 HUB = Path(__file__).resolve().parent
 SOURCES = HUB / "sources"
-SD_SRC = SOURCES / "system-design"
-RESEARCH = SOURCES
+CONTENT = HUB / "content"
+ASSETS = HUB / "assets"
 
 MD_EXT = [
     "markdown.extensions.tables",
@@ -32,404 +36,1320 @@ MD_EXT = [
     "markdown.extensions.def_list",
 ]
 
-PAGE_TMPL = """<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{title} — Learning Hub</title>
-<link rel="stylesheet" href="{root}assets/style.css">
-</head>
-<body>
-<header class="topbar">
-  <a href="{root}index.html" class="brand">📚 Learning Hub</a>
-  <nav class="topnav">
-    <a href="{root}index.html">Home</a>
-    <a href="{root}roadmap.html">Roadmap</a>
-    <a href="{root}dsa/index.html">DSA</a>
-    <a href="{root}system-design/index.html">System Design</a>
-  </nav>
-</header>
-<div class="layout">
-  <aside class="sidebar">{sidebar}</aside>
-  <main class="content">
-    <div class="breadcrumb">{crumbs}</div>
-    <article class="md">{body}</article>
-    <nav class="prevnext">{prevnext}</nav>
-  </main>
-</div>
-<footer class="foot">
-  <span>Generated from local .md files. Edit sources, then run <code>python build.py</code>.</span>
-</footer>
-</body>
-</html>
-"""
 
-CSS = r"""
-:root{
-  --bg:#0d1117; --panel:#161b22; --border:#30363d; --text:#e6edf3; --muted:#8b949e;
-  --link:#58a6ff; --accent:#f78166; --code-bg:#1f242c; --shadow:rgba(0,0,0,.4);
-  --good:#3fb950; --warn:#d29922; --bad:#f85149;
-}
-*{box-sizing:border-box}
-html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font:16px/1.55 -apple-system,Segoe UI,Helvetica,Arial,sans-serif}
-a{color:var(--link);text-decoration:none}
-a:hover{text-decoration:underline}
-code,pre,kbd{font-family:Consolas,Menlo,Monaco,'Courier New',monospace}
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:var(--panel);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50}
-.brand{font-weight:700;font-size:18px;color:var(--text)}
-.topnav a{margin-left:18px;color:var(--muted);font-weight:500}
-.topnav a:hover{color:var(--text);text-decoration:none}
-.layout{display:flex;max-width:1400px;margin:0 auto}
-.sidebar{width:300px;flex-shrink:0;border-right:1px solid var(--border);padding:24px 16px;height:calc(100vh - 60px);overflow-y:auto;position:sticky;top:60px;background:var(--bg)}
-.sidebar h3{margin:18px 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
-.sidebar ul{list-style:none;margin:0;padding:0}
-.sidebar li{margin:2px 0}
-.sidebar a{display:block;padding:5px 10px;border-radius:6px;color:var(--text);font-size:14px}
-.sidebar a:hover{background:var(--panel);text-decoration:none}
-.sidebar a.active{background:var(--panel);color:var(--accent);font-weight:600}
-.sidebar .group{padding-left:14px;border-left:1px solid var(--border);margin-left:4px}
-.content{flex:1;padding:30px 50px;max-width:900px;min-width:0}
-.breadcrumb{color:var(--muted);font-size:13px;margin-bottom:14px}
-.breadcrumb a{color:var(--muted)}
-.md h1{font-size:32px;border-bottom:1px solid var(--border);padding-bottom:10px;margin-top:0}
-.md h2{font-size:24px;border-bottom:1px solid var(--border);padding-bottom:6px;margin-top:30px}
-.md h3{font-size:19px;margin-top:24px}
-.md h4{font-size:16px;margin-top:18px}
-.md p{margin:12px 0}
-.md ul,.md ol{padding-left:28px}
-.md li{margin:4px 0}
-.md blockquote{border-left:4px solid var(--accent);background:var(--panel);padding:8px 16px;margin:16px 0;color:var(--muted)}
-.md table{border-collapse:collapse;margin:14px 0;display:block;overflow-x:auto;max-width:100%}
-.md th,.md td{border:1px solid var(--border);padding:8px 12px;text-align:left}
-.md th{background:var(--panel)}
-.md tr:nth-child(even){background:rgba(255,255,255,.02)}
-.md code{background:var(--code-bg);padding:2px 6px;border-radius:4px;font-size:.92em}
-.md pre{background:var(--code-bg);border:1px solid var(--border);border-radius:6px;padding:14px 16px;overflow-x:auto;font-size:13.5px;line-height:1.45}
-.md pre code{background:transparent;padding:0;font-size:13.5px}
-.md hr{border:0;border-top:1px solid var(--border);margin:30px 0}
-.md img{max-width:100%}
-.codehilite .k,.codehilite .kn,.codehilite .kd,.codehilite .kc{color:#ff7b72}
-.codehilite .s,.codehilite .s1,.codehilite .s2{color:#a5d6ff}
-.codehilite .nf,.codehilite .nx{color:#d2a8ff}
-.codehilite .nb,.codehilite .nc{color:#79c0ff}
-.codehilite .c,.codehilite .c1,.codehilite .cm{color:#8b949e;font-style:italic}
-.codehilite .mi,.codehilite .mf{color:#79c0ff}
-.codehilite .o,.codehilite .p{color:#e6edf3}
-.prevnext{display:flex;justify-content:space-between;margin-top:40px;padding-top:20px;border-top:1px solid var(--border);gap:10px}
-.prevnext a{flex:1;padding:14px 18px;background:var(--panel);border:1px solid var(--border);border-radius:8px;display:block}
-.prevnext a:hover{border-color:var(--accent);text-decoration:none}
-.prevnext .label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
-.prevnext .title{font-weight:600;color:var(--text);margin-top:4px}
-.prevnext a.next{text-align:right}
-.foot{padding:16px 20px;text-align:center;color:var(--muted);font-size:13px;border-top:1px solid var(--border);margin-top:40px}
-.foot code{background:var(--code-bg);padding:2px 6px;border-radius:4px}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;margin:24px 0}
-.card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:22px;transition:.2s}
-.card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 6px 20px var(--shadow)}
-.card h3{margin:0 0 8px;color:var(--text)}
-.card p{color:var(--muted);margin:0 0 14px;font-size:14px}
-.card a{display:inline-block;padding:8px 14px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;font-weight:500}
-.tag{display:inline-block;padding:2px 9px;background:var(--bg);border:1px solid var(--border);border-radius:99px;font-size:11px;color:var(--muted);margin-right:6px}
-.tag.tier1{color:var(--good);border-color:var(--good)}
-.tag.tier2{color:var(--link);border-color:var(--link)}
-.tag.tier3{color:var(--warn);border-color:var(--warn)}
-.tag.tier4{color:var(--bad);border-color:var(--bad)}
-.hero{background:linear-gradient(135deg,var(--panel) 0%,var(--bg) 100%);border:1px solid var(--border);border-radius:14px;padding:40px;margin-bottom:30px}
-.hero h1{margin:0 0 10px;font-size:36px;border:none}
-.hero p{color:var(--muted);font-size:17px;max-width:700px;margin:0}
-@media (max-width:980px){
-  .layout{flex-direction:column}
-  .sidebar{width:100%;height:auto;position:static;border-right:none;border-bottom:1px solid var(--border)}
-  .content{padding:20px}
-}
-"""
+# --------------------------------------------------------------------------- #
+# Markdown rendering & TOC extraction
+# --------------------------------------------------------------------------- #
+
+class HeadingExtractor(HTMLParser):
+    """Pull (level, id, text) for h2/h3 headings from rendered HTML."""
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.headings = []
+        self._capture = None
+        self._buf = []
+
+    def handle_starttag(self, tag, attrs):
+        if tag in ("h2", "h3"):
+            attrs_d = dict(attrs)
+            self._capture = (int(tag[1]), attrs_d.get("id", ""))
+            self._buf = []
+
+    def handle_endtag(self, tag):
+        if tag in ("h2", "h3") and self._capture:
+            level, hid = self._capture
+            text = "".join(self._buf).strip()
+            if hid:
+                self.headings.append({"level": level, "id": hid, "text": text})
+            self._capture = None
+            self._buf = []
+
+    def handle_data(self, data):
+        if self._capture is not None:
+            self._buf.append(data)
 
 
-def title_from_md(text, fallback):
+def render_md(text: str):
+    md = markdown.Markdown(extensions=MD_EXT, output_format="html5")
+    html = md.convert(text)
+    extractor = HeadingExtractor()
+    extractor.feed(html)
+    return html, extractor.headings
+
+
+def title_from_md(text: str, fallback: str) -> str:
     m = re.search(r"^#\s+(.+?)\s*$", text, re.MULTILINE)
     return (m.group(1).strip() if m else fallback).replace("`", "")
 
 
-def render_md(text):
-    md = markdown.Markdown(extensions=MD_EXT, output_format="html5")
-    return md.convert(text)
-
-
-def write_page(out_path: Path, title: str, body_html: str, sidebar_html: str,
-               crumbs_html: str, prevnext_html: str, root: str):
-    html = PAGE_TMPL.format(title=title, body=body_html, sidebar=sidebar_html,
-                            crumbs=crumbs_html, prevnext=prevnext_html, root=root)
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(html, encoding="utf-8")
-
-
-def crumbs(items):
-    return " &rsaquo; ".join(
-        f'<a href="{href}">{name}</a>' if href else name for name, href in items
-    )
-
-
-def prev_next(prev, nxt):
-    out = []
-    if prev:
-        out.append(f'<a class="prev" href="{prev["href"]}"><div class="label">← Previous</div><div class="title">{prev["title"]}</div></a>')
-    else:
-        out.append("<span></span>")
-    if nxt:
-        out.append(f'<a class="next" href="{nxt["href"]}"><div class="label">Next →</div><div class="title">{nxt["title"]}</div></a>')
-    else:
-        out.append("<span></span>")
-    return "".join(out)
-
-
-def build_section(files, src_dir):
-    pages = []
-    for rel_md, title in files:
-        src = src_dir / rel_md
-        if not src.exists():
-            print(f"  ! missing: {src}")
+def first_paragraph(text: str, limit: int = 220) -> str:
+    """Get a short summary from the first non-heading paragraph."""
+    body = re.sub(r"^#.*?$", "", text, count=1, flags=re.MULTILINE).strip()
+    parts = re.split(r"\n\s*\n", body)
+    for part in parts:
+        cleaned = part.strip()
+        if not cleaned or cleaned.startswith(("#", ">", "```", "|", "-", "*")):
             continue
-        text = src.read_text(encoding="utf-8")
-        body = render_md(text)
-        pages.append({
-            "title": title or title_from_md(text, src.stem),
-            "html_name": src.stem + ".html",
-            "body": body,
-            "src": src,
-        })
-    return pages
+        cleaned = re.sub(r"[*_`]", "", cleaned)
+        cleaned = re.sub(r"\[(.+?)\]\(.+?\)", r"\1", cleaned)
+        cleaned = re.sub(r"\s+", " ", cleaned)
+        if len(cleaned) > limit:
+            cleaned = cleaned[: limit - 1].rsplit(" ", 1)[0] + "…"
+        return cleaned
+    return ""
 
 
-def write_section(pages, out_dir: Path, root: str, sidebar_html: str, crumbs_prefix):
-    for i, p in enumerate(pages):
-        prev = {"href": pages[i-1]["html_name"], "title": pages[i-1]["title"]} if i > 0 else None
-        nxt = {"href": pages[i+1]["html_name"], "title": pages[i+1]["title"]} if i < len(pages)-1 else None
-        cb = crumbs(crumbs_prefix + [(p["title"], None)])
-        write_page(out_dir / p["html_name"], p["title"], p["body"],
-                   sidebar_html, cb, prev_next(prev, nxt), root)
+# --------------------------------------------------------------------------- #
+# Source -> manifest items
+# --------------------------------------------------------------------------- #
+
+def slug(name: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
 
 
-def build_root_sidebar(active=""):
-    return """
-    <h3>Learning Hub</h3>
-    <ul>
-      <li><a href="index.html"{0}>🏠 Home</a></li>
-      <li><a href="roadmap.html"{1}>🗺️ Roadmap</a></li>
-    </ul>
-    <h3>Tracks</h3>
-    <ul>
-      <li><a href="dsa/index.html">🧠 DSA &amp; Problem Solving</a></li>
-      <li><a href="system-design/index.html">🏗️ System Design</a></li>
-    </ul>
-    <h3>Quick links</h3>
-    <ul>
-      <li><a href="system-design/5-minute-reads/index.html">⏱️ 5-Minute Reads (System Design)</a></li>
-      <li><a href="system-design/tradeoffs-deep-dive.html">⚖️ Trade-offs Deep Dive</a></li>
-    </ul>
-    """.format(' class="active"' if active=="home" else "",
-               ' class="active"' if active=="roadmap" else "")
+def render_source(src: Path, item_id: str, default_title: str, tag: str = ""):
+    text = src.read_text(encoding="utf-8")
+    html, headings = render_md(text)
+    title = title_from_md(text, default_title)
+    summary = first_paragraph(text)
+
+    rel_out = Path("content") / (item_id + ".html")
+    out = HUB / rel_out
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(html, encoding="utf-8")
+
+    return {
+        "id": item_id,
+        "title": title,
+        "src": rel_out.as_posix(),
+        "anchors": headings,
+        "summary": summary,
+        "tag": tag,
+    }
 
 
-def build_dsa_sidebar():
-    return """
-    <h3>DSA Curriculum</h3>
-    <ul>
-      <li><a href="index.html" class="active">📖 Full Curriculum (77 reads)</a></li>
-    </ul>
-    <h3>Tiers (anchors)</h3>
-    <ul>
-      <li><a href="index.html#tier-1-beginner-foundations-you-cannot-skip">Tier 1 — Beginner</a></li>
-      <li><a href="index.html#tier-2-intermediate-interview-ready">Tier 2 — Intermediate</a></li>
-      <li><a href="index.html#tier-3-advanced-dp-shortest-paths-segment-trees">Tier 3 — Advanced</a></li>
-      <li><a href="index.html#tier-4-expert-rarely-interviewed-often-contest-decisive">Tier 4 — Expert</a></li>
-      <li><a href="index.html#meta-cross-cutting-problem-solving-skills">Meta</a></li>
-    </ul>
-    <h3>Other tracks</h3>
-    <ul>
-      <li><a href="../roadmap.html">🗺️ Roadmap</a></li>
-      <li><a href="../system-design/index.html">🏗️ System Design</a></li>
-    </ul>
-    """
+def build_manifest():
+    tracks = []
+    flat = []  # ordered list for prev/next
+
+    # -- Roadmap ----------------------------------------------------------- #
+    roadmap_src = SOURCES / "roadmap.md"
+    roadmap_track = {"id": "roadmap", "title": "Roadmap", "icon": "🗺️", "groups": []}
+    if roadmap_src.exists():
+        item = render_source(roadmap_src, "roadmap/main", "Roadmap", tag="plan")
+        roadmap_track["groups"].append({"title": "Plan", "items": [item]})
+        flat.append(item)
+    tracks.append(roadmap_track)
+
+    # -- DSA --------------------------------------------------------------- #
+    dsa_track = {"id": "dsa", "title": "DSA & Problem Solving", "icon": "🧠", "groups": []}
+    dsa_src = SOURCES / "dsa.md"
+    if dsa_src.exists():
+        item = render_source(dsa_src, "dsa/full", "DSA Curriculum", tag="curriculum")
+        dsa_track["groups"].append({"title": "Curriculum", "items": [item]})
+        flat.append(item)
+    tracks.append(dsa_track)
+
+    # -- System Design ----------------------------------------------------- #
+    sd_track = {"id": "sd", "title": "System Design", "icon": "🏗️", "groups": []}
+    sd_src = SOURCES / "system-design"
+
+    overview_items = []
+    if (sd_src / "README.md").exists():
+        overview_items.append(render_source(sd_src / "README.md", "sd/overview",
+                                            "System Design — Overview", tag="overview"))
+
+    tier_files = [
+        ("01-beginner.md",     "sd/tier-beginner",     "Beginner",     "tier-1"),
+        ("02-intermediate.md", "sd/tier-intermediate", "Intermediate", "tier-2"),
+        ("03-advanced.md",     "sd/tier-advanced",     "Advanced",     "tier-3"),
+        ("04-expert.md",       "sd/tier-expert",       "Expert",       "tier-4"),
+    ]
+    tier_items = []
+    for fname, item_id, deflt, tag in tier_files:
+        f = sd_src / fname
+        if f.exists():
+            tier_items.append(render_source(f, item_id, deflt, tag=tag))
+
+    deepdive_items = []
+    if (sd_src / "tradeoffs-deep-dive.md").exists():
+        deepdive_items.append(render_source(sd_src / "tradeoffs-deep-dive.md",
+                                            "sd/tradeoffs", "Trade-offs Deep Dive",
+                                            tag="deep-dive"))
+
+    ref_items = []
+    for fname, item_id, deflt in [
+        ("books-and-courses.md", "sd/books",  "Books & Courses"),
+        ("github-repos.md",      "sd/repos",  "GitHub Repos"),
+        ("seminal-papers.md",    "sd/papers", "Seminal Papers"),
+    ]:
+        f = sd_src / fname
+        if f.exists():
+            ref_items.append(render_source(f, item_id, deflt, tag="reference"))
+
+    five_dir = sd_src / "5-minute-reads"
+    five_items = []
+    if five_dir.exists():
+        if (five_dir / "README.md").exists():
+            five_items.append(render_source(five_dir / "README.md",
+                                            "sd/5min/index",
+                                            "5-Minute Reads — Index",
+                                            tag="index"))
+        for f in sorted(five_dir.glob("*.md")):
+            if f.name.lower() == "readme.md":
+                continue
+            stem = f.stem  # 01-what-is-system-design
+            short = re.sub(r"^\d+-", "", stem)
+            five_items.append(render_source(f, f"sd/5min/{short}",
+                                            stem.replace("-", " ").title(),
+                                            tag="5-min"))
+
+    if overview_items:
+        sd_track["groups"].append({"title": "Overview", "items": overview_items})
+        flat.extend(overview_items)
+    if tier_items:
+        sd_track["groups"].append({"title": "Tiers", "items": tier_items})
+        flat.extend(tier_items)
+    if deepdive_items:
+        sd_track["groups"].append({"title": "Deep Dive", "items": deepdive_items})
+        flat.extend(deepdive_items)
+    if five_items:
+        sd_track["groups"].append({"title": "5-Minute Reads", "items": five_items})
+        flat.extend(five_items)
+    if ref_items:
+        sd_track["groups"].append({"title": "References", "items": ref_items})
+        flat.extend(ref_items)
+    tracks.append(sd_track)
+
+    # Order index for prev/next
+    for i, it in enumerate(flat):
+        it["order"] = i
+        it["prev"] = flat[i - 1]["id"] if i > 0 else None
+        it["next"] = flat[i + 1]["id"] if i < len(flat) - 1 else None
+
+    return {"tracks": tracks, "flat": flat}
 
 
-def build_sd_sidebar(sd_pages, in_5min=False, five_pages=None):
-    items = []
-    for p in sd_pages:
-        href = p["html_name"] if not in_5min else f"../{p['html_name']}"
-        items.append(f'<li><a href="{href}">{p["title"]}</a></li>')
-    sb = '<h3>System Design</h3><ul>' + "".join(items) + '</ul>'
-    if in_5min and five_pages:
-        five_items = "".join(
-            f'<li><a href="{p["html_name"]}">{p["title"]}</a></li>' for p in five_pages
-        )
-        sb += '<h3>5-Minute Reads</h3><ul class="group">' + five_items + '</ul>'
-    else:
-        href = "5-minute-reads/index.html"
-        sb += f'<h3>5-Minute Reads</h3><ul><li><a href="{href}">All 20 reads →</a></li></ul>'
-    up = "../" if not in_5min else "../../"
-    sb += f'<h3>Other tracks</h3><ul><li><a href="{up}roadmap.html">🗺️ Roadmap</a></li><li><a href="{up}dsa/index.html">🧠 DSA</a></li></ul>'
-    return sb
+# --------------------------------------------------------------------------- #
+# Static assets (CSS / JS / Shell)
+# --------------------------------------------------------------------------- #
+
+CSS = r"""
+:root {
+  --bg: #0d1117;
+  --bg-elev: #161b22;
+  --bg-elev-2: #1c2230;
+  --border: #30363d;
+  --text: #e6edf3;
+  --text-dim: #8b949e;
+  --link: #58a6ff;
+  --link-hover: #79c0ff;
+  --accent: #f78166;
+  --good: #3fb950;
+  --warn: #d29922;
+  --bad: #f85149;
+  --code-bg: #1c2230;
+  --tag-bg: #21262d;
+  --shadow: 0 6px 24px rgba(0,0,0,.35);
+  --max-content: 920px;
+}
+[data-theme="light"] {
+  --bg: #ffffff;
+  --bg-elev: #f6f8fa;
+  --bg-elev-2: #eaeef2;
+  --border: #d0d7de;
+  --text: #1f2328;
+  --text-dim: #59636e;
+  --link: #0969da;
+  --link-hover: #0550ae;
+  --accent: #cf222e;
+  --good: #1a7f37;
+  --warn: #9a6700;
+  --bad: #cf222e;
+  --code-bg: #f6f8fa;
+  --tag-bg: #eaeef2;
+  --shadow: 0 6px 24px rgba(0,0,0,.10);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  min-height: 100vh;
+}
+
+/* topbar */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 18px;
+  background: var(--bg-elev);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(8px);
+}
+.brand {
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--text);
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.brand:hover { color: var(--link); }
+.search {
+  flex: 1;
+  max-width: 480px;
+  position: relative;
+}
+.search input {
+  width: 100%;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px 8px 34px;
+  font: inherit;
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.search input:focus {
+  border-color: var(--link);
+  box-shadow: 0 0 0 3px rgba(88,166,255,.15);
+}
+.search::before {
+  content: "🔍";
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 13px;
+  opacity: .7;
+}
+.kbd {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--tag-bg);
+  border: 1px solid var(--border);
+  font: 12px ui-monospace, monospace;
+  color: var(--text-dim);
+}
+.topbar .progress-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+.progress-pill .bar {
+  width: 70px;
+  height: 6px;
+  background: var(--bg-elev-2);
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+}
+.progress-pill .bar > span {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  background: linear-gradient(90deg, var(--good), var(--link));
+  transition: width .3s;
+}
+.icon-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background .15s;
+}
+.icon-btn:hover { background: var(--bg-elev-2); }
+
+/* layout */
+.layout {
+  display: grid;
+  grid-template-columns: 280px 1fr 220px;
+  gap: 0;
+  min-height: calc(100vh - 56px);
+}
+.sidebar {
+  border-right: 1px solid var(--border);
+  background: var(--bg);
+  height: calc(100vh - 56px);
+  position: sticky;
+  top: 56px;
+  overflow-y: auto;
+  padding: 14px 8px;
+}
+.sidebar::-webkit-scrollbar { width: 8px; }
+.sidebar::-webkit-scrollbar-thumb { background: var(--bg-elev-2); border-radius: 4px; }
+
+.sidebar .track {
+  margin-bottom: 6px;
+}
+.sidebar .track-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  user-select: none;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text);
+}
+.sidebar .track-header:hover { background: var(--bg-elev); }
+.sidebar .track-header .chev {
+  display: inline-block;
+  transition: transform .15s;
+  color: var(--text-dim);
+  font-size: 10px;
+}
+.sidebar .track[data-open="true"] .chev { transform: rotate(90deg); }
+.sidebar .track-progress {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+.sidebar .track-body {
+  display: none;
+  padding: 4px 0 8px 6px;
+}
+.sidebar .track[data-open="true"] .track-body { display: block; }
+.sidebar .group-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  color: var(--text-dim);
+  padding: 8px 12px 4px;
+}
+.sidebar a.item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  color: var(--text);
+  text-decoration: none;
+  border-radius: 6px;
+  font-size: 13.5px;
+  line-height: 1.4;
+  margin: 1px 0;
+}
+.sidebar a.item:hover { background: var(--bg-elev); color: var(--link); }
+.sidebar a.item.active {
+  background: var(--bg-elev-2);
+  color: var(--link);
+  font-weight: 600;
+}
+.sidebar a.item .check {
+  font-size: 11px;
+  color: var(--good);
+  width: 14px;
+  flex-shrink: 0;
+}
+.sidebar a.item .check:empty::before { content: "○"; color: var(--text-dim); opacity: .35; }
+.sidebar a.item.done .check::before { content: "●"; }
+.sidebar .empty-search {
+  padding: 12px;
+  color: var(--text-dim);
+  font-size: 13px;
+  font-style: italic;
+}
+
+/* main */
+.content {
+  padding: 26px 32px 80px;
+  max-width: var(--max-content);
+  width: 100%;
+  margin: 0 auto;
+}
+.breadcrumb {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-bottom: 14px;
+}
+.breadcrumb a { color: var(--text-dim); text-decoration: none; }
+.breadcrumb a:hover { color: var(--link); }
+.breadcrumb .sep { margin: 0 6px; opacity: .5; }
+
+.page-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 7px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  font: inherit;
+  font-size: 13px;
+  transition: background .15s, border-color .15s;
+}
+.btn:hover { background: var(--bg-elev-2); border-color: var(--text-dim); }
+.btn.primary {
+  background: var(--link);
+  border-color: var(--link);
+  color: #0d1117;
+  font-weight: 600;
+}
+.btn.primary:hover { background: var(--link-hover); }
+.btn.done {
+  background: var(--good);
+  border-color: var(--good);
+  color: #0d1117;
+  font-weight: 600;
+}
+.tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--tag-bg);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+
+/* article */
+.md h1 { font-size: 28px; margin-top: 0; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.md h2 { font-size: 22px; margin-top: 36px; padding-bottom: 6px; border-bottom: 1px solid var(--border); scroll-margin-top: 80px; }
+.md h3 { font-size: 17px; margin-top: 26px; scroll-margin-top: 80px; }
+.md h4 { font-size: 15px; margin-top: 20px; color: var(--text-dim); }
+.md p { margin: 12px 0; }
+.md a { color: var(--link); }
+.md a:hover { color: var(--link-hover); }
+.md hr { border: 0; border-top: 1px solid var(--border); margin: 28px 0; }
+.md ul, .md ol { padding-left: 26px; }
+.md li { margin: 4px 0; }
+.md blockquote {
+  border-left: 3px solid var(--accent);
+  background: var(--bg-elev);
+  padding: 8px 14px;
+  margin: 14px 0;
+  color: var(--text-dim);
+  border-radius: 0 6px 6px 0;
+}
+.md table {
+  border-collapse: collapse;
+  margin: 16px 0;
+  display: block;
+  overflow-x: auto;
+  width: 100%;
+}
+.md th, .md td {
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  text-align: left;
+  vertical-align: top;
+}
+.md th { background: var(--bg-elev); }
+.md tr:nth-child(even) td { background: var(--bg-elev); }
+.md code {
+  background: var(--code-bg);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font: 13px ui-monospace, "SF Mono", Consolas, monospace;
+  color: var(--accent);
+}
+.md pre {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  overflow-x: auto;
+  font: 13px ui-monospace, "SF Mono", Consolas, monospace;
+  line-height: 1.5;
+}
+.md pre code { background: transparent; padding: 0; color: var(--text); }
+
+/* codehilite tokens (Pygments) */
+.codehilite .k, .codehilite .kd, .codehilite .kn, .codehilite .kr { color: #ff7b72; }
+.codehilite .s, .codehilite .s1, .codehilite .s2, .codehilite .sd { color: #a5d6ff; }
+.codehilite .c, .codehilite .c1, .codehilite .cm { color: var(--text-dim); font-style: italic; }
+.codehilite .nf, .codehilite .nx, .codehilite .nc { color: #d2a8ff; }
+.codehilite .mi, .codehilite .mf, .codehilite .mb { color: #79c0ff; }
+.codehilite .o, .codehilite .p { color: var(--text-dim); }
+.codehilite .nb, .codehilite .bp { color: #ffa657; }
+
+/* prev / next */
+.prevnext {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 40px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+.prevnext a {
+  display: block;
+  padding: 12px 16px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  text-decoration: none;
+  color: var(--text);
+  transition: border-color .15s, transform .15s;
+}
+.prevnext a:hover { border-color: var(--link); transform: translateY(-1px); }
+.prevnext .label { font-size: 11px; text-transform: uppercase; letter-spacing: .8px; color: var(--text-dim); }
+.prevnext .title { font-weight: 600; margin-top: 4px; }
+.prevnext .next { text-align: right; }
+
+/* TOC right rail */
+.toc-rail {
+  position: sticky;
+  top: 56px;
+  height: calc(100vh - 56px);
+  overflow-y: auto;
+  padding: 26px 14px 80px 4px;
+  border-left: 1px solid var(--border);
+  font-size: 12.5px;
+}
+.toc-rail h4 {
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: .8px;
+  color: var(--text-dim);
+  margin: 0 0 8px 8px;
+}
+.toc-rail a {
+  display: block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  color: var(--text-dim);
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  margin-left: 2px;
+  line-height: 1.35;
+}
+.toc-rail a.l3 { padding-left: 18px; font-size: 12px; }
+.toc-rail a:hover { color: var(--text); }
+.toc-rail a.active {
+  color: var(--link);
+  border-left-color: var(--link);
+  background: var(--bg-elev);
+}
+
+/* home dashboard */
+.hero {
+  background: linear-gradient(135deg, var(--bg-elev), var(--bg-elev-2));
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 28px 30px;
+  margin-bottom: 22px;
+}
+.hero h1 { margin: 0 0 6px; font-size: 30px; }
+.hero p { margin: 0; color: var(--text-dim); font-size: 16px; }
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+  margin: 14px 0;
+}
+.card {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+}
+.card h3 { margin: 0 0 6px; font-size: 16px; }
+.card p { margin: 0 0 14px; color: var(--text-dim); font-size: 13.5px; flex: 1; }
+.card .progress-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-bottom: 10px;
+}
+.card .progress-line .bar {
+  flex: 1;
+  height: 4px;
+  background: var(--bg-elev-2);
+  border-radius: 2px;
+  position: relative;
+  overflow: hidden;
+}
+.card .progress-line .bar > span {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  background: linear-gradient(90deg, var(--good), var(--link));
+  transition: width .3s;
+}
+.card a.go {
+  align-self: flex-start;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--link);
+  text-decoration: none;
+}
+.card a.go:hover { color: var(--link-hover); }
+.card.recent { border-color: var(--link); }
+
+.shortcut-table {
+  margin-top: 18px;
+  font-size: 13px;
+  border-collapse: collapse;
+}
+.shortcut-table td { padding: 4px 10px; }
+.shortcut-table td:first-child { color: var(--text-dim); }
+
+/* responsive */
+@media (max-width: 1100px) {
+  .layout { grid-template-columns: 240px 1fr; }
+  .toc-rail { display: none; }
+}
+@media (max-width: 760px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar {
+    position: fixed;
+    left: 0; top: 56px;
+    width: 280px;
+    height: calc(100vh - 56px);
+    background: var(--bg);
+    transform: translateX(-100%);
+    transition: transform .2s;
+    z-index: 40;
+    box-shadow: var(--shadow);
+  }
+  body[data-sidebar="open"] .sidebar { transform: translateX(0); }
+  .sidebar-toggle { display: inline-flex !important; }
+  .topbar .progress-pill { display: none; }
+  .content { padding: 18px 16px 60px; }
+}
+.sidebar-toggle { display: none; }
+
+/* mini animations */
+.fade-in { animation: fade .25s ease-out; }
+@keyframes fade {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: none; }
+}
+"""
+
+APP_JS = r"""
+(() => {
+  const LS_DONE = "lh:done";
+  const LS_THEME = "lh:theme";
+  const LS_RECENT = "lh:recent";
+  const LS_OPEN = "lh:open";
+
+  let manifest = null;
+  let byId = new Map();   // id -> item
+  let order = [];         // ordered ids
+  let currentId = null;
+  let scrollSpyObserver = null;
+
+  // --- localStorage helpers --- //
+  const lsGet = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } };
+  const lsSet = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+
+  function getDone() { return new Set(lsGet(LS_DONE, [])); }
+  function setDone(set) { lsSet(LS_DONE, [...set]); }
+  function isDone(id) { return getDone().has(id); }
+  function toggleDone(id) {
+    const s = getDone();
+    if (s.has(id)) s.delete(id); else s.add(id);
+    setDone(s);
+    return s.has(id);
+  }
+
+  function getRecent() { return lsGet(LS_RECENT, []); }
+  function pushRecent(id) {
+    const r = [id, ...getRecent().filter(x => x !== id)].slice(0, 5);
+    lsSet(LS_RECENT, r);
+  }
+
+  function getOpenTracks() { return new Set(lsGet(LS_OPEN, ["roadmap", "dsa", "sd"])); }
+  function setOpenTracks(s) { lsSet(LS_OPEN, [...s]); }
+
+  // --- theme --- //
+  function applyTheme(t) {
+    document.documentElement.dataset.theme = t;
+    const btn = document.getElementById("theme-toggle");
+    if (btn) btn.textContent = t === "light" ? "🌙" : "☀️";
+  }
+  function toggleTheme() {
+    const cur = document.documentElement.dataset.theme || "dark";
+    const nxt = cur === "dark" ? "light" : "dark";
+    lsSet(LS_THEME, nxt);
+    applyTheme(nxt);
+  }
+
+  // --- routing --- //
+  function parseHash() {
+    const h = (location.hash || "").replace(/^#\/?/, "");
+    if (!h) return { id: null, anchor: null };
+    const [id, anchor] = h.split("#");
+    return { id: id || null, anchor: anchor || null };
+  }
+
+  function navigate(id, anchor) {
+    let h = "#/";
+    if (id) h += id;
+    if (anchor) h += "#" + anchor;
+    if (location.hash !== h) {
+      location.hash = h;
+    } else {
+      route();
+    }
+  }
+
+  // --- sidebar --- //
+  function buildSidebar() {
+    const sb = document.getElementById("sidebar");
+    sb.innerHTML = "";
+    const open = getOpenTracks();
+    const done = getDone();
+
+    for (const track of manifest.tracks) {
+      const trackEl = document.createElement("div");
+      trackEl.className = "track";
+      trackEl.dataset.trackId = track.id;
+      trackEl.dataset.open = open.has(track.id) ? "true" : "false";
+
+      const header = document.createElement("div");
+      header.className = "track-header";
+
+      const trackItems = track.groups.flatMap(g => g.items);
+      const doneCount = trackItems.filter(it => done.has(it.id)).length;
+      const total = trackItems.length;
+
+      header.innerHTML = `
+        <span class="chev">▶</span>
+        <span>${track.icon} ${escape(track.title)}</span>
+        <span class="track-progress">${doneCount}/${total}</span>
+      `;
+      header.addEventListener("click", () => {
+        const o = getOpenTracks();
+        if (trackEl.dataset.open === "true") {
+          trackEl.dataset.open = "false";
+          o.delete(track.id);
+        } else {
+          trackEl.dataset.open = "true";
+          o.add(track.id);
+        }
+        setOpenTracks(o);
+      });
+      trackEl.appendChild(header);
+
+      const body = document.createElement("div");
+      body.className = "track-body";
+
+      for (const group of track.groups) {
+        if (track.groups.length > 1) {
+          const gt = document.createElement("div");
+          gt.className = "group-title";
+          gt.textContent = group.title;
+          body.appendChild(gt);
+        }
+        for (const it of group.items) {
+          const a = document.createElement("a");
+          a.className = "item";
+          a.href = "#/" + it.id;
+          a.dataset.itemId = it.id;
+          if (done.has(it.id)) a.classList.add("done");
+          if (currentId === it.id) a.classList.add("active");
+          a.innerHTML = `<span class="check"></span><span>${escape(it.title)}</span>`;
+          body.appendChild(a);
+        }
+      }
+
+      trackEl.appendChild(body);
+      sb.appendChild(trackEl);
+    }
+  }
+
+  function highlightSidebar() {
+    document.querySelectorAll("#sidebar a.item").forEach(a => {
+      a.classList.toggle("active", a.dataset.itemId === currentId);
+    });
+  }
+
+  function refreshSidebarProgress() {
+    const done = getDone();
+    document.querySelectorAll("#sidebar a.item").forEach(a => {
+      a.classList.toggle("done", done.has(a.dataset.itemId));
+    });
+    document.querySelectorAll("#sidebar .track").forEach(tr => {
+      const id = tr.dataset.trackId;
+      const track = manifest.tracks.find(t => t.id === id);
+      if (!track) return;
+      const trackItems = track.groups.flatMap(g => g.items);
+      const dn = trackItems.filter(it => done.has(it.id)).length;
+      const prog = tr.querySelector(".track-progress");
+      if (prog) prog.textContent = `${dn}/${trackItems.length}`;
+    });
+    refreshTopbarProgress();
+  }
+
+  function refreshTopbarProgress() {
+    const done = getDone();
+    const total = order.length;
+    const dn = order.filter(id => done.has(id)).length;
+    const pct = total ? Math.round((dn / total) * 100) : 0;
+    const pill = document.getElementById("global-progress");
+    if (pill) {
+      pill.querySelector(".bar > span").style.width = pct + "%";
+      pill.querySelector(".pct").textContent = `${dn}/${total} · ${pct}%`;
+    }
+  }
+
+  // --- search --- //
+  function filterSidebar(q) {
+    q = q.trim().toLowerCase();
+    const sb = document.getElementById("sidebar");
+    sb.querySelectorAll(".empty-search").forEach(e => e.remove());
+    let anyShown = false;
+    sb.querySelectorAll(".track").forEach(tr => {
+      let trackHasMatch = false;
+      tr.querySelectorAll("a.item").forEach(a => {
+        const t = a.textContent.toLowerCase();
+        const match = !q || t.includes(q);
+        a.style.display = match ? "" : "none";
+        if (match) trackHasMatch = true;
+      });
+      tr.querySelectorAll(".group-title").forEach(g => {
+        let next = g.nextElementSibling;
+        let any = false;
+        while (next && next.classList.contains("item")) {
+          if (next.style.display !== "none") { any = true; break; }
+          next = next.nextElementSibling;
+        }
+        g.style.display = any ? "" : "none";
+      });
+      tr.style.display = trackHasMatch ? "" : "none";
+      if (q && trackHasMatch) tr.dataset.open = "true";
+      if (trackHasMatch) anyShown = true;
+    });
+    if (!anyShown) {
+      const e = document.createElement("div");
+      e.className = "empty-search";
+      e.textContent = `No matches for "${q}"`;
+      sb.appendChild(e);
+    }
+  }
+
+  // --- TOC right rail --- //
+  function buildTOC(anchors) {
+    const rail = document.getElementById("toc-rail");
+    if (!anchors || anchors.length === 0) {
+      rail.innerHTML = "";
+      return;
+    }
+    const html = ['<h4>On this page</h4>'];
+    for (const a of anchors) {
+      html.push(`<a href="#/${currentId}#${a.id}" class="l${a.level}" data-anchor="${a.id}">${escape(a.text)}</a>`);
+    }
+    rail.innerHTML = html.join("");
+  }
+
+  function setupScrollSpy(anchors) {
+    if (scrollSpyObserver) scrollSpyObserver.disconnect();
+    if (!anchors || anchors.length === 0) return;
+    const ids = new Set(anchors.map(a => a.id));
+    const targets = [];
+    ids.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) targets.push(el);
+    });
+    if (targets.length === 0) return;
+    scrollSpyObserver = new IntersectionObserver(entries => {
+      const visible = entries
+        .filter(e => e.isIntersecting)
+        .sort((a, b) => a.target.getBoundingClientRect().top - b.target.getBoundingClientRect().top);
+      if (visible.length === 0) return;
+      const id = visible[0].target.id;
+      document.querySelectorAll("#toc-rail a").forEach(a => {
+        a.classList.toggle("active", a.dataset.anchor === id);
+      });
+    }, { rootMargin: "-80px 0px -65% 0px", threshold: 0.01 });
+    targets.forEach(t => scrollSpyObserver.observe(t));
+  }
+
+  // --- breadcrumb --- //
+  function buildBreadcrumb(item) {
+    const bc = document.getElementById("breadcrumb");
+    const track = manifest.tracks.find(t => t.groups.some(g => g.items.some(i => i.id === item.id)));
+    const group = track ? track.groups.find(g => g.items.some(i => i.id === item.id)) : null;
+    const parts = [`<a href="#/">🏠 Home</a>`];
+    if (track) parts.push(`<span class="sep">›</span>${track.icon} ${escape(track.title)}`);
+    if (group && track && track.groups.length > 1) parts.push(`<span class="sep">›</span>${escape(group.title)}`);
+    parts.push(`<span class="sep">›</span>${escape(item.title)}`);
+    bc.innerHTML = parts.join("");
+  }
+
+  // --- render --- //
+  async function fetchFragment(src) {
+    const res = await fetch(src + "?_=" + Date.now());
+    if (!res.ok) throw new Error("Failed to load: " + src);
+    return res.text();
+  }
+
+  async function renderItem(id, anchor) {
+    const item = byId.get(id);
+    const main = document.getElementById("content");
+    if (!item) {
+      main.innerHTML = `<h1>Not found</h1><p>The page <code>${escape(id)}</code> doesn't exist. <a href="#/">Go home</a>.</p>`;
+      currentId = null;
+      buildTOC([]);
+      return;
+    }
+
+    currentId = id;
+    main.classList.remove("fade-in");
+    void main.offsetWidth;
+    main.classList.add("fade-in");
+
+    try {
+      const html = await fetchFragment(item.src);
+
+      const bc = document.createElement("div");
+      bc.className = "breadcrumb";
+      bc.id = "breadcrumb";
+
+      const actions = makeActions(item);
+
+      const article = document.createElement("article");
+      article.className = "md";
+      article.innerHTML = html;
+
+      const prevnext = buildPrevNext(item);
+
+      main.innerHTML = "";
+      main.appendChild(bc);
+      main.appendChild(actions);
+      main.appendChild(article);
+      main.appendChild(prevnext);
+
+      buildBreadcrumb(item);
+      buildTOC(item.anchors);
+      setupScrollSpy(item.anchors);
+      highlightSidebar();
+      pushRecent(id);
+
+      if (anchor) {
+        const el = document.getElementById(anchor);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "start" });
+        } else {
+          window.scrollTo({ top: 0 });
+        }
+      } else {
+        window.scrollTo({ top: 0 });
+      }
+    } catch (e) {
+      main.innerHTML = `<h1>Error</h1><p>${escape(e.message)}</p>`;
+    }
+  }
+
+  function makeActions(item) {
+    const wrap = document.createElement("div");
+    wrap.className = "page-actions";
+
+    const done = isDone(item.id);
+    const btn = document.createElement("button");
+    btn.className = "btn " + (done ? "done" : "primary");
+    btn.id = "mark-done-btn";
+    btn.innerHTML = done ? "✓ Completed" : "Mark as complete";
+    btn.addEventListener("click", () => {
+      const now = toggleDone(item.id);
+      btn.className = "btn " + (now ? "done" : "primary");
+      btn.innerHTML = now ? "✓ Completed" : "Mark as complete";
+      refreshSidebarProgress();
+    });
+    wrap.appendChild(btn);
+
+    if (item.tag) {
+      const tag = document.createElement("span");
+      tag.className = "tag";
+      tag.textContent = item.tag;
+      wrap.appendChild(tag);
+    }
+
+    const top = document.createElement("button");
+    top.className = "btn";
+    top.textContent = "↑ Top";
+    top.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+    wrap.appendChild(top);
+
+    return wrap;
+  }
+
+  function buildPrevNext(item) {
+    const wrap = document.createElement("div");
+    wrap.className = "prevnext";
+    const prevId = item.prev;
+    const nextId = item.next;
+    const prev = prevId ? byId.get(prevId) : null;
+    const nxt = nextId ? byId.get(nextId) : null;
+    if (prev) {
+      wrap.innerHTML += `<a href="#/${prev.id}" class="prev"><div class="label">← Previous</div><div class="title">${escape(prev.title)}</div></a>`;
+    } else {
+      wrap.innerHTML += "<span></span>";
+    }
+    if (nxt) {
+      wrap.innerHTML += `<a href="#/${nxt.id}" class="next"><div class="label">Next →</div><div class="title">${escape(nxt.title)}</div></a>`;
+    } else {
+      wrap.innerHTML += "<span></span>";
+    }
+    return wrap;
+  }
+
+  // --- home --- //
+  function renderHome() {
+    const main = document.getElementById("content");
+    currentId = null;
+    main.classList.remove("fade-in");
+    void main.offsetWidth;
+    main.classList.add("fade-in");
+    buildTOC([]);
+    if (scrollSpyObserver) scrollSpyObserver.disconnect();
+    highlightSidebar();
+
+    const done = getDone();
+    const recent = getRecent().map(id => byId.get(id)).filter(Boolean);
+
+    const trackCards = manifest.tracks.map(t => {
+      const items = t.groups.flatMap(g => g.items);
+      const dn = items.filter(it => done.has(it.id)).length;
+      const total = items.length;
+      const pct = total ? Math.round((dn / total) * 100) : 0;
+      const first = items.find(it => !done.has(it.id)) || items[0];
+      return `
+        <div class="card">
+          <h3>${t.icon} ${escape(t.title)}</h3>
+          <p>${escape(t.id === "roadmap" ? "Read this first. Four-phase plan with kill switches." :
+                      t.id === "dsa"     ? "77 topics across Beginner → Intermediate → Advanced → Expert + Meta." :
+                                          "Tiers, 20 five-minute reads, trade-offs deep dive, books and papers.")}</p>
+          <div class="progress-line"><span>${dn}/${total}</span><div class="bar"><span style="width:${pct}%"></span></div><span>${pct}%</span></div>
+          <a class="go" href="#/${first ? first.id : ""}">${dn > 0 ? "Continue →" : "Start →"}</a>
+        </div>`;
+    }).join("");
+
+    const recentHTML = recent.length === 0 ? "" : `
+      <h2>Pick up where you left off</h2>
+      <div class="cards">
+        ${recent.map(it => `
+          <div class="card recent">
+            <h3>${escape(it.title)}</h3>
+            <p>${escape(it.summary || "")}</p>
+            <a class="go" href="#/${it.id}">Resume →</a>
+          </div>`).join("")}
+      </div>
+    `;
+
+    main.innerHTML = `
+      <div class="hero">
+        <h1>📚 Learning Hub</h1>
+        <p>Two tracks. One discipline. From beginner to expert in <strong>data structures &amp; problem solving</strong> and <strong>system design</strong>.</p>
+      </div>
+      <h2>Tracks</h2>
+      <div class="cards">${trackCards}</div>
+      ${recentHTML}
+      <h2>Keyboard shortcuts</h2>
+      <table class="shortcut-table">
+        <tr><td><span class="kbd">/</span></td><td>focus search</td></tr>
+        <tr><td><span class="kbd">j</span> / <span class="kbd">k</span></td><td>next / previous topic</td></tr>
+        <tr><td><span class="kbd">m</span></td><td>mark current as complete</td></tr>
+        <tr><td><span class="kbd">t</span></td><td>toggle theme</td></tr>
+        <tr><td><span class="kbd">g</span> <span class="kbd">h</span></td><td>go home</td></tr>
+        <tr><td><span class="kbd">Esc</span></td><td>blur search</td></tr>
+      </table>
+    `;
+  }
+
+  // --- main route --- //
+  function route() {
+    const { id, anchor } = parseHash();
+    if (!id) {
+      renderHome();
+    } else {
+      renderItem(id, anchor);
+    }
+  }
+
+  // --- keyboard --- //
+  function setupKeys() {
+    let gHeld = false;
+    let gTimer = null;
+    document.addEventListener("keydown", e => {
+      if (e.target.matches("input, textarea")) {
+        if (e.key === "Escape") e.target.blur();
+        return;
+      }
+      if (e.key === "/") {
+        e.preventDefault();
+        document.getElementById("search-input").focus();
+      } else if (e.key === "j") {
+        if (!currentId) return;
+        const it = byId.get(currentId);
+        if (it && it.next) navigate(it.next);
+      } else if (e.key === "k") {
+        if (!currentId) return;
+        const it = byId.get(currentId);
+        if (it && it.prev) navigate(it.prev);
+      } else if (e.key === "m") {
+        if (currentId) {
+          const btn = document.getElementById("mark-done-btn");
+          if (btn) btn.click();
+        }
+      } else if (e.key === "t") {
+        toggleTheme();
+      } else if (e.key === "g") {
+        gHeld = true;
+        clearTimeout(gTimer);
+        gTimer = setTimeout(() => { gHeld = false; }, 800);
+      } else if (e.key === "h" && gHeld) {
+        gHeld = false;
+        navigate("");
+      }
+    });
+  }
+
+  // --- helpers --- //
+  function escape(s) {
+    return String(s ?? "").replace(/[&<>"']/g, c => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    }[c]));
+  }
+
+  // --- bootstrap --- //
+  async function init() {
+    applyTheme(lsGet(LS_THEME, "dark"));
+    document.getElementById("theme-toggle").addEventListener("click", toggleTheme);
+    document.getElementById("sidebar-toggle").addEventListener("click", () => {
+      document.body.dataset.sidebar = document.body.dataset.sidebar === "open" ? "" : "open";
+    });
+
+    const res = await fetch("manifest.json?_=" + Date.now());
+    manifest = await res.json();
+    byId = new Map();
+    order = [];
+    for (const t of manifest.tracks) {
+      for (const g of t.groups) {
+        for (const it of g.items) {
+          byId.set(it.id, it);
+          order.push(it.id);
+        }
+      }
+    }
+
+    buildSidebar();
+    refreshSidebarProgress();
+
+    document.getElementById("search-input").addEventListener("input", e => {
+      filterSidebar(e.target.value);
+    });
+
+    window.addEventListener("hashchange", route);
+    document.addEventListener("click", e => {
+      const a = e.target.closest("a[href^='#/']");
+      if (a && document.body.dataset.sidebar === "open") {
+        document.body.dataset.sidebar = "";
+      }
+    });
+
+    setupKeys();
+    route();
+  }
+
+  init().catch(err => {
+    document.getElementById("content").innerHTML =
+      `<h1>Failed to load</h1><pre>${err.message}</pre>`;
+  });
+})();
+"""
 
 
-def write_landing():
-    body = """
-    <div class="hero">
-      <h1>📚 Learning Hub</h1>
-      <p>Two tracks. One discipline. Everything you need to go from beginner to expert in <strong>data structures &amp; problem solving</strong> and <strong>system design</strong>.</p>
+SHELL_HTML = """<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Learning Hub</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%9A%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+  <header class="topbar">
+    <a href="#/" class="brand">📚 Learning Hub</a>
+    <button class="icon-btn sidebar-toggle" id="sidebar-toggle" title="Toggle sidebar">☰</button>
+    <div class="search">
+      <input id="search-input" type="text" placeholder="Search topics  (press /)" autocomplete="off">
     </div>
-
-    <h2>Start here</h2>
-    <div class="cards">
-      <div class="card">
-        <h3>🗺️ The Roadmap</h3>
-        <p>4-phase plan with milestones, kill-switches, and what to <em>stop</em> doing. Read this first.</p>
-        <a href="roadmap.html">Open roadmap →</a>
-      </div>
-      <div class="card">
-        <h3>🧠 DSA &amp; Problem Solving</h3>
-        <p>77 five-minute reads across Beginner → Intermediate → Advanced → Expert + Meta skills. Code in Python &amp; C++.</p>
-        <a href="dsa/index.html">Start DSA →</a>
-      </div>
-      <div class="card">
-        <h3>🏗️ System Design</h3>
-        <p>Foundations, scaling, distributed systems, expert patterns. Plus 20 focused 5-minute reads.</p>
-        <a href="system-design/index.html">Start system design →</a>
-      </div>
+    <div class="progress-pill" id="global-progress" title="Total progress">
+      <span class="pct">0/0 · 0%</span>
+      <div class="bar"><span style="width:0%"></span></div>
     </div>
+    <button class="icon-btn" id="theme-toggle" title="Toggle theme (t)">☀️</button>
+  </header>
+  <div class="layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <main class="content" id="content"></main>
+    <aside class="toc-rail" id="toc-rail"></aside>
+  </div>
+  <script src="assets/app.js"></script>
+</body>
+</html>
+"""
 
-    <h2>Quick reference</h2>
-    <div class="cards">
-      <div class="card">
-        <h3>⏱️ 5-Minute Reads (System Design)</h3>
-        <p>20 bite-sized topics — caching, consistent hashing, CAP, consensus, observability, and more.</p>
-        <a href="system-design/5-minute-reads/index.html">Open →</a>
-      </div>
-      <div class="card">
-        <h3>⚖️ Trade-offs Deep Dive</h3>
-        <p>The tax sheet for every architecture decision. CAP, latency vs. throughput, sync vs. async, monolith vs. microservices.</p>
-        <a href="system-design/tradeoffs-deep-dive.html">Open →</a>
-      </div>
-      <div class="card">
-        <h3>📚 Books, Courses &amp; Papers</h3>
-        <p>Curated reading list — DDIA, Kleppmann's papers, Raft, Dynamo, MapReduce, etc.</p>
-        <a href="system-design/books-and-courses.html">Open →</a>
-      </div>
-    </div>
 
-    <h2>Track levels at a glance</h2>
-    <table>
-      <thead><tr><th>Tier</th><th>DSA</th><th>System Design</th></tr></thead>
-      <tbody>
-        <tr><td><span class="tag tier1">Beginner</span></td><td>Big-O, arrays, hashing, two pointers, sliding window, recursion</td><td>What is system design, scalability basics, latency, APIs</td></tr>
-        <tr><td><span class="tag tier2">Intermediate</span></td><td>Trees, graphs, heaps, DSU, tries, intervals, monotonic stacks</td><td>Caching, sharding, replication, consistent hashing, microservices</td></tr>
-        <tr><td><span class="tag tier3">Advanced</span></td><td>DP families, Dijkstra, segment trees, KMP, MST</td><td>CAP, consistency models, message queues, rate limiting</td></tr>
-        <tr><td><span class="tag tier4">Expert</span></td><td>HLD, suffix structures, FFT, MCMF, persistent segtree, 2-SAT</td><td>Consensus (Raft/Paxos), event-driven + saga, resilience, observability</td></tr>
-      </tbody>
-    </table>
-
-    <h2>How to use this hub</h2>
-    <ol>
-      <li><strong>Read the roadmap.</strong> Don't skip it. It tells you what NOT to do, which is more valuable than what to do.</li>
-      <li><strong>Pick one tier per track.</strong> Mixing levels is how people stay stuck.</li>
-      <li><strong>One topic = one solved problem (DSA) or one design walkthrough (system design).</strong> Reading without doing is entertainment.</li>
-      <li><strong>Track in a spreadsheet.</strong> The roadmap explains why this is non-optional.</li>
-    </ol>
-
-    <h2>Edit &amp; rebuild</h2>
-    <p>All sources are markdown files. Edit the <code>.md</code> in either:</p>
-    <ul>
-      <li><code>C:\\Users\\smudili\\Documents\\system-design-learning</code></li>
-      <li><code>C:\\Users\\smudili\\.copilot\\session-state\\7a4bac2b-6e57-404c-b633-f638cacb3ddf\\research</code></li>
-    </ul>
-    <p>Then run: <code>python C:\\Users\\smudili\\Documents\\learning-hub\\build.py</code></p>
-    """
-    cb = crumbs([("Home", None)])
-    write_page(HUB / "index.html", "Learning Hub", body,
-               build_root_sidebar(active="home"), cb,
-               prev_next(None, {"href":"roadmap.html","title":"Roadmap"}),
-               root="")
-
+# --------------------------------------------------------------------------- #
+# Entry
+# --------------------------------------------------------------------------- #
 
 def main():
     print(f"Building hub at {HUB}")
-    HUB.mkdir(exist_ok=True)
-    (HUB / "assets").mkdir(exist_ok=True)
-    (HUB / "assets" / "style.css").write_text(CSS, encoding="utf-8")
+    if CONTENT.exists():
+        for f in CONTENT.glob("**/*"):
+            if f.is_file():
+                f.unlink()
+    CONTENT.mkdir(parents=True, exist_ok=True)
+    ASSETS.mkdir(parents=True, exist_ok=True)
 
-    # Roadmap
-    rm_src = RESEARCH / "roadmap.md"
-    if rm_src.exists():
-        text = rm_src.read_text(encoding="utf-8")
-        title = title_from_md(text, "Roadmap")
-        body = render_md(text)
-        cb = crumbs([("Home", "index.html"), ("Roadmap", None)])
-        write_page(HUB / "roadmap.html", title, body,
-                   build_root_sidebar(active="roadmap"), cb,
-                   prev_next(None, {"href":"dsa/index.html","title":"DSA Curriculum"}),
-                   root="")
-        print("  + roadmap.html")
+    (ASSETS / "style.css").write_text(CSS, encoding="utf-8")
+    (ASSETS / "app.js").write_text(APP_JS, encoding="utf-8")
 
-    # DSA
-    dsa_src = RESEARCH / "dsa.md"
-    if dsa_src.exists():
-        (HUB / "dsa").mkdir(exist_ok=True)
-        text = dsa_src.read_text(encoding="utf-8")
-        title = title_from_md(text, "DSA Curriculum")
-        body = render_md(text)
-        cb = crumbs([("Home", "../index.html"), ("DSA", None)])
-        write_page(HUB / "dsa" / "index.html", title, body,
-                   build_dsa_sidebar(), cb,
-                   prev_next({"href":"../roadmap.html","title":"Roadmap"},
-                             {"href":"../system-design/index.html","title":"System Design"}),
-                   root="../")
-        print("  + dsa/index.html")
+    manifest = build_manifest()
+    (HUB / "manifest.json").write_text(
+        json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
 
-    # System Design
-    if SD_SRC.exists():
-        sd_out = HUB / "system-design"
-        sd_out.mkdir(exist_ok=True)
-        top_pages = [
-            ("README.md", "Overview"),
-            ("01-beginner.md", "Beginner"),
-            ("02-intermediate.md", "Intermediate"),
-            ("03-advanced.md", "Advanced"),
-            ("04-expert.md", "Expert"),
-            ("tradeoffs-deep-dive.md", "Trade-offs Deep Dive"),
-            ("books-and-courses.md", "Books & Courses"),
-            ("github-repos.md", "GitHub Repos"),
-            ("seminal-papers.md", "Seminal Papers"),
-        ]
-        sd_pages = build_section(top_pages, SD_SRC)
-        for p in sd_pages:
-            if p["html_name"] == "README.html":
-                p["html_name"] = "index.html"
-                p["title"] = "System Design — Overview"
-        sd_sidebar = build_sd_sidebar(sd_pages)
-        write_section(sd_pages, sd_out, root="../", sidebar_html=sd_sidebar,
-                      crumbs_prefix=[("Home","../index.html"),("System Design","index.html")])
-        print(f"  + system-design/ ({len(sd_pages)} pages)")
+    (HUB / "index.html").write_text(SHELL_HTML, encoding="utf-8")
 
-        five_dir = SD_SRC / "5-minute-reads"
-        if five_dir.exists():
-            five_out = sd_out / "5-minute-reads"
-            five_out.mkdir(exist_ok=True)
-            five_files = sorted(p.name for p in five_dir.glob("*.md") if p.name != "README.md")
-            inputs = [("README.md", "5-Minute Reads — Index")] + [(f, None) for f in five_files]
-            five_pages = build_section(inputs, five_dir)
-            for p in five_pages:
-                if p["html_name"] == "README.html":
-                    p["html_name"] = "index.html"
-            five_sidebar = build_sd_sidebar(sd_pages, in_5min=True, five_pages=five_pages)
-            write_section(five_pages, five_out, root="../../",
-                          sidebar_html=five_sidebar,
-                          crumbs_prefix=[("Home","../../index.html"),
-                                         ("System Design","../index.html"),
-                                         ("5-Minute Reads","index.html")])
-            print(f"  + system-design/5-minute-reads/ ({len(five_pages)} pages)")
-
-    write_landing()
-    print(f"\nDone. Open: {HUB / 'index.html'}")
+    n_items = len(manifest["flat"])
+    n_tracks = len(manifest["tracks"])
+    print(f"  + {n_tracks} tracks, {n_items} topics")
+    print(f"  + content/ ({len(list(CONTENT.glob('**/*.html')))} fragments)")
+    print(f"  + manifest.json")
+    print(f"  + index.html (SPA shell)")
+    print(f"  + assets/style.css, assets/app.js")
+    print(f"\nDone. Serve from {HUB} (open index.html via file:// or local server)")
 
 
 if __name__ == "__main__":

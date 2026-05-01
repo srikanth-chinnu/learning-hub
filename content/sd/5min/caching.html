@@ -1,0 +1,215 @@
+<h1 id="7-caching-strategies-5-min-read">🟡 #7 — Caching Strategies (5-min read)</h1>
+<h2 id="tldr">🎯 TL;DR</h2>
+<p><strong>A cache is a fast, in-memory copy of slow-to-fetch data. Caching is the #1 way to make a system faster, but every cache has two hard problems: invalidation and eviction. Know the four write strategies and pick deliberately.</strong></p>
+<hr>
+<h2 id="plain-english">📖 Plain English</h2>
+<p>Your database query takes 50ms. Same query 1 million times = a slow service.</p>
+<p>Solution: store the result in <strong>memory</strong> (Redis, Memcached). Next time, fetch in 0.5ms.</p>
+<div class="codehilite"><pre><span></span><code><span class="k">Without</span><span class="w"> </span><span class="nl">cache</span><span class="p">:</span><span class="w">  </span><span class="o">[</span><span class="n">App</span><span class="o">]</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="o">[</span><span class="n">DB</span><span class="o">]</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="mi">50</span><span class="n">ms</span>
+<span class="k">With</span><span class="w"> </span><span class="nl">cache</span><span class="p">:</span><span class="w">     </span><span class="o">[</span><span class="n">App</span><span class="o">]</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="o">[</span><span class="n">Cache</span><span class="o">]</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="mf">0.5</span><span class="n">ms</span><span class="w"> </span><span class="err">⚡</span>
+</code></pre></div>
+
+<p>That's caching. Sounds simple. The hard part is keeping the cache <strong>correct</strong> when data changes.</p>
+<blockquote>
+<p><em>"There are only two hard things in computer science: cache invalidation and naming things."</em> — Phil Karlton</p>
+</blockquote>
+<hr>
+<h2 id="where-caching-lives-layers">🔑 Where Caching Lives (Layers)</h2>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Example</th>
+<th>Latency</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>CPU L1/L2</strong></td>
+<td>Hardware</td>
+<td>nanoseconds</td>
+</tr>
+<tr>
+<td><strong>Application memory</strong></td>
+<td>In-process map</td>
+<td>microseconds</td>
+</tr>
+<tr>
+<td><strong>Distributed cache</strong></td>
+<td>Redis, Memcached</td>
+<td>&lt;1 ms</td>
+</tr>
+<tr>
+<td><strong>CDN edge cache</strong></td>
+<td>Cloudflare, CloudFront</td>
+<td>&lt;50 ms (geo)</td>
+</tr>
+<tr>
+<td><strong>Browser cache</strong></td>
+<td>HTTP <code>Cache-Control</code></td>
+<td>0 ms</td>
+</tr>
+<tr>
+<td><strong>Database cache</strong></td>
+<td>Buffer pool</td>
+<td>&lt;1 ms</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Most systems use multiple layers.</strong> Browser → CDN → Redis → DB.</p>
+<hr>
+<h2 id="the-four-write-strategies">📝 The Four Write Strategies</h2>
+<p>This is <strong>the</strong> intermediate-level concept interviewers love.</p>
+<h3 id="1-cache-aside-lazy-loading-most-common">1️⃣ Cache-Aside (Lazy Loading) — most common</h3>
+<div class="codehilite"><pre><span></span><code><span class="nv">Read</span>:<span class="w">   </span><span class="nv">App</span><span class="w"> </span>→<span class="w"> </span><span class="nv">cache</span><span class="w"> </span><span class="ss">(</span><span class="nv">miss</span><span class="ss">)</span><span class="w"> </span>→<span class="w"> </span><span class="nv">DB</span><span class="w"> </span>→<span class="w"> </span><span class="nv">populate</span><span class="w"> </span><span class="nv">cache</span><span class="w"> </span>→<span class="w"> </span><span class="k">return</span>
+<span class="nv">Write</span>:<span class="w">  </span><span class="nv">App</span><span class="w"> </span>→<span class="w"> </span><span class="nv">DB</span><span class="w"> </span>→<span class="w"> </span><span class="nv">invalidate</span><span class="w"> </span><span class="nv">cache</span>
+</code></pre></div>
+
+<ul>
+<li>✅ Pros: Only caches what's accessed; resilient (DB is source of truth)</li>
+<li>❌ Cons: Cache miss penalty; "thundering herd" on popular invalidations</li>
+</ul>
+<h3 id="2-write-through">2️⃣ Write-Through</h3>
+<div class="codehilite"><pre><span></span><code>Write: App → cache → DB (cache writes synchronously to DB)
+Read:  App → cache (always populated)
+</code></pre></div>
+
+<ul>
+<li>✅ Pros: Strong consistency; no miss penalty</li>
+<li>❌ Cons: Higher write latency; caches data that may never be read</li>
+</ul>
+<h3 id="3-write-behind-write-back">3️⃣ Write-Behind (Write-Back)</h3>
+<div class="codehilite"><pre><span></span><code>Write: App → cache (returns OK)
+       cache → DB (asynchronously, batched)
+</code></pre></div>
+
+<ul>
+<li>✅ Pros: Lowest write latency; high throughput</li>
+<li>❌ Cons: <strong>Data loss risk</strong> if cache dies before flush</li>
+</ul>
+<h3 id="4-write-around">4️⃣ Write-Around</h3>
+<div class="codehilite"><pre><span></span><code>Write: App → DB (skip cache entirely)
+Read:  App → cache (miss) → DB → populate cache
+</code></pre></div>
+
+<ul>
+<li>✅ Pros: Good for write-heavy + read-rare</li>
+<li>❌ Cons: First read is always a miss</li>
+</ul>
+<p><strong>Default choice:</strong> Cache-Aside. Simple, robust, well-understood.</p>
+<hr>
+<h2 id="eviction-policies-when-cache-is-full">🚪 Eviction Policies (when cache is full)</h2>
+<table>
+<thead>
+<tr>
+<th>Policy</th>
+<th>Strategy</th>
+<th>Best for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>LRU</strong> (Least Recently Used)</td>
+<td>Drop the oldest-accessed item</td>
+<td>Most general workloads ★</td>
+</tr>
+<tr>
+<td><strong>LFU</strong> (Least Frequently Used)</td>
+<td>Drop the least-accessed-overall</td>
+<td>Long-lived popular items</td>
+</tr>
+<tr>
+<td><strong>FIFO</strong></td>
+<td>Drop the oldest-inserted item</td>
+<td>Simple use cases</td>
+</tr>
+<tr>
+<td><strong>TTL</strong> (Time-To-Live)</td>
+<td>Drop after N seconds</td>
+<td>Time-bound data (sessions)</td>
+</tr>
+<tr>
+<td><strong>Random</strong></td>
+<td>Drop a random item</td>
+<td>Surprisingly OK; very cheap</td>
+</tr>
+<tr>
+<td><strong>ARC</strong> (Adaptive Replacement)</td>
+<td>LRU + LFU hybrid, self-tuning</td>
+<td>When you don't want to choose</td>
+</tr>
+</tbody>
+</table>
+<p><strong>LRU is the default</strong> in Redis, most systems. Don't overthink.</p>
+<hr>
+<h2 id="when-not-to-cache">❌ When NOT to Cache</h2>
+<ol>
+<li><strong>Access time of cache ≈ access time of source</strong> — no gain</li>
+<li><strong>Low repetition</strong> — every request is unique</li>
+<li><strong>Data changes faster than you can invalidate</strong> — cache is always stale</li>
+<li><strong>Strong consistency required</strong> — payments, inventory (use cautiously)</li>
+</ol>
+<hr>
+<h2 id="the-thundering-herd-problem">🐝 The "Thundering Herd" Problem</h2>
+<p>A popular cached value expires. 10,000 requests simultaneously miss the cache. All 10,000 hit the DB. DB melts.</p>
+<p><strong>Solutions:</strong>
+- <strong>Request coalescing</strong> — only the first request fetches; others wait
+- <strong>Stale-while-revalidate</strong> — serve old value while refetching in background
+- <strong>Probabilistic early refresh</strong> — refresh just before expiry
+- <strong>Lock-then-fetch</strong> — first miss takes a lock; others retry briefly</p>
+<p>Discord's data services layer uses <strong>request coalescing</strong> as a key technique to handle hot keys.[^1]</p>
+<hr>
+<h2 id="real-world-numbers">🏗️ Real-World Numbers</h2>
+<ul>
+<li><strong>Facebook Memcached:</strong> trillions of requests/day, 99.99% hit rate at the edge[^2]</li>
+<li><strong>Netflix EVCache:</strong> ~30M ops/sec; up to 30 GB/sec</li>
+<li><strong>Twitter Redis:</strong> 105 TB RAM, 39M QPS[^3]</li>
+<li><strong>Stack Overflow:</strong> 90% of pages served entirely from cache</li>
+</ul>
+<p>Caching is <strong>the</strong> lever that turns "1000 RPS database" into "1M RPS service."</p>
+<hr>
+<h2 id="quick-decision-guide">🚦 Quick Decision Guide</h2>
+<table>
+<thead>
+<tr>
+<th>Need</th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Session storage</td>
+<td>Redis (TTL + LRU)</td>
+</tr>
+<tr>
+<td>Database query results</td>
+<td>Cache-aside with Redis/Memcached</td>
+</tr>
+<tr>
+<td>Static assets (CSS, JS, images)</td>
+<td>CDN with long TTL</td>
+</tr>
+<tr>
+<td>API responses</td>
+<td>HTTP cache headers + CDN</td>
+</tr>
+<tr>
+<td>Page fragments</td>
+<td>Fragment caching in app memory or Redis</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="dig-deeper">🔗 Dig Deeper</h2>
+<ul>
+<li>📘 <a href="https://github.com/karanpratapsingh/system-design">karanpratapsingh/system-design — Caching chapter</a></li>
+<li>📘 <em>Designing Data-Intensive Applications</em> — discusses caching trade-offs throughout</li>
+<li>📺 <a href="https://www.youtube.com/@ByteByteGo">ByteByteGo: 4 Netflix Caching Strategies</a></li>
+</ul>
+<hr>
+<h2 id="citations">📖 Citations</h2>
+<p>[^1]: <a href="https://discord.com/blog/how-discord-stores-trillions-of-messages">Discord: Storing Trillions of Messages</a> — request coalescing in their Rust data services layer.
+[^2]: <a href="https://www.usenix.org/conference/nsdi13/technical-sessions/presentation/nishtala">Scaling Memcache at Facebook (NSDI 2013)</a>
+[^3]: <code>binhnguyennus/awesome-scalability</code> repo — How Twitter uses Redis at 105TB / 39M QPS.</p>
+<hr>
+<p>← <a href="./README.md">Back to 5-min reads index</a></p>

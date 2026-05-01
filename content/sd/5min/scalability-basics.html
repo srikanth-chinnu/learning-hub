@@ -1,0 +1,126 @@
+<h1 id="2-scalability-vertical-vs-horizontal-5-min-read">🟢 #2 — Scalability: Vertical vs Horizontal (5-min read)</h1>
+<h2 id="tldr">🎯 TL;DR</h2>
+<p><strong>Scaling means handling more load. Vertical scaling = "buy a bigger server." Horizontal scaling = "buy more servers." The first is easy but capped; the second is harder but limitless.</strong></p>
+<hr>
+<h2 id="plain-english">📖 Plain English</h2>
+<p>Your app is becoming popular. Two roads to handle the traffic:</p>
+<h3 id="vertical-scaling-scale-up">🪜 Vertical Scaling (Scale Up)</h3>
+<p>Take your existing server and <strong>make it more powerful</strong>: more CPU, more RAM, faster disks.</p>
+<ul>
+<li>✅ <strong>Pros:</strong> No code changes. Simple. Predictable.</li>
+<li>❌ <strong>Cons:</strong> There's a hard ceiling (the biggest server money can buy). Single point of failure. Cost grows non-linearly.</li>
+</ul>
+<p><strong>Analogy:</strong> Trading your bicycle for a motorbike, then for a car, then for a truck. Eventually you can't buy a bigger vehicle.</p>
+<h3 id="horizontal-scaling-scale-out">➡️ Horizontal Scaling (Scale Out)</h3>
+<p>Add <strong>more servers</strong> running copies of your app. Distribute traffic across them with a <strong>load balancer</strong>.</p>
+<ul>
+<li>✅ <strong>Pros:</strong> Effectively unlimited. Built-in redundancy. Cheaper hardware.</li>
+<li>❌ <strong>Cons:</strong> Code must be <strong>stateless</strong> (no in-memory user sessions). Database becomes the bottleneck. More moving parts.</li>
+</ul>
+<p><strong>Analogy:</strong> Instead of one bigger truck, you hire 100 motorcyclists. Each one handles less, but together they deliver more.</p>
+<hr>
+<h2 id="key-trade-offs">🔑 Key Trade-offs</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th><strong>Vertical</strong></th>
+<th><strong>Horizontal</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cost ceiling</td>
+<td>High (huge servers cost millions)</td>
+<td>Low (commodity hardware)</td>
+</tr>
+<tr>
+<td>Fault tolerance</td>
+<td>Single point of failure</td>
+<td>Multiple servers tolerate losses</td>
+</tr>
+<tr>
+<td>Code changes</td>
+<td>None</td>
+<td>Must be stateless</td>
+</tr>
+<tr>
+<td>Operational complexity</td>
+<td>Low</td>
+<td>High (load balancers, service discovery, distributed state)</td>
+</tr>
+<tr>
+<td>State management</td>
+<td>Easy (one server has it all)</td>
+<td>Hard (where does session state live?)</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="real-world-example">🏗️ Real-World Example</h2>
+<p><strong>Day 1:</strong> Your blog runs on a single $5/month VPS. ✅ Vertical scaling.</p>
+<p><strong>Day 100:</strong> Your blog goes viral. You upgrade to a $200/month server. Still vertical.</p>
+<p><strong>Day 365:</strong> You hit the limits — even AWS's biggest single instance can't keep up. You:
+1. Move sessions out of memory into Redis
+2. Put a load balancer in front
+3. Run 10 identical app servers behind it
+4. Now you can scale to 100 servers, 1000, 10000... 🚀</p>
+<p>That last step is <strong>horizontal scaling</strong>.</p>
+<hr>
+<h2 id="stateless-vs-stateful-the-critical-concept">⚙️ Stateless vs Stateful — The Critical Concept</h2>
+<p>Horizontal scaling <strong>requires stateless services</strong>.</p>
+<ul>
+<li><strong>Stateful service:</strong> Stores user data in memory between requests. (Bad — server X has user A's session, server Y doesn't.)</li>
+<li><strong>Stateless service:</strong> Stores state externally (DB, Redis, JWT in cookie). Any server can handle any request.</li>
+</ul>
+<p>The mantra: <strong>"Servers should be cattle, not pets."</strong> You should be able to kill any server and replace it with a fresh one without anyone noticing.</p>
+<hr>
+<h2 id="availability-math">📊 Availability Math</h2>
+<p>Multiple servers also boost <strong>availability</strong>[^1]:</p>
+<ul>
+<li>1 server with 99.9% uptime = 8h 45m downtime/year</li>
+<li>2 servers in parallel: <code>1 - (0.001 × 0.001) = 99.9999%</code> = 31 seconds/year ⚡</li>
+<li>4 servers: effectively zero downtime</li>
+</ul>
+<p>This is why "scale horizontally" usually means more reliability <strong>and</strong> more capacity, simultaneously.</p>
+<hr>
+<h2 id="when-to-use-what">🚦 When to Use What</h2>
+<table>
+<thead>
+<tr>
+<th>Use vertical scaling when...</th>
+<th>Use horizontal scaling when...</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Early-stage startup (move fast)</td>
+<td>You're hitting the single-server ceiling</td>
+</tr>
+<tr>
+<td>Strongly consistent transactional databases</td>
+<td>Your service is naturally stateless (web, API)</td>
+</tr>
+<tr>
+<td>You can't afford complexity yet</td>
+<td>You need 99.99%+ uptime</td>
+</tr>
+<tr>
+<td>Quick wins, short timeline</td>
+<td>You need geographic distribution</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Pro tip:</strong> Most systems do both. Vertically scale your database (one strong primary), horizontally scale your app servers.</p>
+<hr>
+<h2 id="dig-deeper">🔗 Dig Deeper</h2>
+<ul>
+<li>📘 <a href="https://github.com/donnemartin/system-design-primer">donnemartin/system-design-primer — Scaling section</a> — "Scalability for Dummies" 4-part series</li>
+<li>📺 <a href="https://www.youtube.com/watch?v=-W9F__D3oY4">CS75 Harvard Scalability Lecture (David Malan)</a></li>
+<li>📘 <a href="https://github.com/karanpratapsingh/system-design">karanpratapsingh/system-design — Chapter I</a></li>
+</ul>
+<hr>
+<h2 id="citations">📖 Citations</h2>
+<p>[^1]: <code>donnemartin/system-design-primer:README.md</code> — Availability formula: <code>Availability (parallel) = 1 - (1 - A) × (1 - B)</code>. 99.9% = 8h 45m down/yr; 99.99% = 52m/yr.</p>
+<hr>
+<p>← <a href="./README.md">Back to 5-min reads index</a></p>

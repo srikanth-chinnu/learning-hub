@@ -1,0 +1,193 @@
+<h1 id="12-microservices-vs-monolith-5-min-read">🟡 #12 — Microservices vs Monolith (5-min read)</h1>
+<h2 id="tldr">🎯 TL;DR</h2>
+<p><strong>Monolith = one codebase, one deployment. Microservices = many small services, each independently deployed. Monoliths win at small scale; microservices win at organizational scale (50+ engineers). Most teams should start with a monolith.</strong></p>
+<hr>
+<h2 id="plain-english">📖 Plain English</h2>
+<h3 id="monolith">Monolith</h3>
+<p><strong>One big application.</strong> All features (auth, billing, notifications, products, etc.) live in one codebase, one repository, one deployment artifact.</p>
+<div class="codehilite"><pre><span></span><code>┌─────────────────────────────────────┐
+│        MyApp (one process)          │
+│  ┌────────┐ ┌─────────┐ ┌────────┐  │
+│  │  Auth  │ │ Billing │ │Products│  │
+│  └────────┘ └─────────┘ └────────┘  │
+│       Single shared database        │
+└─────────────────────────────────────┘
+</code></pre></div>
+
+<h3 id="microservices">Microservices</h3>
+<p><strong>Many small applications</strong>, each owning a single business capability, each with its own DB, deployed independently, communicating over the network.</p>
+<div class="codehilite"><pre><span></span><code><span class="k">[Auth Service]    [Billing Service]   [Products Service]</span>
+<span class="w">   </span><span class="na">│ DB-1              │ DB-2              │ DB-3</span>
+<span class="w">   </span><span class="na">└────────── network calls ──────────────┘</span>
+</code></pre></div>
+
+<hr>
+<h2 id="the-core-trade-off">🔑 The Core Trade-Off</h2>
+<blockquote>
+<p><strong>Microservices trade local complexity for network/operational complexity.</strong></p>
+</blockquote>
+<p>A monolith has nasty in-codebase complexity: tangled modules, shared dependencies, slow build times, fear of changing anything.</p>
+<p>Microservices push that complexity <em>out of the code</em> and into the network: timeouts, retries, distributed tracing, eventual consistency, deployment orchestration.</p>
+<p><strong>Both have roughly the same total complexity</strong> — just in different places. The question is: which kind of complexity do you handle better?</p>
+<hr>
+<h2 id="side-by-side">📊 Side-by-Side</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th><strong>Monolith</strong></th>
+<th><strong>Microservices</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Codebase</td>
+<td>1</td>
+<td>N (one per service)</td>
+</tr>
+<tr>
+<td>Deployments</td>
+<td>1</td>
+<td>N (independent)</td>
+</tr>
+<tr>
+<td>Scaling</td>
+<td>Whole app together</td>
+<td>Per-service</td>
+</tr>
+<tr>
+<td>Tech stack</td>
+<td>Usually one</td>
+<td>Polyglot (use right tool)</td>
+</tr>
+<tr>
+<td>Team coordination</td>
+<td>Hard at &gt;50 engineers</td>
+<td>Each team owns its service</td>
+</tr>
+<tr>
+<td>Network overhead</td>
+<td>None (in-process)</td>
+<td>Significant (RPC, latency)</td>
+</tr>
+<tr>
+<td>Debugging</td>
+<td>Stack trace</td>
+<td>Distributed tracing</td>
+</tr>
+<tr>
+<td>Transactions</td>
+<td>ACID via DB</td>
+<td>Saga pattern (eventual consistency)</td>
+</tr>
+<tr>
+<td>Failure mode</td>
+<td>Whole app crashes</td>
+<td>Partial (other services work)</td>
+</tr>
+<tr>
+<td>Time to ship feature (early)</td>
+<td>Fast</td>
+<td>Slow (more setup)</td>
+</tr>
+<tr>
+<td>Time to ship feature (large org)</td>
+<td>Slow (coordination)</td>
+<td>Fast (independent teams)</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="use-microservices-when">🚦 Use Microservices When...</h2>
+<p>✅ You have <strong>multiple teams</strong> (Conway's Law — your architecture mirrors your org chart)
+✅ Different services need <strong>different scaling</strong> (search needs 100 servers; user profile needs 2)
+✅ Different services need <strong>different tech</strong> (ML in Python, real-time in Go, web in Node)
+✅ You need <strong>independent deployment</strong> (deploy 10x/day without coordinating)
+✅ <strong>Different failure tolerances</strong> (payments must be perfect; recommendations can be flaky)</p>
+<h2 id="use-a-monolith-when">🚦 Use a Monolith When...</h2>
+<p>✅ You're a <strong>small team</strong> (&lt; 30 engineers)
+✅ The product is still finding <strong>product-market fit</strong> (boundaries are unclear)
+✅ You don't have <strong>strong DevOps capability</strong>
+✅ <strong>Latency matters</strong> (avoiding network hops is huge)
+✅ <strong>Strong transactional consistency</strong> is core (SQL transactions span everything)</p>
+<blockquote>
+<p><strong>Famously monolithic</strong>: Stack Overflow (one .NET app, one SQL Server, beats most microservices stacks on perf), GitHub (Rails monolith for years), Shopify (Rails "majestic monolith")</p>
+</blockquote>
+<hr>
+<h2 id="the-modular-monolith-the-pragmatic-middle">🪜 The Modular Monolith — The Pragmatic Middle</h2>
+<p>A <strong>modular monolith</strong> is one deployment with <strong>strict internal module boundaries</strong>. Each "module" is structured as if it were a service (its own folder, schema, public API), but they all run together.</p>
+<div class="codehilite"><pre><span></span><code><span class="k">[MyApp Process]</span>
+<span class="na">├── auth/        ← could be a service later</span>
+<span class="na">├── billing/     ← could be a service later</span>
+<span class="na">└── products/    ← could be a service later</span>
+</code></pre></div>
+
+<p>✅ Easy to refactor into services <em>later</em> if needed
+✅ All the perf benefits of a monolith
+✅ Most companies should start here, not microservices</p>
+<p>This is what Shopify, GitHub, Basecamp do.</p>
+<hr>
+<h2 id="microservices-anti-patterns">⚠️ Microservices Anti-patterns</h2>
+<ol>
+<li><strong>Distributed monolith</strong> — Services that must always be deployed together. Worst of both worlds.</li>
+<li><strong>Shared database</strong> — Multiple services hitting the same DB. Couples them at the worst layer.</li>
+<li><strong>Chatty services</strong> — One user request fans out to 50 internal calls. Latency dies.</li>
+<li><strong>Premature decomposition</strong> — Splitting domains you don't understand yet. Boundaries shift painfully.</li>
+<li><strong>No service ownership</strong> — When everyone owns a service, no one does. Each service should have a clear team.</li>
+</ol>
+<hr>
+<h2 id="real-world-examples">🏗️ Real-World Examples</h2>
+<table>
+<thead>
+<tr>
+<th>Company</th>
+<th>Architecture</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Netflix</strong></td>
+<td>1000+ microservices</td>
+<td>Massive scale, polyglot, independent teams</td>
+</tr>
+<tr>
+<td><strong>Amazon</strong></td>
+<td>Service-Oriented (since 2002 Bezos memo)</td>
+<td>Forced API boundaries internally</td>
+</tr>
+<tr>
+<td><strong>Stack Overflow</strong></td>
+<td>Monolith (.NET + SQL Server)</td>
+<td>Very small ops team; extreme perf</td>
+</tr>
+<tr>
+<td><strong>Shopify</strong></td>
+<td>Modular monolith (Rails)</td>
+<td>Maintained codebase boundaries via "components"</td>
+</tr>
+<tr>
+<td><strong>Uber</strong></td>
+<td>Migrated monolith → microservices → DOMA (Domain-Oriented Microservice Architecture)[^1]</td>
+<td>Pendulum swing</td>
+</tr>
+<tr>
+<td><strong>GitHub</strong></td>
+<td>Rails monolith + few satellite services</td>
+<td>Pragmatic, ships fast</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="dig-deeper">🔗 Dig Deeper</h2>
+<ul>
+<li>📘 <em>Building Microservices</em> by Sam Newman ★</li>
+<li>📺 <a href="https://www.youtube.com/watch?v=GBTdnfD6s5Q">Sam Newman: When To Use Microservices (And When Not To)</a></li>
+<li>📘 <a href="https://github.com/karanpratapsingh/system-design">karanpratapsingh/system-design — Monolith vs Microservices</a></li>
+<li>📘 <a href="https://shopify.engineering/deconstructing-monolith-designing-software-maximizes-developer-productivity">Shopify: Deconstructing the Monolith</a></li>
+</ul>
+<hr>
+<h2 id="citations">📖 Citations</h2>
+<p>[^1]: <a href="https://www.uber.com/blog/microservice-architecture/">Uber Engineering: Microservice Architecture (DOMA)</a> — Uber's evolution from monolith to many small services to domain-oriented service groups.</p>
+<hr>
+<p>← <a href="./README.md">Back to 5-min reads index</a></p>

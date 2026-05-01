@@ -1,0 +1,167 @@
+<h1 id="18-event-driven-architecture-saga-pattern-5-min-read">🔴 #18 — Event-Driven Architecture &amp; Saga Pattern (5-min read)</h1>
+<h2 id="tldr">🎯 TL;DR</h2>
+<p><strong>Event-driven architecture (EDA) means services react to events instead of calling each other directly. The Saga pattern is how you do "distributed transactions" without 2PC: a chain of local transactions, each compensated if a later one fails.</strong></p>
+<hr>
+<h2 id="plain-english">📖 Plain English</h2>
+<h3 id="traditional-request-response-synchronous">Traditional Request-Response (synchronous)</h3>
+<div class="codehilite"><pre><span></span><code><span class="k">[Order Service] ──calls──→ [Payment Service] ──calls──→ [Inventory] ──calls──→ [Shipping]</span>
+<span class="w">                  </span><span class="na">│                              │                    │</span>
+<span class="w">              </span><span class="na">waits, fails if         tightly coupled,     fan-out cascade,</span>
+<span class="w">              </span><span class="na">any service is down     blocking, slow       hard to evolve</span>
+</code></pre></div>
+
+<p>If any service is slow or down, the whole chain fails.</p>
+<h3 id="event-driven-architecture">Event-Driven Architecture</h3>
+<div class="codehilite"><pre><span></span><code><span class="k">[Order Service] → emits event &quot;OrderCreated&quot; → [Event Bus / Kafka]</span>
+<span class="w">                                                    </span><span class="na">│</span>
+<span class="w">                                </span><span class="na">┌───────────────────┼──────────────────┐</span>
+<span class="w">                                </span><span class="na">▼                   ▼                  ▼</span>
+<span class="w">                          </span><span class="k">[Payment Svc]      [Inventory Svc]    [Shipping Svc]</span>
+<span class="w">                          </span><span class="na">(reacts)            (reacts)           (reacts)</span>
+</code></pre></div>
+
+<p>Each service:
+- ✅ Doesn't know who else is listening
+- ✅ Reacts in its own time
+- ✅ Can be deployed independently
+- ✅ Survives if other services are temporarily down</p>
+<hr>
+<h2 id="core-eda-concepts">🎯 Core EDA Concepts</h2>
+<table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Event</strong></td>
+<td>An immutable fact: "OrderCreated", "UserSignedUp"</td>
+</tr>
+<tr>
+<td><strong>Producer</strong></td>
+<td>Service that emits events</td>
+</tr>
+<tr>
+<td><strong>Consumer</strong></td>
+<td>Service that reacts to events</td>
+</tr>
+<tr>
+<td><strong>Event bus</strong></td>
+<td>Where events flow (Kafka, RabbitMQ, Pub/Sub)</td>
+</tr>
+<tr>
+<td><strong>Choreography</strong></td>
+<td>Each service knows what events to react to (decentralized)</td>
+</tr>
+<tr>
+<td><strong>Orchestration</strong></td>
+<td>A central coordinator tells services what to do (centralized)</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="the-saga-pattern-distributed-transactions-without-2pc">🌀 The Saga Pattern — Distributed Transactions Without 2PC</h2>
+<p>The classic problem:</p>
+<blockquote>
+<p>"Place an order: charge the credit card AND reserve inventory AND ship. If any step fails, undo the others."</p>
+</blockquote>
+<p>In a single database, this is a <code>BEGIN TRANSACTION ... COMMIT</code>. Across microservices, no such luxury.</p>
+<p><strong>Saga</strong> = a sequence of local transactions, each with a compensating action.</p>
+<h3 id="example-e-commerce-saga">Example: E-commerce Saga</h3>
+<div class="codehilite"><pre><span></span><code><span class="mf">1.</span><span class="w"> </span><span class="ow">Or</span><span class="n">der</span><span class="w"> </span><span class="n">Service</span><span class="w">     </span><span class="err">→</span><span class="w"> </span><span class="n">INSERT</span><span class="w"> </span><span class="ow">or</span><span class="n">der</span><span class="w"> </span><span class="p">(</span><span class="n">pending</span><span class="p">)</span><span class="w">        </span><span class="err">[</span><span class="n">compensate</span><span class="p">:</span><span class="w"> </span><span class="n">cancel</span><span class="w"> </span><span class="ow">or</span><span class="n">der</span><span class="err">]</span>
+<span class="mf">2.</span><span class="w"> </span><span class="n">Payment</span><span class="w"> </span><span class="n">Service</span><span class="w">   </span><span class="err">→</span><span class="w"> </span><span class="n">charge</span><span class="w"> </span><span class="n">card</span><span class="w">                   </span><span class="err">[</span><span class="n">compensate</span><span class="p">:</span><span class="w"> </span><span class="n">refund</span><span class="err">]</span>
+<span class="mf">3.</span><span class="w"> </span><span class="n">Inventory</span><span class="w"> </span><span class="n">Service</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="n">reserve</span><span class="w"> </span><span class="n">items</span><span class="w">                 </span><span class="err">[</span><span class="n">compensate</span><span class="p">:</span><span class="w"> </span><span class="n">release</span><span class="w"> </span><span class="n">reservation</span><span class="err">]</span>
+<span class="mf">4.</span><span class="w"> </span><span class="n">Shipping</span><span class="w"> </span><span class="n">Service</span><span class="w">  </span><span class="err">→</span><span class="w"> </span><span class="n">create</span><span class="w"> </span><span class="n">shipment</span><span class="w">               </span><span class="err">[</span><span class="n">compensate</span><span class="p">:</span><span class="w"> </span><span class="n">cancel</span><span class="w"> </span><span class="n">shipment</span><span class="err">]</span>
+<span class="mf">5.</span><span class="w"> </span><span class="ow">Or</span><span class="n">der</span><span class="w"> </span><span class="n">Service</span><span class="w">     </span><span class="err">→</span><span class="w"> </span><span class="n">UPDATE</span><span class="w"> </span><span class="ow">or</span><span class="n">der</span><span class="w"> </span><span class="kr">to</span><span class="w"> </span><span class="n">confirmed</span>
+</code></pre></div>
+
+<p>If <strong>step 3</strong> fails:
+- Run compensation for <strong>step 2</strong> (refund the card)
+- Run compensation for <strong>step 1</strong> (cancel the order)
+- Tell the user: "Couldn't fulfill the order"</p>
+<p>This avoids 2PC (two-phase commit) which requires all systems to lock and is fragile across the network.</p>
+<hr>
+<h2 id="choreography-vs-orchestration">🎭 Choreography vs Orchestration</h2>
+<h3 id="choreography-decentralized">Choreography (decentralized)</h3>
+<div class="codehilite"><pre><span></span><code>Order Svc emits &quot;OrderCreated&quot;
+   ↓
+Payment Svc listens, charges, emits &quot;PaymentSucceeded&quot;
+   ↓
+Inventory Svc listens, reserves, emits &quot;InventoryReserved&quot;
+   ↓
+Shipping Svc listens, ships, emits &quot;ShipmentCreated&quot;
+   ↓
+Order Svc listens, marks order as confirmed
+</code></pre></div>
+
+<ul>
+<li>✅ Loose coupling</li>
+<li>❌ Hard to understand the flow (no central place that defines it)</li>
+<li>❌ Compensation logic scattered</li>
+</ul>
+<h3 id="orchestration-centralized">Orchestration (centralized)</h3>
+<div class="codehilite"><pre><span></span><code><span class="k">[Order Saga Orchestrator]</span>
+<span class="w">        </span><span class="na">│</span>
+<span class="w">        </span><span class="na">├─→ Payment.charge → success</span>
+<span class="w">        </span><span class="na">├─→ Inventory.reserve → success</span>
+<span class="w">        </span><span class="na">├─→ Shipping.ship → FAILED</span>
+<span class="w">        </span><span class="na">├─→ Inventory.release (compensation)</span>
+<span class="w">        </span><span class="na">└─→ Payment.refund (compensation)</span>
+</code></pre></div>
+
+<ul>
+<li>✅ Clear, central definition</li>
+<li>✅ Easy to monitor &amp; test</li>
+<li>❌ Orchestrator becomes a focal point (could be a bottleneck/SPOF)</li>
+</ul>
+<p><strong>Both are valid.</strong> Use orchestration for complex business flows; choreography for simpler, evolving systems. Tools: Temporal, Camunda Zeebe, AWS Step Functions for orchestration.</p>
+<hr>
+<h2 id="event-sourcing-related-but-different">📦 Event Sourcing (related, but different)</h2>
+<ul>
+<li><strong>Event-driven architecture</strong> = services communicate via events</li>
+<li><strong>Event sourcing</strong> = the <em>state</em> of your data is the log of events; current state is computed by replaying</li>
+</ul>
+<div class="codehilite"><pre><span></span><code><span class="nl">Traditional</span><span class="p">:</span><span class="w">   </span><span class="p">[</span><span class="n">Account</span><span class="o">:</span><span class="w"> </span><span class="n">balance</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">$100</span><span class="p">]</span><span class="w">   </span><span class="err">←</span><span class="w"> </span><span class="n">stored</span>
+<span class="n">Event</span><span class="w"> </span><span class="n">sourced</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="n">Account</span><span class="w"> </span><span class="n">events</span><span class="o">:</span><span class="w"> </span><span class="o">+</span><span class="n">$50</span><span class="p">,</span><span class="w"> </span><span class="o">+</span><span class="n">$50</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="n">$10</span><span class="p">,</span><span class="w"> </span><span class="o">+</span><span class="n">$10</span><span class="p">]</span><span class="w">   </span><span class="err">←</span><span class="w"> </span><span class="n">stored</span>
+<span class="w">                </span><span class="n">Current</span><span class="w"> </span><span class="n">balance</span><span class="o">:</span><span class="w"> </span><span class="n">replay</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">$100</span>
+</code></pre></div>
+
+<p>Used when:
+- You need a complete audit trail
+- You want to "rewind" state for debugging
+- You want to compute multiple "views" of the same data
+- Examples: financial systems (Stripe), git (literally event-sourced), CQRS apps</p>
+<p>Pairs naturally with EDA: emit each event when state changes.</p>
+<hr>
+<h2 id="real-world-eda-at-scale">🏗️ Real-World EDA at Scale</h2>
+<h3 id="uber">Uber</h3>
+<p>Each trip emits 50+ events; downstream systems consume them in parallel (pricing, ETA prediction, driver state, billing, fraud).</p>
+<h3 id="linkedin">LinkedIn</h3>
+<p>Invented Kafka. Every user action is an event. ML models, analytics, notifications all consume the same event stream.</p>
+<h3 id="netflix">Netflix</h3>
+<p>Backend microservices use events extensively. Migrated from hard-coded service calls to event-driven for resilience.</p>
+<h3 id="stripe">Stripe</h3>
+<p>Webhooks are an EDA pattern: when something happens in Stripe, an event is sent to your endpoint. You react.</p>
+<hr>
+<h2 id="common-pitfalls">⚠️ Common Pitfalls</h2>
+<ol>
+<li><strong>Events as commands</strong> — Events should be facts ("OrderCreated"), not commands ("ChargeCard"). Mixing them recreates tight coupling.</li>
+<li><strong>No schema evolution plan</strong> — Events live forever. Use Avro/Protobuf with versioning, not JSON freestyle.</li>
+<li><strong>Forgetting idempotency</strong> — At-least-once delivery means duplicates. Each consumer must handle them.</li>
+<li><strong>Saga not actually idempotent</strong> — A saga step that runs twice must produce the same result.</li>
+<li><strong>Hidden dependencies</strong> — Choreography hides the flow. Use distributed tracing (OpenTelemetry) to recover visibility.</li>
+<li><strong>No DLQ / retry strategy</strong> — Events that can't be processed fester. Always plan for poison messages.</li>
+</ol>
+<hr>
+<h2 id="dig-deeper">🔗 Dig Deeper</h2>
+<ul>
+<li>📘 <em>Designing Data-Intensive Applications</em> — Chapter 11: Stream Processing</li>
+<li>📘 <a href="https://learn.microsoft.com/en-us/azure/architecture/reference-architectures/saga/saga">Microsoft: Saga Pattern</a></li>
+<li>📘 <a href="https://microservices.io/patterns/data/saga.html">Chris Richardson: Microservices Patterns — Saga chapter</a></li>
+<li>📘 <a href="https://martinfowler.com/eaaDev/EventSourcing.html">Martin Fowler: Event Sourcing</a></li>
+<li>📺 <a href="https://temporal.io/">Temporal: Workflow Orchestration tutorials</a></li>
+</ul>
+<hr>
+<p>← <a href="./README.md">Back to 5-min reads index</a></p>

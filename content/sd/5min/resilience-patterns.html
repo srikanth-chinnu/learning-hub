@@ -1,0 +1,193 @@
+<h1 id="19-resilience-patterns-circuit-breaker-bulkhead-5-min-read">🔴 #19 — Resilience Patterns: Circuit Breaker &amp; Bulkhead (5-min read)</h1>
+<h2 id="tldr">🎯 TL;DR</h2>
+<p><strong>Distributed systems fail in cascading ways: one slow service can drag down 10 others. Resilience patterns — circuit breakers, bulkheads, timeouts, retries, fallbacks — contain failures so a small fire doesn't burn down the building.</strong></p>
+<hr>
+<h2 id="plain-english">📖 Plain English</h2>
+<p>You have 10 microservices. Service B starts responding slowly. Service A calls B, A's threads pile up waiting. Service C calls A, C's threads pile up waiting. The whole system grinds to a halt.</p>
+<p><strong>This is a cascading failure.</strong> Resilience patterns prevent it.</p>
+<div class="codehilite"><pre><span></span><code><span class="k">Without</span><span class="w"> </span><span class="nl">patterns</span><span class="p">:</span><span class="w">        </span><span class="k">With</span><span class="w"> </span><span class="n">circuit</span><span class="w"> </span><span class="n">breaker</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nl">bulkhead</span><span class="p">:</span>
+
+<span class="o">[</span><span class="n">A</span><span class="o">]</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="o">[</span><span class="n">B is slow</span><span class="o">]</span><span class="w">       </span><span class="o">[</span><span class="n">A</span><span class="o">]</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="o">[</span><span class="n">B circuit OPEN; instant fail</span><span class="o">]</span>
+<span class="w"> </span><span class="err">↓</span><span class="w">                        </span><span class="err">↓</span>
+<span class="o">[</span><span class="n">C</span><span class="o">]</span><span class="w"> </span><span class="n">hangs</span><span class="w">                </span><span class="o">[</span><span class="n">C</span><span class="o">]</span><span class="w"> </span><span class="n">keeps</span><span class="w"> </span><span class="n">working</span><span class="w"> </span><span class="k">with</span><span class="w"> </span><span class="n">cached</span><span class="w"> </span><span class="k">result</span>
+<span class="w"> </span><span class="err">↓</span>
+<span class="o">[</span><span class="n">D</span><span class="o">]</span><span class="w"> </span><span class="n">hangs</span>
+<span class="w"> </span><span class="err">↓</span>
+<span class="w">   </span><span class="err">💥</span><span class="w"> </span><span class="k">system</span><span class="w"> </span><span class="n">dead</span>
+</code></pre></div>
+
+<hr>
+<h2 id="pattern-1-circuit-breaker">🔌 Pattern #1: Circuit Breaker</h2>
+<p>Inspired by electrical circuit breakers. <strong>Stops calling a failing service</strong> to give it time to recover.</p>
+<h3 id="three-states">Three States</h3>
+<div class="codehilite"><pre><span></span><code><span class="w">   </span><span class="o">[</span><span class="n">CLOSED</span><span class="o">]</span><span class="w">  </span><span class="err">──</span><span class="n">N</span><span class="w"> </span><span class="n">failures</span><span class="err">──►</span><span class="w">  </span><span class="o">[</span><span class="n">OPEN</span><span class="o">]</span>
+<span class="w">       </span><span class="err">▲</span><span class="w">                        </span><span class="err">│</span>
+<span class="w">       </span><span class="err">│</span><span class="w">                  </span><span class="n">wait</span><span class="w"> </span><span class="n">timeout</span>
+<span class="w">   </span><span class="n">success</span><span class="w">                      </span><span class="err">│</span>
+<span class="w">       </span><span class="err">│</span><span class="w">                        </span><span class="err">▼</span>
+<span class="w">       </span><span class="err">└─────</span><span class="n">one</span><span class="w"> </span><span class="n">success</span><span class="err">────</span><span class="w"> </span><span class="o">[</span><span class="n">HALF-OPEN</span><span class="o">]</span>
+<span class="w">                             </span><span class="p">(</span><span class="k">try</span><span class="w"> </span><span class="n">one</span><span class="w"> </span><span class="k">call</span><span class="p">)</span>
+<span class="w">                             </span><span class="k">on</span><span class="w"> </span><span class="n">fail</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="k">OPEN</span>
+<span class="w">                             </span><span class="k">on</span><span class="w"> </span><span class="n">success</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="n">CLOSED</span>
+</code></pre></div>
+
+<ul>
+<li><strong>CLOSED</strong>: Calls flow normally; track failures</li>
+<li><strong>OPEN</strong>: Failures crossed threshold; <em>immediately</em> fail without calling (fast fail)</li>
+<li><strong>HALF-OPEN</strong>: After a cool-off, allow one test call; if it succeeds, close the breaker</li>
+</ul>
+<h3 id="code-level-example-hystrix-style">Code-Level Example (Hystrix-style)</h3>
+<div class="codehilite"><pre><span></span><code><span class="nd">@circuit_breaker</span><span class="p">(</span><span class="n">failure_threshold</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">recovery_timeout</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_user_profile</span><span class="p">(</span><span class="n">user_id</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">user_service</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">user_id</span><span class="p">)</span>
+</code></pre></div>
+
+<p>After 5 failures within a window:
+- Breaker opens for 30 seconds
+- All calls return <code>CircuitBreakerOpenError</code> instantly (no network call)
+- After 30s, one call is allowed; rest follows</p>
+<h3 id="where-used">Where Used</h3>
+<ul>
+<li><strong>Netflix Hystrix</strong> (the famous library; now in maintenance)</li>
+<li><strong>Resilience4j</strong> (Java)</li>
+<li><strong>Polly</strong> (.NET)</li>
+<li>Built into Envoy, Istio, AWS App Mesh</li>
+</ul>
+<hr>
+<h2 id="pattern-2-bulkhead">🚣 Pattern #2: Bulkhead</h2>
+<p>Named after <strong>ship compartments</strong>: if one floods, others stay watertight.</p>
+<p><strong>Idea:</strong> Isolate resources (threads, connections, memory) per dependency. A failure in one can't drain everything.</p>
+<h3 id="without-bulkhead">Without Bulkhead</h3>
+<div class="codehilite"><pre><span></span><code><span class="k">[App: 200 threads pool]</span>
+<span class="w">   </span><span class="na">├─→ Service A (slow → 150 threads stuck)</span>
+<span class="w">   </span><span class="na">├─→ Service B (only 50 left)</span>
+<span class="w">   </span><span class="na">└─→ Service C (starves)</span>
+</code></pre></div>
+
+<h3 id="with-bulkhead">With Bulkhead</h3>
+<div class="codehilite"><pre><span></span><code><span class="k">[App]</span>
+<span class="w">   </span><span class="na">├─→ Service A pool</span><span class="o">:</span><span class="w"> </span><span class="s">max 50 threads (slow → 50 stuck, 150 left for others)</span>
+<span class="w">   </span><span class="na">├─→ Service B pool</span><span class="o">:</span><span class="w"> </span><span class="s">max 50 threads</span>
+<span class="w">   </span><span class="na">└─→ Service C pool</span><span class="o">:</span><span class="w"> </span><span class="s">max 50 threads</span>
+</code></pre></div>
+
+<p>A's slowness is <strong>contained</strong>. Other services keep working.</p>
+<p>This is also why microservices are deployed in <strong>separate processes</strong> — natural bulkheads at the OS level.</p>
+<hr>
+<h2 id="pattern-3-timeouts">⏱️ Pattern #3: Timeouts</h2>
+<p><strong>Always set a timeout on every network call.</strong> Most languages default to "wait forever," which is catastrophic.</p>
+<div class="codehilite"><pre><span></span><code><span class="c1"># DANGEROUS</span>
+<span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>  <span class="c1"># waits forever if server hangs</span>
+
+<span class="c1"># CORRECT</span>
+<span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>  <span class="c1"># fail after 5 seconds</span>
+</code></pre></div>
+
+<h3 id="setting-timeouts">Setting Timeouts</h3>
+<ul>
+<li>Use <strong>percentile-based</strong> timeouts: timeout = p99 latency × 2</li>
+<li>Make them <strong>shorter</strong> at higher levels of the stack:</li>
+<li>DB query: 1s</li>
+<li>Service call: 3s</li>
+<li>Total request: 5s</li>
+<li>Otherwise inner timeouts never fire</li>
+</ul>
+<hr>
+<h2 id="pattern-4-retries-with-backoff">🔁 Pattern #4: Retries (with backoff!)</h2>
+<p>Network is unreliable. Some failures are transient. Retrying often helps.</p>
+<p><strong>But naive retries make things worse:</strong>
+- 1 server fails → 100 clients retry → 100x load
+- Recovering server gets DDoS'd back into failure</p>
+<h3 id="exponential-backoff">Exponential Backoff</h3>
+<div class="codehilite"><pre><span></span><code><span class="nv">attempt</span><span class="w"> </span><span class="mi">1</span>:<span class="w"> </span><span class="k">wait</span><span class="w"> </span><span class="mi">100</span><span class="nv">ms</span>
+<span class="nv">attempt</span><span class="w"> </span><span class="mi">2</span>:<span class="w"> </span><span class="k">wait</span><span class="w"> </span><span class="mi">200</span><span class="nv">ms</span>
+<span class="nv">attempt</span><span class="w"> </span><span class="mi">3</span>:<span class="w"> </span><span class="k">wait</span><span class="w"> </span><span class="mi">400</span><span class="nv">ms</span>
+<span class="nv">attempt</span><span class="w"> </span><span class="mi">4</span>:<span class="w"> </span><span class="k">wait</span><span class="w"> </span><span class="mi">800</span><span class="nv">ms</span>
+...
+</code></pre></div>
+
+<h3 id="jitter-critical">Jitter (critical!)</h3>
+<div class="codehilite"><pre><span></span><code><span class="n">delay</span> <span class="o">=</span> <span class="n">base</span> <span class="o">*</span> <span class="mi">2</span><span class="o">^</span><span class="n">attempt</span> <span class="o">+</span> <span class="n">random</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">base</span><span class="p">)</span>  <span class="c1"># add randomness</span>
+</code></pre></div>
+
+<p>Without jitter, clients all retry simultaneously → "retry storms." With jitter, retries spread out.[^1]</p>
+<h3 id="idempotency-required">Idempotency Required</h3>
+<p>Retries assume operations are safe to repeat. Use idempotency keys for non-idempotent ops (payments).</p>
+<hr>
+<h2 id="pattern-5-fallbacks-graceful-degradation">🪂 Pattern #5: Fallbacks (Graceful Degradation)</h2>
+<p>When the primary path fails, return <em>something useful</em>, not an error:</p>
+<table>
+<thead>
+<tr>
+<th>Primary failed</th>
+<th>Fallback</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Recommendation engine</td>
+<td>Return generic top-10 list</td>
+</tr>
+<tr>
+<td>Personalized homepage</td>
+<td>Return cached version from yesterday</td>
+</tr>
+<tr>
+<td>Search service</td>
+<td>Return autocomplete suggestions only</td>
+</tr>
+<tr>
+<td>User profile</td>
+<td>Return default avatar + basic info</td>
+</tr>
+</tbody>
+</table>
+<p>Netflix is famous for this:[^2] when the recommendation engine fails, you still see <em>some</em> movies, not a 500 error.</p>
+<hr>
+<h2 id="pattern-6-backpressure">⚡ Pattern #6: Backpressure</h2>
+<p>When a downstream service can't keep up, <strong>slow down or drop requests</strong> rather than overwhelming it.</p>
+<ul>
+<li>Reactive systems (Akka, RxJava) have first-class backpressure</li>
+<li>HTTP/2 has flow control</li>
+<li>Kafka consumers control their own rate (pull model)</li>
+</ul>
+<p>The opposite is <strong>load shedding</strong>: at the edge, when the system is over capacity, reject some requests immediately to protect the rest.</p>
+<hr>
+<h2 id="service-mesh-all-of-this-for-free">🌐 Service Mesh: All of This, For Free</h2>
+<p>A <strong>service mesh</strong> (Istio, Linkerd, Consul Connect) injects a sidecar proxy beside every service. The proxy handles:
+- ✅ Circuit breakers
+- ✅ Retries with backoff
+- ✅ Timeouts
+- ✅ mTLS encryption
+- ✅ Distributed tracing
+- ✅ Load balancing</p>
+<p><strong>No application code changes.</strong> Just configure and deploy.</p>
+<p>This is how modern distributed systems get resilience patterns "for free."</p>
+<hr>
+<h2 id="the-resilience-checklist">🚦 The Resilience Checklist</h2>
+<p>For every external service call:</p>
+<ul>
+<li>[ ] Has a <strong>timeout</strong> (not "wait forever")</li>
+<li>[ ] Has <strong>retry with jitter + exponential backoff</strong></li>
+<li>[ ] Is wrapped in a <strong>circuit breaker</strong></li>
+<li>[ ] Has a <strong>fallback</strong> (cached, default, or graceful error)</li>
+<li>[ ] Uses a <strong>bounded thread pool / connection pool</strong></li>
+<li>[ ] Is <strong>observable</strong> (metrics: success rate, latency, p99)</li>
+<li>[ ] Is <strong>idempotent</strong> if retried</li>
+</ul>
+<p>Even half this checklist makes you better than 90% of production systems.</p>
+<hr>
+<h2 id="dig-deeper">🔗 Dig Deeper</h2>
+<ul>
+<li>📘 <em>Release It!</em> by Michael Nygard ★ — the bible of resilience patterns</li>
+<li>📘 <a href="https://github.com/Netflix/Hystrix/wiki">Hystrix wiki — patterns &amp; rationale</a></li>
+<li>📘 <a href="https://aws.amazon.com/builders-library/avoiding-fallback-in-distributed-systems/">AWS Builders' Library: Avoiding Cascading Failures</a></li>
+<li>📘 <a href="https://resilience4j.readme.io/">Resilience4j docs</a></li>
+<li>📘 <a href="https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/">Marc Brooker: Exponential Backoff and Jitter</a></li>
+</ul>
+<hr>
+<h2 id="citations">📖 Citations</h2>
+<p>[^1]: <a href="https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/">Marc Brooker: Exponential Backoff and Jitter (AWS)</a>
+[^2]: <a href="https://netflixtechblog.com/">Netflix Tech Blog — Hystrix and Fallbacks</a> — graceful degradation philosophy.</p>
+<hr>
+<p>← <a href="./README.md">Back to 5-min reads index</a></p>

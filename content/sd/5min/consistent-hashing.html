@@ -1,0 +1,159 @@
+<h1 id="11-consistent-hashing-5-min-read">🟡 #11 — Consistent Hashing (5-min read)</h1>
+<h2 id="tldr">🎯 TL;DR</h2>
+<p><strong>Consistent hashing is a clever trick that lets you add or remove servers from a hash-based system while only re-shuffling about 1/N of the data instead of all of it. It's the foundation of every modern distributed cache and database.</strong></p>
+<hr>
+<h2 id="plain-english">📖 Plain English</h2>
+<h3 id="the-naive-approach-and-why-its-broken">The Naïve Approach (and why it's broken)</h3>
+<p>You have 4 cache servers. You assign keys: <code>server = hash(key) % 4</code>.</p>
+<p>Works great. Until you add a 5th server. Now <code>hash(key) % 5</code> gives <strong>completely different</strong> assignments. <strong>Almost every key moves to a different server.</strong> Cache hit rate → 0%. Database melts.</p>
+<h3 id="consistent-hashing-the-fix">Consistent Hashing — The Fix</h3>
+<p>Instead of a modulo, imagine a <strong>circular ring</strong> numbered 0 to 2³². Hash each server onto the ring. Hash each key onto the ring. A key belongs to the <strong>first server clockwise</strong> from its position.</p>
+<div class="codehilite"><pre><span></span><code><span class="w">       </span><span class="p">[</span><span class="n">Server</span><span class="w"> </span><span class="n">A</span><span class="p">]</span><span class="w"> </span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="w">            </span><span class="err">●</span>
+<span class="w">   </span><span class="n">k1</span><span class="w"> </span><span class="err">●</span><span class="w">          </span><span class="err">●</span><span class="w"> </span><span class="n">k2</span>
+
+<span class="p">[</span><span class="n">Server</span><span class="w"> </span><span class="n">D</span><span class="p">]</span><span class="w"> </span><span class="err">●</span><span class="w">    </span><span class="err">●</span><span class="w"> </span><span class="p">[</span><span class="n">Server</span><span class="w"> </span><span class="n">B</span><span class="p">]</span>
+
+<span class="w">   </span><span class="n">k4</span><span class="w"> </span><span class="err">●</span><span class="w">          </span><span class="err">●</span><span class="w"> </span><span class="n">k3</span>
+<span class="w">            </span><span class="err">●</span>
+<span class="w">       </span><span class="p">[</span><span class="n">Server</span><span class="w"> </span><span class="n">C</span><span class="p">]</span>
+</code></pre></div>
+
+<p>Now when you add <strong>Server E</strong> somewhere on the ring:
+- Only the keys <em>between Server E and the previous server</em> move
+- All other keys stay on their original server
+- ~1/N of keys move (instead of all of them)</p>
+<hr>
+<h2 id="the-core-properties">🔑 The Core Properties</h2>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Plain Hashing</th>
+<th>Consistent Hashing</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Add 1 server (out of N → N+1)</td>
+<td>~all keys move</td>
+<td>~1/N of keys move</td>
+</tr>
+<tr>
+<td>Remove 1 server</td>
+<td>~all keys move</td>
+<td>~1/N of keys move</td>
+</tr>
+<tr>
+<td>Implementation</td>
+<td>Trivial</td>
+<td>Moderate (sorted ring + binary search)</td>
+</tr>
+<tr>
+<td>Real-world use</td>
+<td>Toy projects</td>
+<td>DynamoDB, Cassandra, memcached, Akamai CDN</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="virtual-nodes-the-critical-refinement">🔁 Virtual Nodes — The Critical Refinement</h2>
+<p>The basic ring has a problem: if you only have 4 servers, they might cluster on the ring → uneven load distribution.</p>
+<p><strong>Solution: virtual nodes.</strong> Each physical server gets ~100-200 <em>virtual</em> positions on the ring.</p>
+<div class="codehilite"><pre><span></span><code>Server A → A1, A2, A3, ..., A150  (150 positions on ring)
+Server B → B1, B2, B3, ..., B150
+...
+</code></pre></div>
+
+<p>Now keys are spread evenly. Adding a server is even cleaner: its 150 virtual nodes spread the moved keys across many existing servers (no single server overloaded during rebalance).</p>
+<p><strong>Every real implementation uses virtual nodes.</strong> Cassandra calls them "vnodes."</p>
+<hr>
+<h2 id="where-consistent-hashing-is-used">🏗️ Where Consistent Hashing Is Used</h2>
+<table>
+<thead>
+<tr>
+<th>System</th>
+<th>What's Hashed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>DynamoDB</strong></td>
+<td>Items partitioned by hash of partition key</td>
+</tr>
+<tr>
+<td><strong>Cassandra</strong></td>
+<td>Rows partitioned across nodes via vnodes</td>
+</tr>
+<tr>
+<td><strong>Discord's message store</strong></td>
+<td>Channel messages sharded with consistent hashing</td>
+</tr>
+<tr>
+<td><strong>Memcached clients</strong></td>
+<td>Distribute keys across cache servers</td>
+</tr>
+<tr>
+<td><strong>Akamai CDN</strong></td>
+<td>Routes requests to edge servers</td>
+</tr>
+<tr>
+<td><strong>CDN/load balancers</strong></td>
+<td>Sticky session routing without persistent state</td>
+</tr>
+<tr>
+<td><strong>Kubernetes</strong></td>
+<td>Service load balancing</td>
+</tr>
+</tbody>
+</table>
+<p>It's basically the backbone of distributed systems.</p>
+<hr>
+<h2 id="a-tiny-mental-model">📐 A Tiny Mental Model</h2>
+<p>Imagine the hash ring as a clock face (0 to 11 instead of 0 to 2³²):</p>
+<div class="codehilite"><pre><span></span><code>              12 ← Server A
+       11           1
+    10                 2 ← Server B
+   9                    3
+    8                  4
+       7            5
+              6 ← Server C
+</code></pre></div>
+
+<ul>
+<li>key <code>apple</code> hashes to 7 → owned by Server C (next one clockwise)</li>
+<li>key <code>banana</code> hashes to 11 → owned by Server A</li>
+<li>Add Server D at position 10 → keys between 8 and 10 move from C to D; everything else unchanged</li>
+</ul>
+<p>That's it. The whole concept.</p>
+<hr>
+<h2 id="common-use-cases">🎯 Common Use Cases</h2>
+<h3 id="distributed-cache">Distributed Cache</h3>
+<p>You have 8 Redis servers. Use consistent hashing to assign keys. When you add a 9th:
+- Cache hit rate stays high (only 1/9 of keys move)
+- No "stampede" to the database</p>
+<h3 id="sharded-database">Sharded Database</h3>
+<p>You have 32 database shards. Use consistent hashing on <code>user_id</code>. Adding shard #33:
+- Only 1/33 of users migrate
+- Most users are unaffected</p>
+<h3 id="load-balancing">Load Balancing</h3>
+<p>You have 50 backend servers. Each user's session sticks to one server based on <code>hash(user_id)</code>. When a server dies:
+- Users on that server reroute to the <em>next</em> one (clockwise)
+- All other users' sessions stay put</p>
+<hr>
+<h2 id="pitfalls">⚠️ Pitfalls</h2>
+<ol>
+<li><strong>Forgetting virtual nodes</strong> — basic ring has uneven distribution; always use vnodes</li>
+<li><strong>Hot keys</strong> — one celebrity's data on one shard. Mitigate with key salting or replication.</li>
+<li><strong>Choosing a bad hash function</strong> — must be uniform (use MurmurHash3, xxHash; avoid <code>hashCode()</code>)</li>
+<li><strong>Believing it solves all sharding problems</strong> — it doesn't help with cross-shard queries or transactions</li>
+</ol>
+<hr>
+<h2 id="dig-deeper">🔗 Dig Deeper</h2>
+<ul>
+<li>📺 <a href="https://www.youtube.com/@ByteByteGo">ByteByteGo: Consistent Hashing Explained</a></li>
+<li>📘 <a href="https://www.akamai.com/site/en/documents/research-paper/consistent-hashing-and-random-trees-distributed-caching-protocols-for-relieving-hot-spots-on-the-world-wide-web-technical-publication.pdf">Karger et al., 1997 — Original consistent hashing paper</a></li>
+<li>📘 <a href="https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf">Amazon Dynamo paper</a> — uses consistent hashing in production</li>
+</ul>
+<hr>
+<p>← <a href="./README.md">Back to 5-min reads index</a></p>

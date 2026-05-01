@@ -1,0 +1,152 @@
+<h1 id="9-database-replication-5-min-read">🟡 #9 — Database Replication (5-min read)</h1>
+<h2 id="tldr">🎯 TL;DR</h2>
+<p><strong>Replication = keeping copies of your database on multiple servers. It boosts read scalability, availability, and disaster tolerance. The big trade-off: synchronous replication is slow but consistent; asynchronous is fast but can lose data.</strong></p>
+<hr>
+<h2 id="plain-english">📖 Plain English</h2>
+<p>You have one database. Two problems:</p>
+<ol>
+<li><strong>Reads are bottlenecked</strong> — millions of users querying one server.</li>
+<li><strong>It's a single point of failure</strong> — server dies, app dies.</li>
+</ol>
+<p><strong>Solution: replicate.</strong> Run two (or more) copies of the DB. One is the <strong>primary</strong> (handles writes). The others are <strong>replicas</strong> (handle reads, can take over if primary dies).</p>
+<div class="codehilite"><pre><span></span><code><span class="k">[App writes] → [Primary]</span>
+<span class="w">                  </span><span class="na">│  ← writes replicated</span>
+<span class="w">                  </span><span class="na">▼</span>
+<span class="w">            </span><span class="na">[Replica 1]  ← reads</span>
+<span class="w">            </span><span class="na">[Replica 2]  ← reads</span>
+<span class="w">            </span><span class="na">[Replica 3]  ← reads</span>
+</code></pre></div>
+
+<p>Same data, three places. Reads scale horizontally. If primary dies, promote a replica.</p>
+<hr>
+<h2 id="three-replication-topologies">🔄 Three Replication Topologies</h2>
+<h3 id="1-single-leader-primary-replica-most-common">1️⃣ Single-Leader (Primary-Replica) — most common ★</h3>
+<div class="codehilite"><pre><span></span><code><span class="w">   </span><span class="o">[</span><span class="n">Primary</span><span class="o">]</span><span class="w">   </span><span class="err">←——</span><span class="w"> </span><span class="n">writes</span>
+<span class="w">   </span><span class="o">/</span><span class="w">   </span><span class="o">|</span><span class="w">   </span><span class="err">\</span>
+<span class="o">[</span><span class="n">R1</span><span class="o">]</span><span class="w"> </span><span class="o">[</span><span class="n">R2</span><span class="o">]</span><span class="w"> </span><span class="o">[</span><span class="n">R3</span><span class="o">]</span><span class="w">   </span><span class="err">←——</span><span class="w"> </span><span class="k">reads</span>
+</code></pre></div>
+
+<ul>
+<li>One write source, many read destinations</li>
+<li>Used by: PostgreSQL, MySQL, MongoDB, Redis (default)</li>
+<li>✅ Simple, well-understood</li>
+<li>❌ Primary is bottleneck for writes</li>
+</ul>
+<h3 id="2-multi-leader-multi-primary">2️⃣ Multi-Leader (Multi-Primary)</h3>
+<div class="codehilite"><pre><span></span><code><span class="k">[Leader A] ←——→ [Leader B]</span>
+<span class="w">   </span><span class="na">↑               ↑</span>
+<span class="na">writes         writes</span>
+</code></pre></div>
+
+<ul>
+<li>Multiple primaries accept writes; sync between each other</li>
+<li>Used by: Multi-region setups, MySQL with circular replication, CRDTs (Riak)</li>
+<li>✅ Local writes in each region; survives a region failure</li>
+<li>❌ <strong>Conflict resolution is hard.</strong> Two writes to the same row in different leaders → which wins?</li>
+</ul>
+<h3 id="3-leaderless-peer-to-peer">3️⃣ Leaderless (Peer-to-Peer)</h3>
+<div class="codehilite"><pre><span></span><code><span class="k">[Node A] ←→ [Node B]</span>
+<span class="w">   </span><span class="na">↕            ↕</span>
+<span class="k">[Node C] ←→ [Node D]</span>
+</code></pre></div>
+
+<ul>
+<li>Any node accepts any write; quorum protocols ensure correctness</li>
+<li>Used by: Cassandra, DynamoDB, Riak</li>
+<li>✅ Maximum availability; no single point of failure</li>
+<li>❌ Quorum reads/writes; eventual consistency by default</li>
+</ul>
+<hr>
+<h2 id="synchronous-vs-asynchronous-replication">⚡ Synchronous vs Asynchronous Replication</h2>
+<p>This is the <strong>fundamental trade-off</strong>.[^1]</p>
+<h3 id="synchronous">Synchronous</h3>
+<ul>
+<li>Primary waits for replica(s) to acknowledge before confirming write to the app</li>
+<li>✅ <strong>Strong consistency</strong> — replicas always up-to-date</li>
+<li>❌ <strong>Slow writes</strong> — limited by slowest replica</li>
+<li>❌ <strong>Reduced availability</strong> — if replica is down, primary stalls</li>
+<li>Used in: financial systems, strict consistency needs</li>
+</ul>
+<h3 id="asynchronous-the-default-in-most-systems">Asynchronous (the default in most systems)</h3>
+<ul>
+<li>Primary commits the write locally and replies immediately to the app</li>
+<li>Replicas catch up "soon" (milliseconds, usually)</li>
+<li>✅ <strong>Fast writes</strong> — primary doesn't wait</li>
+<li>❌ <strong>Replica lag</strong> — reads from replicas can be stale</li>
+<li>❌ <strong>Data loss possible</strong> — if primary dies before replication, last few writes are gone</li>
+<li>Used in: most production systems</li>
+</ul>
+<h3 id="semi-synchronous-compromise">Semi-Synchronous (compromise)</h3>
+<ul>
+<li>Wait for at least 1 replica to ack (configurable)</li>
+<li>Best of both: durability + speed</li>
+<li>Used by: MySQL semi-sync, PostgreSQL sync replication</li>
+</ul>
+<hr>
+<h2 id="the-replica-lag-problem">📈 The Replica Lag Problem</h2>
+<p><strong>You wrote a comment. You refresh. Comment is gone.</strong> Why?</p>
+<ul>
+<li>Your write went to primary (fast)</li>
+<li>Your refresh hit a replica that hadn't caught up yet (lag of 50-500ms)</li>
+</ul>
+<h3 id="solutions">Solutions</h3>
+<ol>
+<li><strong>Read your writes consistency:</strong> route the user back to primary for N seconds after a write</li>
+<li><strong>Monotonic reads:</strong> stick the user to one replica during a session</li>
+<li><strong>Bounded staleness:</strong> only use replicas with lag &lt; 100ms</li>
+<li><strong>Synchronous replication</strong> for the affected tables (extreme)</li>
+</ol>
+<hr>
+<h2 id="failover">🚦 Failover</h2>
+<p>When the primary dies:</p>
+<ol>
+<li><strong>Detect failure</strong> (health checks, missed heartbeats)</li>
+<li><strong>Choose a new primary</strong> (the most up-to-date replica)</li>
+<li><strong>Reconfigure clients</strong> (DNS, service discovery)</li>
+<li><strong>Old primary rejoins as replica</strong> when revived</li>
+</ol>
+<p><strong>Automated failover</strong> is dangerous if you misjudge "is the primary really dead?" Two leaders simultaneously = <strong>split-brain</strong> = data corruption. Use proven tools (Patroni, MongoDB ReplicaSet, AWS RDS Multi-AZ).</p>
+<hr>
+<h2 id="real-world-examples">🏗️ Real-World Examples</h2>
+<table>
+<thead>
+<tr>
+<th>System</th>
+<th>Pattern</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>PostgreSQL with read replicas</strong></td>
+<td>Single-leader, async by default, can configure semi-sync</td>
+</tr>
+<tr>
+<td><strong>MongoDB Replica Set</strong></td>
+<td>Single-leader with automatic failover (3+ nodes for quorum)</td>
+</tr>
+<tr>
+<td><strong>MySQL with Galera/Group Replication</strong></td>
+<td>Multi-leader; synchronous</td>
+</tr>
+<tr>
+<td><strong>Cassandra / DynamoDB</strong></td>
+<td>Leaderless; tunable consistency (QUORUM, ONE, ALL)</td>
+</tr>
+<tr>
+<td><strong>CockroachDB / Spanner</strong></td>
+<td>Synchronous via Raft consensus across regions</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="dig-deeper">🔗 Dig Deeper</h2>
+<ul>
+<li>📘 <em>Designing Data-Intensive Applications</em> — Chapter 5: Replication ★</li>
+<li>📘 <a href="https://github.com/karanpratapsingh/system-design">karanpratapsingh/system-design — Database Replication</a></li>
+<li>📺 <a href="https://www.cl.cam.ac.uk/teaching/2021/ConcDisSys/">Martin Kleppmann's Cambridge course — replication lecture</a></li>
+</ul>
+<hr>
+<h2 id="citations">📖 Citations</h2>
+<p>[^1]: Kleppmann, <em>Designing Data-Intensive Applications</em>, Ch. 5 — defines synchronous vs asynchronous replication trade-offs in detail.</p>
+<hr>
+<p>← <a href="./README.md">Back to 5-min reads index</a></p>

@@ -1,0 +1,196 @@
+<h1 id="5-sql-vs-nosql-5-min-read">🟢 #5 — SQL vs NoSQL (5-min read)</h1>
+<h2 id="tldr">🎯 TL;DR</h2>
+<p><strong>SQL is your default. Choose NoSQL when you have a specific reason: massive scale, flexible schema, specific access patterns. "NoSQL" isn't one thing — it's four very different families of databases.</strong></p>
+<hr>
+<h2 id="plain-english">📖 Plain English</h2>
+<h3 id="sql-relational">SQL (Relational)</h3>
+<p><strong>Data lives in tables with rows and columns.</strong> Strict schema. You join tables. Examples: PostgreSQL, MySQL.</p>
+<div class="codehilite"><pre><span></span><code><span class="k">SELECT</span><span class="w"> </span><span class="n">u</span><span class="p">.</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">o</span><span class="p">.</span><span class="n">total</span>
+<span class="k">FROM</span><span class="w"> </span><span class="n">users</span><span class="w"> </span><span class="n">u</span><span class="w"> </span><span class="k">JOIN</span><span class="w"> </span><span class="n">orders</span><span class="w"> </span><span class="n">o</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">u</span><span class="p">.</span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">o</span><span class="p">.</span><span class="n">user_id</span>
+<span class="k">WHERE</span><span class="w"> </span><span class="n">o</span><span class="p">.</span><span class="n">created_at</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">NOW</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nb">INTERVAL</span><span class="w"> </span><span class="s1">&#39;7 days&#39;</span><span class="p">;</span>
+</code></pre></div>
+
+<h3 id="nosql-four-distinct-families">NoSQL — Four Distinct Families</h3>
+<ol>
+<li><strong>Key-Value</strong> (Redis, DynamoDB) — <code>key → value</code>. Like a giant hash map.</li>
+<li><strong>Document</strong> (MongoDB, Firestore) — JSON blobs grouped into collections.</li>
+<li><strong>Column-Family / Wide-Column</strong> (Cassandra, HBase) — rows with dynamic columns; great for time-series.</li>
+<li><strong>Graph</strong> (Neo4j, Neptune) — nodes + edges; great for relationships.</li>
+</ol>
+<p>These have <strong>almost nothing in common</strong> with each other except "not SQL."</p>
+<hr>
+<h2 id="the-key-differences">🔑 The Key Differences</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th><strong>SQL</strong></th>
+<th><strong>NoSQL</strong> (typical)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Schema</strong></td>
+<td>Strict (defined upfront)</td>
+<td>Flexible (per-document)</td>
+</tr>
+<tr>
+<td><strong>Joins</strong></td>
+<td>First-class</td>
+<td>Avoided / not supported</td>
+</tr>
+<tr>
+<td><strong>ACID transactions</strong></td>
+<td>Strong</td>
+<td>Limited (often per-document only)</td>
+</tr>
+<tr>
+<td><strong>Scaling</strong></td>
+<td>Vertical (mostly)</td>
+<td>Horizontal (built-in)</td>
+</tr>
+<tr>
+<td><strong>Query language</strong></td>
+<td>SQL (standardized)</td>
+<td>Varies per DB</td>
+</tr>
+<tr>
+<td><strong>Consistency</strong></td>
+<td>Strong by default</td>
+<td>Often eventual</td>
+</tr>
+<tr>
+<td><strong>Best for</strong></td>
+<td>Relational data, transactions</td>
+<td>Massive scale, simple access patterns</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="the-which-db-decision-tree">🏗️ The "Which DB?" Decision Tree</h2>
+<div class="codehilite"><pre><span></span><code><span class="nv">Need</span><span class="w"> </span><span class="nv">ACID</span><span class="w"> </span><span class="nv">transactions</span><span class="w"> </span><span class="nv">across</span><span class="w"> </span><span class="nv">multiple</span><span class="w"> </span><span class="nv">records</span>?
+└─<span class="w"> </span><span class="nv">YES</span><span class="w"> </span>→<span class="w"> </span><span class="nv">SQL</span><span class="w"> </span><span class="ss">(</span><span class="nv">Postgres</span>,<span class="w"> </span><span class="nv">MySQL</span>,<span class="w"> </span><span class="nv">Aurora</span><span class="ss">)</span>
+
+<span class="nv">Need</span><span class="w"> </span><span class="nv">to</span><span class="w"> </span><span class="nv">scale</span><span class="w"> </span><span class="nv">horizontally</span><span class="w"> </span><span class="nv">to</span><span class="w"> </span><span class="nv">billions</span><span class="w"> </span><span class="nv">of</span><span class="w"> </span><span class="nv">rows</span>?
+└─<span class="w"> </span><span class="nv">Time</span><span class="o">-</span><span class="nv">series</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nv">append</span><span class="o">-</span><span class="nv">heavy</span>?<span class="w">       </span>→<span class="w"> </span><span class="nv">Cassandra</span>,<span class="w"> </span><span class="nv">HBase</span>,<span class="w"> </span><span class="nv">Bigtable</span>
+└─<span class="w"> </span><span class="nv">Document</span><span class="o">-</span><span class="nv">shaped</span><span class="w"> </span><span class="nv">data</span>?<span class="w">              </span>→<span class="w"> </span><span class="nv">MongoDB</span>,<span class="w"> </span><span class="nv">DynamoDB</span>
+└─<span class="w"> </span><span class="nv">Sub</span><span class="o">-</span><span class="nv">millisecond</span><span class="w"> </span><span class="nv">reads</span>?<span class="w">             </span>→<span class="w"> </span><span class="nv">Redis</span><span class="w"> </span><span class="ss">(</span><span class="nv">key</span><span class="o">-</span><span class="nv">value</span><span class="ss">)</span>
+└─<span class="w"> </span><span class="nv">Pattern</span><span class="w"> </span><span class="nv">matching</span><span class="w"> </span><span class="nv">on</span><span class="w"> </span><span class="nv">relationships</span>?<span class="w"> </span>→<span class="w"> </span><span class="nv">Neo4j</span><span class="w"> </span><span class="ss">(</span><span class="nv">graph</span><span class="ss">)</span>
+
+<span class="nv">Don</span><span class="err">&#39;t know yet?</span>
+<span class="err">└─ → SQL. Always start here. Migrate later if forced.</span>
+</code></pre></div>
+
+<hr>
+<h2 id="quick-use-case-map">📋 Quick Use-Case Map</h2>
+<table>
+<thead>
+<tr>
+<th>Scenario</th>
+<th>Best Choice</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>User accounts, orders, payments</td>
+<td><strong>PostgreSQL</strong></td>
+<td>ACID + relations + audit</td>
+</tr>
+<tr>
+<td>Session storage, leaderboards</td>
+<td><strong>Redis</strong> (KV)</td>
+<td>Sub-ms latency</td>
+</tr>
+<tr>
+<td>Product catalog with varied attributes</td>
+<td><strong>MongoDB</strong> (Document)</td>
+<td>Flexible schema</td>
+</tr>
+<tr>
+<td>IoT sensor readings, time-series</td>
+<td><strong>Cassandra</strong> or <strong>InfluxDB</strong></td>
+<td>Write-heavy, ordered</td>
+</tr>
+<tr>
+<td>Twitter timeline cache</td>
+<td><strong>Redis</strong> sorted sets</td>
+<td>Fast push/pop</td>
+</tr>
+<tr>
+<td>Recommendation graph (Netflix)</td>
+<td><strong>Neo4j</strong> or graph DB</td>
+<td>Multi-hop traversal</td>
+</tr>
+<tr>
+<td>Product reviews, comments</td>
+<td><strong>PostgreSQL</strong> with JSONB</td>
+<td>Best of both worlds</td>
+</tr>
+<tr>
+<td>Analytics on terabytes of clicks</td>
+<td><strong>BigQuery / Snowflake</strong></td>
+<td>Columnar, OLAP</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="common-mistakes">❌ Common Mistakes</h2>
+<ol>
+<li><strong>"NoSQL is faster"</strong> — Wrong. SQL with proper indexes is <em>blazing</em> fast. NoSQL trades query flexibility for scale, not raw speed.</li>
+<li><strong>"NoSQL means schemaless"</strong> — Wrong. You always have a schema; NoSQL just doesn't enforce it. You enforce it in code instead.</li>
+<li><strong>"NoSQL doesn't support transactions"</strong> — Wrong. MongoDB has multi-document transactions; DynamoDB has them too. They're more limited but they exist.</li>
+<li><strong>"Use NoSQL because we'll have lots of users"</strong> — Wrong. PostgreSQL handles millions of users fine on a single server. Stripe ran on Postgres for years.</li>
+<li><strong>"Joins don't scale"</strong> — Right at extreme scale (&gt;10TB). Wrong at almost everyone else's scale. Don't optimize for problems you don't have.</li>
+</ol>
+<hr>
+<h2 id="quick-indexing-note">🔍 Quick Indexing Note</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th><strong>SQL (B-Tree)</strong></th>
+<th><strong>NoSQL (LSM-Tree)</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Best at</td>
+<td>Random reads, in-place updates</td>
+<td>Sequential writes</td>
+</tr>
+<tr>
+<td>Used by</td>
+<td>PostgreSQL, MySQL</td>
+<td>Cassandra, RocksDB</td>
+</tr>
+<tr>
+<td>Trade-off</td>
+<td>Read-optimized</td>
+<td>Write-optimized</td>
+</tr>
+</tbody>
+</table>
+<p>If your workload is <strong>write-heavy</strong> (logs, events, IoT) → LSM-tree DB shines.
+If it's <strong>read-mostly with random access</strong> → B-tree DB shines.</p>
+<p>See: <a href="./09-database-replication.md">5-min read on database replication</a>.</p>
+<hr>
+<h2 id="the-pragmatic-rule">🚦 The Pragmatic Rule</h2>
+<blockquote>
+<p><strong>Default to PostgreSQL.</strong> Move to NoSQL only when you have a specific, measured reason — not because someone said it's "more scalable." Most companies that "moved to NoSQL" (then back to SQL) didn't actually need NoSQL.[^1]</p>
+</blockquote>
+<p>Companies that famously stuck with PostgreSQL: Stripe, Instagram (in early days), Robinhood, GitLab.
+Companies that migrated to NoSQL for real reasons: Discord (MongoDB → Cassandra → ScyllaDB for trillions of messages),[^2] Netflix (Cassandra for eventual consistency at edge).</p>
+<hr>
+<h2 id="dig-deeper">🔗 Dig Deeper</h2>
+<ul>
+<li>📘 <a href="https://github.com/karanpratapsingh/system-design">karanpratapsingh/system-design — Chapter II: Databases</a></li>
+<li>📘 <em>Designing Data-Intensive Applications</em> (Kleppmann) — Chapter 2 + 3</li>
+<li>📺 <a href="https://www.youtube.com/@ByteByteGo">ByteByteGo: How to choose a database</a></li>
+</ul>
+<hr>
+<h2 id="citations">📖 Citations</h2>
+<p>[^1]: Pat Helland's "Life Beyond Distributed Transactions" — many companies that swore off SQL came back. <code>papers-we-love/papers-we-love</code> repository.
+[^2]: <a href="https://discord.com/blog/how-discord-stores-trillions-of-messages">Discord: How Discord Stores Trillions of Messages</a> — Cassandra → ScyllaDB migration story.</p>
+<hr>
+<p>← <a href="./README.md">Back to 5-min reads index</a></p>

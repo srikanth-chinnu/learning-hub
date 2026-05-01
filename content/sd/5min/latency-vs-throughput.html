@@ -1,0 +1,194 @@
+<h1 id="3-latency-vs-throughput-5-min-read">🟢 #3 — Latency vs Throughput (5-min read)</h1>
+<h2 id="tldr">🎯 TL;DR</h2>
+<p><strong>Latency = how long one request takes. Throughput = how many requests per second. They're related but optimizing one often hurts the other.</strong></p>
+<hr>
+<h2 id="plain-english">📖 Plain English</h2>
+<p>Imagine a coffee shop:</p>
+<ul>
+<li><strong>Latency:</strong> how long YOU wait from "ordering" to "receiving your coffee." (You care about this.)</li>
+<li><strong>Throughput:</strong> how many coffees the shop serves per hour. (The owner cares about this.)</li>
+</ul>
+<p>A barista who makes one perfect espresso in 30 seconds = low latency, low throughput.
+A drive-thru with 5 baristas making 100 mediocre coffees per minute = higher throughput but maybe higher latency per customer (queue).</p>
+<p>In systems:
+- <strong>Latency</strong> is measured per request: <code>p50 latency = 50ms</code>, <code>p99 = 250ms</code>
+- <strong>Throughput</strong> is rate: <code>1,000 requests/second (RPS)</code>, <code>5 GB/sec</code></p>
+<hr>
+<h2 id="the-counterintuitive-truth">🔑 The Counterintuitive Truth</h2>
+<p><strong>You can have high throughput AND high latency simultaneously.</strong></p>
+<p>Example: A nightly batch job processes 10 million records (high throughput!) but each one takes 2 seconds (high latency). That's fine — nobody is waiting on individual records.</p>
+<p>Example: A real-time API serves 10,000 RPS (high throughput!) at 5ms p99 (low latency). That's elite.</p>
+<p><strong>The two are independent dimensions.</strong> A good system optimizes the one that matters for the use case.</p>
+<hr>
+<h2 id="percentiles-matter-more-than-averages">📊 Percentiles Matter More Than Averages</h2>
+<p>If you only know "average latency = 50ms", you don't know how bad bad days are.</p>
+<table>
+<thead>
+<tr>
+<th>Percentile</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>p50 (median)</strong></td>
+<td>Half the requests are faster, half are slower</td>
+</tr>
+<tr>
+<td><strong>p95</strong></td>
+<td>95% of requests are this fast or faster</td>
+</tr>
+<tr>
+<td><strong>p99</strong></td>
+<td>The slowest 1% of requests — your unhappy customers</td>
+</tr>
+<tr>
+<td><strong>p99.9</strong></td>
+<td>1 in 1000 worst — system pathologies</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why p99 matters:</strong> A user who makes 100 requests has a ~63% chance of hitting at least one p99 request.[^1] So p99 latency basically <em>is</em> the user-perceived latency.</p>
+<hr>
+<h2 id="latency-numbers-every-engineer-should-know">🏗️ Latency Numbers Every Engineer Should Know</h2>
+<p>From Jeff Dean's famous "Latency Numbers Every Programmer Should Know":[^2]</p>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>Latency</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>L1 cache reference</td>
+<td>0.5 ns</td>
+</tr>
+<tr>
+<td>Branch mispredict</td>
+<td>5 ns</td>
+</tr>
+<tr>
+<td>L2 cache reference</td>
+<td>7 ns</td>
+</tr>
+<tr>
+<td>Mutex lock/unlock</td>
+<td>25 ns</td>
+</tr>
+<tr>
+<td>Main memory reference</td>
+<td>100 ns</td>
+</tr>
+<tr>
+<td>Compress 1KB with Snappy</td>
+<td>3 µs</td>
+</tr>
+<tr>
+<td>Send 1KB over 1Gbps network</td>
+<td>10 µs</td>
+</tr>
+<tr>
+<td><strong>Read 4KB from SSD</strong></td>
+<td><strong>150 µs</strong></td>
+</tr>
+<tr>
+<td>Read 1MB sequentially from memory</td>
+<td>250 µs</td>
+</tr>
+<tr>
+<td><strong>Round trip in same datacenter</strong></td>
+<td><strong>500 µs</strong></td>
+</tr>
+<tr>
+<td>Read 1MB sequentially from SSD</td>
+<td>1 ms</td>
+</tr>
+<tr>
+<td>Disk seek (HDD)</td>
+<td>10 ms</td>
+</tr>
+<tr>
+<td><strong>Round trip CA → Netherlands</strong></td>
+<td><strong>150 ms</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Internalize these.</strong> Senior engineers reason in these numbers without thinking.</p>
+<hr>
+<h2 id="the-trade-off">⚖️ The Trade-Off</h2>
+<p>To increase <strong>throughput</strong>, you often <strong>batch</strong> or <strong>parallelize</strong>. Both can hurt <strong>latency</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Optimization</th>
+<th>Throughput effect</th>
+<th>Latency effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Batching (collect 100 requests, send together)</td>
+<td>⬆️ Up</td>
+<td>⬆️ Up (waiting for batch)</td>
+</tr>
+<tr>
+<td>Parallelism (spawn more workers)</td>
+<td>⬆️ Up</td>
+<td>➡️ Same per request</td>
+</tr>
+<tr>
+<td>Pipelining (overlap stages)</td>
+<td>⬆️ Up</td>
+<td>➡️ Same</td>
+</tr>
+<tr>
+<td>Caching</td>
+<td>⬆️ Up (hits)</td>
+<td>⬇️ Down (hits)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Kafka</strong> is throughput-optimized: millions of msg/sec at the cost of ~10ms latency due to batching.
+<strong>Redis</strong> is latency-optimized: sub-ms latency at the cost of running mostly in single-threaded memory.</p>
+<hr>
+<h2 id="what-to-optimize">🚦 What to Optimize</h2>
+<table>
+<thead>
+<tr>
+<th>User-facing?</th>
+<th>Optimize for</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Yes, real-time</strong> (search, chat, gaming)</td>
+<td>Latency (p99 &lt; 100ms)</td>
+<td>Twitter timeline, Stripe payment</td>
+</tr>
+<tr>
+<td><strong>Yes, async</strong> (video upload, email send)</td>
+<td>Throughput (jobs/sec)</td>
+<td>YouTube transcoding, Mailchimp</td>
+</tr>
+<tr>
+<td><strong>No</strong> (analytics, ML training)</td>
+<td>Throughput (rows/sec)</td>
+<td>Spark batch jobs, Snowflake</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="dig-deeper">🔗 Dig Deeper</h2>
+<ul>
+<li>📘 <a href="http://norvig.com/21-days.html#answers">Latency Numbers Every Programmer Should Know — Norvig</a></li>
+<li>📘 <a href="https://github.com/donnemartin/system-design-primer">donnemartin/system-design-primer — Performance vs Scalability section</a></li>
+<li>📺 <a href="https://www.youtube.com/watch?v=1-3Ahy7Fxsc">Jeff Dean: Achieving Rapid Response Times in Large Online Services</a></li>
+</ul>
+<hr>
+<h2 id="citations">📖 Citations</h2>
+<p>[^1]: Tail latency math: <code>P(at least one slow) = 1 - P(none slow)¹⁰⁰ = 1 - 0.99¹⁰⁰ ≈ 0.63</code>
+[^2]: <a href="http://norvig.com/21-days.html#answers">Latency numbers — Jeff Dean / Peter Norvig</a> — also in <code>donnemartin/system-design-primer</code> appendix.</p>
+<hr>
+<p>← <a href="./README.md">Back to 5-min reads index</a></p>

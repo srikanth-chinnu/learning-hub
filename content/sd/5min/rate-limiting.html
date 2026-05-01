@@ -1,0 +1,194 @@
+<h1 id="14-rate-limiting-5-min-read">🟡 #14 — Rate Limiting (5-min read)</h1>
+<h2 id="tldr">🎯 TL;DR</h2>
+<p><strong>Rate limiting is "how many requests per second is this client allowed?" It protects your service from abuse, accidental overuse, and runaway clients. Token Bucket and Sliding Window are the two algorithms you must know.</strong></p>
+<hr>
+<h2 id="plain-english">📖 Plain English</h2>
+<p>Without rate limiting:
+- A buggy client retries forever in a tight loop → DDoS yourself
+- A malicious bot scrapes your API → cost explosion
+- One customer accidentally floods → harms all other customers</p>
+<p>With rate limiting:</p>
+<blockquote>
+<p>"User X may make at most 100 requests per minute. Beyond that, return <code>429 Too Many Requests</code>."</p>
+</blockquote>
+<p>Simple in concept. Subtle in implementation.</p>
+<hr>
+<h2 id="the-five-algorithms">🔑 The Five Algorithms</h2>
+<h3 id="1-fixed-window">1️⃣ Fixed Window</h3>
+<ul>
+<li>"100 requests per minute, reset at the top of each minute"</li>
+<li>✅ Trivial to implement (just count + reset)</li>
+<li>❌ <strong>Boundary spike problem</strong>: 100 at 11:59:59 + 100 at 12:00:01 = 200 requests in 2 seconds</li>
+<li>Use only when: simplicity &gt; correctness</li>
+</ul>
+<h3 id="2-sliding-window-log">2️⃣ Sliding Window Log</h3>
+<ul>
+<li>Track timestamp of every request in the window</li>
+<li>"Have I had 100 requests in the last 60 seconds?"</li>
+<li>✅ Most accurate</li>
+<li>❌ Memory grows with traffic (one entry per request)</li>
+<li>Use when: low traffic, accuracy matters</li>
+</ul>
+<h3 id="3-sliding-window-counter">3️⃣ Sliding Window Counter</h3>
+<ul>
+<li>Two counters (this minute + last minute), weighted by time elapsed</li>
+<li>✅ Smooth, no boundary spike</li>
+<li>✅ Constant memory</li>
+<li>Use when: most production cases ★</li>
+</ul>
+<h3 id="4-token-bucket">4️⃣ Token Bucket</h3>
+<ul>
+<li>Bucket holds N tokens. Refills at R tokens/sec.</li>
+<li>Each request consumes 1 token. No tokens? Reject.</li>
+<li>✅ Allows bursts (up to bucket size)</li>
+<li>✅ Used by AWS, Stripe, GCP</li>
+<li>Use when: most production cases ★ — especially when bursts are OK</li>
+</ul>
+<h3 id="5-leaky-bucket">5️⃣ Leaky Bucket</h3>
+<ul>
+<li>Requests enter a queue (the bucket). Server processes at fixed rate.</li>
+<li>✅ Smooths spikes; guaranteed steady output</li>
+<li>❌ Adds latency (queueing); bucket can fill</li>
+<li>Use when: smoothing traffic to a downstream system</li>
+</ul>
+<hr>
+<h2 id="token-bucket-worked-example">🪣 Token Bucket — Worked Example</h2>
+<p>You allow 10 RPS, burst capacity 20.</p>
+<div class="codehilite"><pre><span></span><code>t=0s:  [.................. 20 tokens]
+       Client makes 15 requests rapidly.
+t=1s:  [...... 5 tokens]   refill +10 → [............. 15 tokens]
+       Client makes 5 more rapidly.
+t=2s:  [.... 10 tokens]    refill +10 → [.................. 20 tokens (capped)]
+</code></pre></div>
+
+<p>Burst supported. Steady-state = 10 RPS. Simple. Used by Stripe's API.</p>
+<hr>
+<h2 id="where-to-apply-rate-limiting">🌐 Where to Apply Rate Limiting</h2>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>What you protect from</th>
+<th>Examples</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>CDN / Edge</strong></td>
+<td>DDoS, scraping</td>
+<td>Cloudflare, AWS WAF</td>
+</tr>
+<tr>
+<td><strong>API Gateway</strong></td>
+<td>Per-API-key limits</td>
+<td>Kong, AWS API Gateway</td>
+</tr>
+<tr>
+<td><strong>Application</strong></td>
+<td>Per-user, per-endpoint</td>
+<td>App-level middleware</td>
+</tr>
+<tr>
+<td><strong>Database / Backend</strong></td>
+<td>Expensive queries</td>
+<td>Connection limits, query timeouts</td>
+</tr>
+</tbody>
+</table>
+<p><strong>You usually want multiple layers.</strong> A CDN caps total RPS; the app caps per-user RPS.</p>
+<hr>
+<h2 id="distributed-rate-limiting">🔑 Distributed Rate Limiting</h2>
+<p>You have 10 API servers. The user is allowed 100 RPS <em>total</em>. How?</p>
+<h3 id="option-1-shared-redis-counter-most-common">Option 1: Shared Redis counter (most common)</h3>
+<div class="codehilite"><pre><span></span><code>INCR rate_limit:user_42:current_minute  (with EXPIRE)
+</code></pre></div>
+
+<ul>
+<li>✅ Simple, correct</li>
+<li>❌ Redis is a hot path; failure = no limiting</li>
+</ul>
+<h3 id="option-2-local-sync">Option 2: Local + sync</h3>
+<ul>
+<li>Each server has a local count; periodically syncs total</li>
+<li>✅ No hot Redis; lower latency</li>
+<li>❌ Approximate (may overshoot during sync interval)</li>
+</ul>
+<h3 id="option-3-sticky-routing-lb-hashes-user_id-to-one-server">Option 3: Sticky routing (LB hashes user_id to one server)</h3>
+<ul>
+<li>✅ Counter stays local; no sync needed</li>
+<li>❌ Server failure resets that user's count</li>
+</ul>
+<p><strong>Production reality:</strong> Most companies use Redis with token bucket scripted in Lua for atomicity.</p>
+<hr>
+<h2 id="what-to-limit-on">📋 What to Limit On</h2>
+<table>
+<thead>
+<tr>
+<th>Granularity</th>
+<th>When</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Per IP</td>
+<td>Public unauthenticated endpoints (login page)</td>
+</tr>
+<tr>
+<td>Per API key / user</td>
+<td>Authenticated APIs (Stripe, GitHub)</td>
+</tr>
+<tr>
+<td>Per endpoint</td>
+<td>Expensive endpoints get tighter limits</td>
+</tr>
+<tr>
+<td>Per IP + endpoint</td>
+<td>DDoS protection on hot paths</td>
+</tr>
+<tr>
+<td>Global</td>
+<td>Last-resort circuit breaker</td>
+</tr>
+</tbody>
+</table>
+<p>GitHub combines several: 5,000 RPS per token, but <code>/search</code> is 30 RPM, and unauthenticated is 60 RPH.</p>
+<hr>
+<h2 id="returning-the-limit-info">🚦 Returning the Limit Info</h2>
+<p>Always tell clients about their limits:</p>
+<div class="codehilite"><pre><span></span><code><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">429</span> <span class="ne">Too Many Requests</span>
+<span class="na">Retry-After</span><span class="o">:</span> <span class="l">12</span>
+<span class="na">X-RateLimit-Limit</span><span class="o">:</span> <span class="l">100</span>
+<span class="na">X-RateLimit-Remaining</span><span class="o">:</span> <span class="l">0</span>
+<span class="na">X-RateLimit-Reset</span><span class="o">:</span> <span class="l">1735000000</span>
+</code></pre></div>
+
+<p>This lets well-behaved clients back off intelligently.</p>
+<hr>
+<h2 id="common-pitfalls">⚠️ Common Pitfalls</h2>
+<ol>
+<li><strong>Counting by IP only</strong> — NAT means many users share an IP (offices, mobile carriers); they all hit the limit together</li>
+<li><strong>No graceful degradation</strong> — When Redis is down, do you allow all traffic, or block all? Decide upfront.</li>
+<li><strong>Hard cliff at the limit</strong> — Better: gradually slow down (queueing) before fully rejecting</li>
+<li><strong>Forgetting retries amplify</strong> — A client that retries 5 times when rate-limited makes the problem 5x worse. Use exponential backoff.</li>
+<li><strong>Not differentiating endpoints</strong> — <code>/health</code> and <code>/expensive-search</code> shouldn't share a budget</li>
+</ol>
+<hr>
+<h2 id="real-world-examples">🏗️ Real-World Examples</h2>
+<ul>
+<li><strong>Stripe API</strong>: Token bucket per API key; 100 read RPS, 100 write RPS, custom for high-volume customers[^1]</li>
+<li><strong>Twitter API</strong>: Sliding window per user; varies per endpoint</li>
+<li><strong>GitHub API</strong>: 5,000/hr authenticated; 60/hr unauthenticated; reset returned in headers</li>
+<li><strong>Cloudflare</strong>: Edge rate limiting, configurable rules across millions of sites</li>
+</ul>
+<hr>
+<h2 id="dig-deeper">🔗 Dig Deeper</h2>
+<ul>
+<li>📘 <em>System Design Interview Vol 1</em> (Alex Xu) — Chapter 4: Design a Rate Limiter (THE textbook explanation)</li>
+<li>📺 <a href="https://www.youtube.com/@ByteByteGo">ByteByteGo: Rate Limiting</a></li>
+<li>📘 <a href="https://stripe.com/blog/rate-limiters">Stripe blog: Scaling our API rate limiter</a></li>
+</ul>
+<hr>
+<h2 id="citations">📖 Citations</h2>
+<p>[^1]: <a href="https://stripe.com/blog/rate-limiters">Stripe — Scaling Our API Rate Limiter</a> — Token bucket, Lua scripts on Redis.</p>
+<hr>
+<p>← <a href="./README.md">Back to 5-min reads index</a></p>

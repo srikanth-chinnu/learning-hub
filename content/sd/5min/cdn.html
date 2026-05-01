@@ -1,0 +1,145 @@
+<h1 id="8-cdn-content-delivery-networks-5-min-read">🟡 #8 — CDN: Content Delivery Networks (5-min read)</h1>
+<h2 id="tldr">🎯 TL;DR</h2>
+<p><strong>A CDN is hundreds of servers spread around the world that cache your static content close to users. It's the cheapest, easiest, biggest performance win in web development.</strong></p>
+<hr>
+<h2 id="plain-english">📖 Plain English</h2>
+<p>Your web server is in <strong>Virginia</strong>. A user in <strong>Tokyo</strong> loads your site. The packets must cross the Pacific (≈150ms each way). Multiply by 50 assets (CSS, JS, images) and the page is slow.</p>
+<p>A <strong>CDN</strong> (Cloudflare, CloudFront, Fastly, Akamai) has a server in Tokyo that caches your assets. The Tokyo user fetches at &lt;20ms. Same site. Same code. <strong>10x faster.</strong></p>
+<div class="codehilite"><pre><span></span><code>Without CDN:  Tokyo user ────────────────► Virginia server (150ms RTT)
+With CDN:     Tokyo user → Tokyo edge cache (15ms)
+                                       ↓
+                                cache hit, served instantly
+</code></pre></div>
+
+<hr>
+<h2 id="what-cdns-cache-and-dont">🔑 What CDNs Cache (and don't)</h2>
+<p>✅ <strong>Great fit:</strong>
+- Images, videos, fonts, CSS, JS bundles
+- API responses with <code>Cache-Control: max-age</code> headers
+- HTML pages for static sites
+- Software downloads (npm, pip, Docker images)
+- Live video segments (HLS chunks)</p>
+<p>❌ <strong>Bad fit (don't cache):</strong>
+- Personalized content (logged-in user dashboards)
+- Real-time data (live trading prices, chat messages)
+- Sensitive data (account details, JWT tokens)
+- POST/PUT/DELETE responses</p>
+<hr>
+<h2 id="push-cdn-vs-pull-cdn">🌎 Push CDN vs Pull CDN</h2>
+<h3 id="pull-cdn-default-easiest">Pull CDN (default, easiest)</h3>
+<div class="codehilite"><pre><span></span><code>First request:   Tokyo user → Edge (miss) → Origin → Edge (cache) → User
+Future requests: Tokyo user → Edge (hit)  → User
+</code></pre></div>
+
+<ul>
+<li>You upload to your origin once. CDN fetches lazily on first miss.</li>
+<li>✅ Simple; auto-cached on demand</li>
+<li>❌ First request slow ("cold cache")</li>
+<li><strong>Use for:</strong> Most websites, blogs, e-commerce, SaaS</li>
+</ul>
+<h3 id="push-cdn">Push CDN</h3>
+<div class="codehilite"><pre><span></span><code><span class="n">You</span><span class="w"> </span><span class="n">explicitly</span><span class="w"> </span><span class="n">upload</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">CDN</span><span class="w"> </span><span class="n">edge</span><span class="w"> </span><span class="n">nodes</span><span class="w"> </span><span class="n">via</span><span class="w"> </span><span class="n">API</span><span class="o">.</span>
+<span class="n">Origin</span><span class="w"> </span><span class="k">is</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="n">involved</span><span class="w"> </span><span class="n">during</span><span class="w"> </span><span class="n">requests</span><span class="w"> </span><span class="n">at</span><span class="w"> </span><span class="n">all</span><span class="o">.</span>
+</code></pre></div>
+
+<ul>
+<li>✅ Full control; first request fast</li>
+<li>❌ More complex (you manage cache invalidation)</li>
+<li><strong>Use for:</strong> Large infrequently-updated assets (game patches, software releases)</li>
+</ul>
+<hr>
+<h2 id="cache-invalidation-the-hard-part">🔄 Cache Invalidation — The Hard Part</h2>
+<p>You changed your <code>style.css</code>. CDN edges still serve the old one. Now what?</p>
+<h3 id="strategy-1-ttl-time-to-live">Strategy 1: TTL (Time-To-Live)</h3>
+<div class="codehilite"><pre><span></span><code><span class="err">Cache-Control: public, max-age=86400   # cached for 1 day</span>
+</code></pre></div>
+
+<p>Wait it out. Simple. Fine for stable assets.</p>
+<h3 id="strategy-2-cache-busting-urls-the-modern-way">Strategy 2: Cache-busting URLs (the modern way) ★</h3>
+<div class="codehilite"><pre><span></span><code><span class="p">&lt;</span><span class="nt">link</span> <span class="na">rel</span><span class="o">=</span><span class="s">&quot;stylesheet&quot;</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;/style.css?v=42b3f9c&quot;</span><span class="p">&gt;</span>
+<span class="cm">&lt;!-- file actually deployed as /style.42b3f9c.css --&gt;</span>
+</code></pre></div>
+
+<ul>
+<li>New version → new URL → new cache entry</li>
+<li>Old version is invalidated by being unreferenced</li>
+<li>Used by every modern build tool (webpack, Vite, Next.js)</li>
+</ul>
+<h3 id="strategy-3-manual-purge-invalidation">Strategy 3: Manual purge / invalidation</h3>
+<ul>
+<li>Call CDN API: "purge <code>/style.css</code> everywhere"</li>
+<li>Cloudflare: &lt; 30 seconds globally</li>
+<li>AWS CloudFront: ~10 minutes</li>
+<li>❌ Costs money; rate-limited</li>
+</ul>
+<p><strong>Modern best practice:</strong> Use cache-busting URLs (long TTL + new URLs on change). You'll thank yourself.</p>
+<hr>
+<h2 id="real-world-performance-wins">📊 Real-World Performance Wins</h2>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Without CDN</th>
+<th>With CDN</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>First Contentful Paint (Tokyo user, US origin)</td>
+<td>1.8s</td>
+<td>0.4s</td>
+</tr>
+<tr>
+<td>Bandwidth cost</td>
+<td>$0.09/GB (origin)</td>
+<td>$0.02-0.08/GB (CDN)</td>
+</tr>
+<tr>
+<td>Origin server load</td>
+<td>Full</td>
+<td>1-10%</td>
+</tr>
+<tr>
+<td>DDoS protection</td>
+<td>None</td>
+<td>Built-in</td>
+</tr>
+</tbody>
+</table>
+<p>A CDN in front of your service:
+- <strong>Faster</strong> for users
+- <strong>Cheaper</strong> (cuts origin bandwidth 90%+)
+- <strong>More reliable</strong> (origin can be down briefly without users noticing)
+- <strong>Safer</strong> (absorbs DDoS, hides origin IP)</p>
+<hr>
+<h2 id="how-big-cdns-work">🏗️ How Big CDNs Work</h2>
+<p>Most CDNs operate <strong>hundreds of POPs</strong> (Points of Presence) globally:
+- <strong>Cloudflare:</strong> 300+ cities
+- <strong>AWS CloudFront:</strong> 410+ edge locations
+- <strong>Akamai:</strong> 4,000+ POPs (yes, four thousand)</p>
+<p>Each POP has SSDs full of cached objects. Routing uses <strong>anycast IP</strong>: same IP advertised from every POP; BGP routes the user to the closest one.</p>
+<p><strong>Netflix</strong> has its own CDN — <strong>Open Connect</strong> — with custom hardware in ISPs to stream video from inside the user's ISP network.[^1]</p>
+<hr>
+<h2 id="practical-setup">🚦 Practical Setup</h2>
+<p>For most apps, this is the entire CDN config:</p>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Your asset path</span>
+<span class="k">GET</span><span class="w"> </span><span class="s">/static/app.42b3f9c.js</span>
+
+<span class="c1"># Response headers</span>
+<span class="s">Cache-Control:</span><span class="w"> </span><span class="s">public,</span><span class="w"> </span><span class="s">max-age=31536000,</span><span class="w"> </span><span class="s">immutable</span><span class="w">   </span><span class="c1"># 1 year</span>
+<span class="s">ETag:</span><span class="w"> </span><span class="s">&quot;42b3f9c&quot;</span>
+</code></pre></div>
+
+<p>That's it. Set it once. Profit forever.</p>
+<hr>
+<h2 id="dig-deeper">🔗 Dig Deeper</h2>
+<ul>
+<li>📘 <a href="https://github.com/karanpratapsingh/system-design">karanpratapsingh/system-design — CDN section</a></li>
+<li>📺 <a href="https://www.youtube.com/@ByteByteGo">ByteByteGo: How CDN works</a></li>
+<li>📘 <a href="https://openconnect.netflix.com/">Netflix Open Connect overview</a></li>
+</ul>
+<hr>
+<h2 id="citations">📖 Citations</h2>
+<p>[^1]: <code>binhnguyennus/awesome-scalability</code> repo — Netflix Open Connect CDN architecture.</p>
+<hr>
+<p>← <a href="./README.md">Back to 5-min reads index</a></p>

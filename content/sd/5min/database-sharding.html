@@ -1,0 +1,145 @@
+<h1 id="10-database-sharding-5-min-read">🟡 #10 — Database Sharding (5-min read)</h1>
+<h2 id="tldr">🎯 TL;DR</h2>
+<p><strong>Sharding splits one big database into many smaller ones, each holding a subset of data. It's the only way to scale writes beyond a single server. It's also the most operationally painful thing you can do — avoid until forced.</strong></p>
+<hr>
+<h2 id="plain-english">📖 Plain English</h2>
+<p><a href="./09-database-replication.md">Replication</a> gave us many copies of the same data — great for reads, useless for writes. All writes still go to one primary.</p>
+<p>When that one primary can't handle the write volume? <strong>Sharding.</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="n">Before</span><span class="w"> </span><span class="n">sharding</span><span class="o">:</span><span class="w">           </span><span class="n">After</span><span class="w"> </span><span class="n">sharding</span><span class="o">:</span>
+
+<span class="w">   </span><span class="p">[</span><span class="n">DB</span><span class="p">]</span><span class="w">                     </span><span class="p">[</span><span class="n">DB</span><span class="o">-</span><span class="n">A</span><span class="o">:</span><span class="w"> </span><span class="n">users</span><span class="w"> </span><span class="mi">1-1</span><span class="n">M</span><span class="p">]</span>
+<span class="w">     </span><span class="err">↑</span><span class="w">                      </span><span class="p">[</span><span class="n">DB</span><span class="o">-</span><span class="n">B</span><span class="o">:</span><span class="w"> </span><span class="n">users</span><span class="w"> </span><span class="mi">1</span><span class="n">M</span><span class="mi">-2</span><span class="n">M</span><span class="p">]</span>
+<span class="w">     </span><span class="err">│</span><span class="w">                      </span><span class="p">[</span><span class="n">DB</span><span class="o">-</span><span class="n">C</span><span class="o">:</span><span class="w"> </span><span class="n">users</span><span class="w"> </span><span class="mi">2</span><span class="n">M</span><span class="mi">-3</span><span class="n">M</span><span class="p">]</span>
+<span class="p">[</span><span class="n">All</span><span class="w"> </span><span class="n">writes</span><span class="p">]</span><span class="w">                </span><span class="p">[</span><span class="n">DB</span><span class="o">-</span><span class="n">D</span><span class="o">:</span><span class="w"> </span><span class="n">users</span><span class="w"> </span><span class="mi">3</span><span class="n">M</span><span class="mi">-4</span><span class="n">M</span><span class="p">]</span>
+</code></pre></div>
+
+<p>Each shard is a <strong>complete, independent database</strong> holding part of the data. Each handles its own writes. No single bottleneck.</p>
+<hr>
+<h2 id="sharding-strategies">🔑 Sharding Strategies</h2>
+<h3 id="1-range-based-sharding">1️⃣ Range-Based Sharding</h3>
+<ul>
+<li>Split by ranges: shard A = users <code>aaron-james</code>, shard B = <code>jane-rachel</code>, etc.</li>
+<li>✅ Range queries are efficient</li>
+<li>❌ Hot spots (e.g., everyone whose name starts with "A")</li>
+<li>Used by: HBase, BigQuery (partitioning)</li>
+</ul>
+<h3 id="2-hash-based-sharding">2️⃣ Hash-Based Sharding</h3>
+<ul>
+<li><code>shard = hash(user_id) % N</code></li>
+<li>✅ Even distribution</li>
+<li>❌ Range queries require hitting all shards</li>
+<li>❌ Re-sharding = nightmare (every key moves when N changes)</li>
+</ul>
+<h3 id="3-consistent-hashing">3️⃣ Consistent Hashing ★</h3>
+<ul>
+<li>Hash both keys <em>and</em> shards onto a ring; key → next clockwise shard</li>
+<li>✅ Adding/removing shards moves only ~1/N of the keys</li>
+<li>Used by: Cassandra, DynamoDB, memcached clients</li>
+<li>📖 See <a href="./11-consistent-hashing.md">5-min read #11</a></li>
+</ul>
+<h3 id="4-directory-based-sharding-lookup-service">4️⃣ Directory-Based Sharding (Lookup Service)</h3>
+<ul>
+<li>A <strong>router</strong> service maps key → shard (e.g., <code>user_42 → shard_3</code>)</li>
+<li>✅ Most flexible (rebalance anytime)</li>
+<li>❌ Router is a new single point of failure; extra hop adds latency</li>
+<li>Used by: Vitess (YouTube/Square), Discord's message store</li>
+</ul>
+<h3 id="5-geographic-sharding">5️⃣ Geographic Sharding</h3>
+<ul>
+<li>Shard by user's region: US users → us-shard, EU users → eu-shard</li>
+<li>✅ Lower latency, GDPR/data residency</li>
+<li>❌ Cross-region queries are expensive</li>
+<li>Used by: Netflix, Uber (geo-partitioning by city)</li>
+</ul>
+<hr>
+<h2 id="real-world-example-discord">🏗️ Real-World Example: Discord</h2>
+<p>Discord stores <strong>trillions</strong> of messages.[^1] How?</p>
+<ul>
+<li><strong>Sharded by <code>(channel_id, bucket)</code></strong> — bucket = time-window</li>
+<li>Each shard is a Cassandra (now ScyllaDB) partition</li>
+<li>Hot channels distributed across many partitions naturally</li>
+<li>Look up messages by channel; recent first (uses range scan within shard)</li>
+</ul>
+<hr>
+<h2 id="shardings-painful-realities">⚠️ Sharding's Painful Realities</h2>
+<h3 id="1-cross-shard-queries-are-brutal">1. Cross-Shard Queries Are Brutal</h3>
+<ul>
+<li>"Top 10 users by total spending" — must hit ALL shards, merge results in app</li>
+<li>Joins across shards = essentially impossible</li>
+<li><strong>Mitigation:</strong> Denormalize. Pre-compute aggregates in a separate analytics DB (often Spark/Snowflake).</li>
+</ul>
+<h3 id="2-re-sharding-operational-hell">2. Re-sharding = Operational Hell</h3>
+<ul>
+<li>Adding a new shard means migrating data while live traffic flows</li>
+<li><strong>Mitigation:</strong> Start with virtual shards (e.g., 1024 logical shards from day 1, even if you only have 4 physical servers).</li>
+</ul>
+<h3 id="3-transactions-across-shards">3. Transactions Across Shards</h3>
+<ul>
+<li>ACID is hard when data spans shards</li>
+<li><strong>Mitigation:</strong> Choose shard key so most transactions stay within one shard. Use Saga pattern for cross-shard.</li>
+</ul>
+<h3 id="4-hot-shards">4. Hot Shards</h3>
+<ul>
+<li>One celebrity user gets 1M views/sec → that user's shard melts</li>
+<li><strong>Mitigation:</strong> Add a salt to the key, or split hot keys into sub-shards</li>
+</ul>
+<hr>
+<h2 id="choosing-a-shard-key-the-1-decision">🔑 Choosing a Shard Key — The #1 Decision</h2>
+<p>The shard key determines everything:
+- ✅ <strong>Good shard keys</strong>: <code>user_id</code> (uniform), <code>tenant_id</code> (multi-tenant SaaS), <code>(channel_id, time)</code> (Discord)
+- ❌ <strong>Bad shard keys</strong>: <code>country</code> (skew toward US/EU), <code>date</code> (today's shard is hot)</p>
+<p><strong>Rule:</strong> Choose a key with high cardinality and uniform access. Most queries should be answerable with just the shard key.</p>
+<hr>
+<h2 id="when-not-to-shard">📊 When NOT to Shard</h2>
+<table>
+<thead>
+<tr>
+<th>Situation</th>
+<th>Why not</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>&lt; 1 TB data, &lt; 10K writes/sec</td>
+<td>Single beefy Postgres server handles it</td>
+</tr>
+<tr>
+<td>Heavy joins / analytics</td>
+<td>Use a separate OLAP DB (Snowflake, BigQuery)</td>
+</tr>
+<tr>
+<td>You haven't tried read replicas yet</td>
+<td>Try replication first</td>
+</tr>
+<tr>
+<td>You haven't tried partitioning yet</td>
+<td>PostgreSQL native partitioning is simpler</td>
+</tr>
+<tr>
+<td>You're "doing it for the resume"</td>
+<td>Stop.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Most companies put off sharding until it's painful.</strong> Stripe, Instagram, GitHub all ran on a single Postgres for years.</p>
+<hr>
+<h2 id="modern-alternatives">🚦 Modern Alternatives</h2>
+<p>Before sharding manually, consider:
+- <strong>PostgreSQL partitioning</strong> — automatic in modern Postgres
+- <strong>Vitess</strong> (YouTube) — sharding layer on MySQL
+- <strong>Citus</strong> (Microsoft) — sharded Postgres
+- <strong>CockroachDB / Spanner / Aurora</strong> — globally distributed; auto-shard
+- <strong>DynamoDB / Cassandra</strong> — sharding built in from day 1</p>
+<p>These hide much of the sharding pain behind a managed layer.</p>
+<hr>
+<h2 id="dig-deeper">🔗 Dig Deeper</h2>
+<ul>
+<li>📘 <em>Designing Data-Intensive Applications</em> — Chapter 6: Partitioning</li>
+<li>📘 <a href="https://discord.com/blog/how-discord-stores-trillions-of-messages">Discord engineering: how they store messages</a></li>
+<li>📺 <a href="https://www.youtube.com/@ByteByteGo">ByteByteGo: Database Sharding Explained</a></li>
+</ul>
+<hr>
+<h2 id="citations">📖 Citations</h2>
+<p>[^1]: <a href="https://discord.com/blog/how-discord-stores-trillions-of-messages">How Discord Stores Trillions of Messages</a> — explains their <code>(channel_id, bucket)</code> sharding model.</p>
+<hr>
+<p>← <a href="./README.md">Back to 5-min reads index</a></p>
