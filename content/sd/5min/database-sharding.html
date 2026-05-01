@@ -3,7 +3,7 @@
 <p><strong>Sharding splits one big database into many smaller ones, each holding a subset of data. It's the only way to scale writes beyond a single server. It's also the most operationally painful thing you can do — avoid until forced.</strong></p>
 <hr>
 <h2 id="plain-english">📖 Plain English</h2>
-<p><a href="./09-database-replication.md">Replication</a> gave us many copies of the same data — great for reads, useless for writes. All writes still go to one primary.</p>
+<p><a href="#/sd/5min/database-replication">Replication</a> gave us many copies of the same data — great for reads, useless for writes. All writes still go to one primary.</p>
 <p>When that one primary can't handle the write volume? <strong>Sharding.</strong></p>
 <div class="codehilite"><pre><span></span><code><span class="n">Before</span><span class="w"> </span><span class="n">sharding</span><span class="o">:</span><span class="w">           </span><span class="n">After</span><span class="w"> </span><span class="n">sharding</span><span class="o">:</span>
 
@@ -35,7 +35,7 @@
 <li>Hash both keys <em>and</em> shards onto a ring; key → next clockwise shard</li>
 <li>✅ Adding/removing shards moves only ~1/N of the keys</li>
 <li>Used by: Cassandra, DynamoDB, memcached clients</li>
-<li>📖 See <a href="./11-consistent-hashing.md">5-min read #11</a></li>
+<li>📖 See <a href="#/sd/5min/consistent-hashing">5-min read #11</a></li>
 </ul>
 <h3 id="4-directory-based-sharding-lookup-service">4️⃣ Directory-Based Sharding (Lookup Service)</h3>
 <ul>
@@ -142,4 +142,4 @@
 <h2 id="citations">📖 Citations</h2>
 <p>[^1]: <a href="https://discord.com/blog/how-discord-stores-trillions-of-messages">How Discord Stores Trillions of Messages</a> — explains their <code>(channel_id, bucket)</code> sharding model.</p>
 <hr>
-<p>← <a href="./README.md">Back to 5-min reads index</a></p>
+<p>← <a href="#/sd/5min/index">Back to 5-min reads index</a></p>

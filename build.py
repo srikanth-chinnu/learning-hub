@@ -17,6 +17,7 @@ import json
 import re
 from html.parser import HTMLParser
 from pathlib import Path
+from urllib.parse import unquote
 
 import markdown
 
@@ -25,6 +26,13 @@ HUB = Path(__file__).resolve().parent
 SOURCES = HUB / "sources"
 CONTENT = HUB / "content"
 ASSETS = HUB / "assets"
+
+# Populated by render_source as we walk each markdown file.
+# Key: source path relative to SOURCES, POSIX form (e.g. "system-design/README.md")
+# Value: SPA item_id (e.g. "sd/overview")
+LINK_MAP: dict[str, str] = {}
+# (rendered_html_path, source_path) for the post-render link-rewrite pass.
+RENDERED_PAGES: list[tuple[Path, Path]] = []
 
 MD_EXT = [
     "markdown.extensions.tables",
@@ -118,6 +126,13 @@ def render_source(src: Path, item_id: str, default_title: str, tag: str = ""):
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(html, encoding="utf-8")
 
+    try:
+        src_rel = src.resolve().relative_to(SOURCES).as_posix()
+        LINK_MAP[src_rel] = item_id
+    except ValueError:
+        pass
+    RENDERED_PAGES.append((out, src.resolve()))
+
     return {
         "id": item_id,
         "title": title,
@@ -126,6 +141,79 @@ def render_source(src: Path, item_id: str, default_title: str, tag: str = ""):
         "summary": summary,
         "tag": tag,
     }
+
+
+# --------------------------------------------------------------------------- #
+# Rewrite cross-document .md links into SPA hash routes
+# --------------------------------------------------------------------------- #
+
+_HREF_RE = re.compile(r'href="([^"]+)"')
+_SCHEME_RE = re.compile(r'^(?:[a-z][a-z0-9+.\-]*:|#|//)', re.IGNORECASE)
+
+
+def resolve_href(href: str, src_dir: Path) -> str | None:
+    """Resolve a relative href found in a rendered fragment.
+
+    Returns a new SPA hash href (e.g. '#/sd/5min/caching#anchor') when the
+    target is a known source document, or None when the href should be left
+    untouched (external URL, in-page anchor, unknown target).
+    """
+    if not href or _SCHEME_RE.match(href):
+        return None
+
+    # Split fragment / query off the path.
+    anchor = ""
+    if "#" in href:
+        href, anchor = href.split("#", 1)
+    if "?" in href:
+        href = href.split("?", 1)[0]
+    href = unquote(href)
+    if not href:
+        return None
+
+    try:
+        target = (src_dir / href).resolve()
+        rel = target.relative_to(SOURCES).as_posix()
+    except (ValueError, OSError):
+        return None
+
+    item_id = LINK_MAP.get(rel)
+    if item_id is None:
+        # Directory-style link → try its README.md (and a slash-stripped variant).
+        for candidate in (rel.rstrip("/") + "/README.md", rel + "/README.md"):
+            if candidate in LINK_MAP:
+                item_id = LINK_MAP[candidate]
+                break
+    if item_id is None:
+        return None
+
+    return f"#/{item_id}#{anchor}" if anchor else f"#/{item_id}"
+
+
+def rewrite_links() -> int:
+    """Walk every rendered fragment and rewrite known .md hrefs.
+
+    Returns the number of substitutions made (for logging).
+    """
+    total = 0
+    for out_path, src in RENDERED_PAGES:
+        src_dir = src.parent
+        html = out_path.read_text(encoding="utf-8")
+        page_count = 0
+
+        def _sub(match: re.Match) -> str:
+            nonlocal page_count
+            new_href = resolve_href(match.group(1), src_dir)
+            if new_href is None:
+                return match.group(0)
+            page_count += 1
+            return f'href="{new_href}"'
+
+        new_html = _HREF_RE.sub(_sub, html)
+        if page_count:
+            out_path.write_text(new_html, encoding="utf-8")
+            total += page_count
+    return total
 
 
 def build_manifest():
@@ -1342,6 +1430,8 @@ def main():
 
     (HUB / "index.html").write_text(SHELL_HTML, encoding="utf-8")
 
+    rewrites = rewrite_links()
+
     n_items = len(manifest["flat"])
     n_tracks = len(manifest["tracks"])
     print(f"  + {n_tracks} tracks, {n_items} topics")
@@ -1349,6 +1439,7 @@ def main():
     print(f"  + manifest.json")
     print(f"  + index.html (SPA shell)")
     print(f"  + assets/style.css, assets/app.js")
+    print(f"  + rewrote {rewrites} cross-document links to SPA hash routes")
     print(f"\nDone. Serve from {HUB} (open index.html via file:// or local server)")
 
 

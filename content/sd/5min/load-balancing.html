@@ -174,7 +174,7 @@
 <li><strong>No health checks</strong> — LB will gleefully send traffic to dead servers.</li>
 <li><strong>Ignoring connection draining</strong> — When you remove a server, in-flight requests should finish gracefully. Configure draining timeout.</li>
 <li><strong>Load balancer = single point of failure</strong> — Use at least 2 LBs in HA mode (or managed service like AWS ALB which handles this).</li>
-<li><strong>Hashing on user_id without virtual nodes</strong> — Adding/removing servers reshuffles everything. Use <a href="./11-consistent-hashing.md">Consistent Hashing</a> instead.</li>
+<li><strong>Hashing on user_id without virtual nodes</strong> — Adding/removing servers reshuffles everything. Use <a href="#/sd/5min/consistent-hashing">Consistent Hashing</a> instead.</li>
 </ol>
 <hr>
 <h2 id="dig-deeper">🔗 Dig Deeper</h2>
@@ -184,4 +184,4 @@
 <li>📘 <a href="https://github.com/donnemartin/system-design-primer">donnemartin/system-design-primer — Load balancer + Reverse proxy sections</a></li>
 </ul>
 <hr>
-<p>← <a href="./README.md">Back to 5-min reads index</a></p>
+<p>← <a href="#/sd/5min/index">Back to 5-min reads index</a></p>
