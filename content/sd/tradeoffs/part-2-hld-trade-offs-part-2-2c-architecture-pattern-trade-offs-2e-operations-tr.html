@@ -1,0 +1,299 @@
+<h1 id="part-2-hld-trade-offs-part-2-2c-architecture-pattern-trade-offs-2e-operations-trade-offs">PART 2 — HLD Trade-offs — Part 2: 2C. Architecture Pattern Trade-offs → 2E. Operations Trade-offs</h1>
+<h2 id="2c-architecture-pattern-trade-offs">2C. Architecture Pattern Trade-offs</h2>
+<h3 id="monolith-vs-microservices-vs-modular-monolith">Monolith vs Microservices vs Modular Monolith</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Monolith</th>
+<th>Modular monolith</th>
+<th>Microservices</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Deploy unit</strong></td>
+<td>1</td>
+<td>1</td>
+<td>N</td>
+</tr>
+<tr>
+<td><strong>Boundary enforcement</strong></td>
+<td>Code review</td>
+<td>Module/package boundaries</td>
+<td>Network</td>
+</tr>
+<tr>
+<td><strong>Refactor across boundary</strong></td>
+<td>Easy (rename)</td>
+<td>Easy (move file)</td>
+<td>Hard (API + data migration)</td>
+</tr>
+<tr>
+<td><strong>Independent scaling</strong></td>
+<td>All-or-nothing</td>
+<td>All-or-nothing</td>
+<td>Per-service</td>
+</tr>
+<tr>
+<td><strong>Independent deploy</strong></td>
+<td>No</td>
+<td>No</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><strong>Operational burden</strong></td>
+<td>Low</td>
+<td>Low</td>
+<td><strong>High</strong> (service discovery, mesh, observability per service)</td>
+</tr>
+<tr>
+<td><strong>Failure mode</strong></td>
+<td>All-or-nothing</td>
+<td>All-or-nothing</td>
+<td>Cascading; need circuit breakers everywhere</td>
+</tr>
+<tr>
+<td><strong>Hire/onboard</strong></td>
+<td>Easy</td>
+<td>Easy</td>
+<td>Hard (each service has its own state)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Heuristic:</strong> Stay monolithic until either (a) team size &gt; Dunbar's-number-ish (~150 engineers) OR (b) you have a <em>real</em> scale-asymmetric component (ML inference on GPUs, low-latency trading core, etc.).</p>
+<h3 id="rest-vs-grpc-vs-graphql-vs-websockets">REST vs gRPC vs GraphQL vs WebSockets</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>REST</th>
+<th>gRPC</th>
+<th>GraphQL</th>
+<th>WebSockets</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Transport</strong></td>
+<td>HTTP/1.1 or 2</td>
+<td>HTTP/2</td>
+<td>HTTP</td>
+<td>TCP upgrade</td>
+</tr>
+<tr>
+<td><strong>Encoding</strong></td>
+<td>JSON</td>
+<td>Protobuf (binary)</td>
+<td>JSON</td>
+<td>Anything</td>
+</tr>
+<tr>
+<td><strong>Schema</strong></td>
+<td>OpenAPI (optional)</td>
+<td>.proto (required)</td>
+<td>SDL (required)</td>
+<td>None</td>
+</tr>
+<tr>
+<td><strong>Streaming</strong></td>
+<td>SSE workaround</td>
+<td>Bidi native</td>
+<td>Subscriptions (over WS)</td>
+<td>Native</td>
+</tr>
+<tr>
+<td><strong>Browser-native</strong></td>
+<td>Yes</td>
+<td>No (needs gRPC-Web proxy)</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><strong>Best for</strong></td>
+<td>Public APIs, CRUD</td>
+<td>Internal microservices</td>
+<td>Aggregation across many backends, mobile</td>
+<td>Real-time push</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Cost of gRPC:</strong> Operational complexity (HTTP/2 ALB quirks, harder debugging — need <code>grpcurl</code>), not browser-native.
+<strong>Cost of GraphQL:</strong> N+1 queries on the resolver layer (need DataLoader); harder caching (no URL-based HTTP cache); query complexity attacks.</p>
+<h3 id="cqrs-command-query-responsibility-segregation">CQRS (Command Query Responsibility Segregation)</h3>
+<p>Split write model from read model. Writes go to a normalized OLTP store; reads go to denormalized projections optimized for queries.</p>
+<p><strong>When to use:</strong> When read load &gt;&gt; write load AND read patterns are diverse (multiple denormalizations needed).
+<strong>When NOT to use:</strong> Most CRUD apps. The eventual consistency between write and read sides is <em>real</em>; users see "I just saved this — why isn't it in my list?" complaints.</p>
+<h3 id="event-sourcing">Event Sourcing</h3>
+<p>Store the <em>log of state-changing events</em>, not the current state. Project current state by replay.</p>
+<p><strong>Pros:</strong> Full audit log; time-travel; replay to fix bugs; natural fit for CQRS.
+<strong>Cons:</strong> Schema evolution of events is <em>hard</em> (events are immutable forever); querying current state requires projections; debugging requires replaying from snapshot.</p>
+<p><strong>Don't apply globally.</strong> Apply to <em>specific bounded contexts</em> where the audit log is intrinsic to the business (banking ledger, order lifecycle, IoT telemetry).</p>
+<h2 id="2d-resilience-pattern-trade-offs">2D. Resilience Pattern Trade-offs</h2>
+<h3 id="circuit-breakers-hystrix-style">Circuit Breakers (Hystrix-style)</h3>
+<p>States: <strong>Closed</strong> (pass through) → <strong>Open</strong> (fast-fail) → <strong>Half-open</strong> (probe).</p>
+<p><strong>Trade-off:</strong>
+- <strong>Threshold too low</strong> → opens on transient blips → unnecessary outages.
+- <strong>Threshold too high</strong> → never opens → your callers cascade-fail because you're not failing fast.</p>
+<p><strong>Tune by:</strong> % failures over rolling window (e.g., 50% over 10s with min 20 requests). Always combine with <strong>timeouts</strong> — a circuit breaker without timeouts is decoration.</p>
+<h3 id="retries">Retries</h3>
+<blockquote>
+<p>"Retries are 'selfish.' What I mean is that when a client retries, it takes more of the server's time to get a higher chance of success. ... When the server is healthy, retries fix transient faults. When the server is unhealthy, retries amplify the problem." — AWS Builders' Library, <em>Timeouts, retries, and backoff with jitter</em></p>
+</blockquote>
+<p><strong>Always combine retries with:</strong>
+1. <strong>Exponential backoff</strong> — <code>wait = base * 2^attempt</code>.
+2. <strong>Jitter</strong> — <code>wait = random(0, base * 2^attempt)</code>. <strong>Without jitter, you get retry storms</strong> (every client retries at the same beat).
+3. <strong>Cap on total attempts</strong> — typically 3.
+4. <strong>Token bucket</strong> at the <em>caller</em> — caps the <em>rate</em> of retries even when many requests are failing simultaneously.</p>
+<h3 id="timeouts">Timeouts</h3>
+<p>The worst timeout is no timeout. The second-worst is the wrong timeout.</p>
+<p><strong>Heuristic:</strong> Timeout = 99.9th-percentile observed latency × 1.5–2. <em>Not</em> the average. Use percentiles.</p>
+<p><strong>Cascading timeouts:</strong> Caller timeout MUST be &gt; callee timeout, OR the caller cancels work the callee is still doing → wasted resources. Prefer <strong>deadline propagation</strong> (gRPC native; HTTP via <code>X-Deadline-Ms</code> header) — every hop subtracts its expected work and forwards the remaining budget.</p>
+<h3 id="bulkheads">Bulkheads</h3>
+<p>Isolate resources so one slow dependency doesn't drain <em>all</em> threads.</p>
+<div class="codehilite"><pre><span></span><code>Request pool (200 threads) — bad: one slow downstream eats them all
+   vs
+Bulkheaded:
+  Pool A (50 threads) → Service X
+  Pool B (50 threads) → Service Y
+  Pool C (50 threads) → Service Z
+  Pool D (50 threads) → spillover/critical
+</code></pre></div>
+
+<p>If X dies, A is starved but B/C/D still serve. <strong>Cost:</strong> Each pool is sized for peak — total capacity &gt; undivided pool. <strong>Worth it</strong> for any system with &gt;1 critical dependency.</p>
+<h3 id="fallback-default-responses">Fallback / Default Responses</h3>
+<blockquote>
+<p>"Fallbacks are a deceptive safety net. They look like resilience, but they often just delay the failure or move it somewhere harder to see." — AWS Builders' Library</p>
+</blockquote>
+<p><strong>Use fallbacks ONLY when:</strong>
+- The fallback is <strong>truly equivalent</strong> in business terms (e.g., empty recommendation list is fine; missing payment auth is <em>not</em>).
+- You can <strong>distinguish primary from fallback in your metrics</strong> so you don't accidentally serve degraded experiences for weeks.</p>
+<h3 id="load-shedding">Load Shedding</h3>
+<p>When overloaded, <strong>drop requests with intent</strong>. Two key techniques:</p>
+<ol>
+<li><strong>Prioritization queues</strong> — health checks, control plane &gt; user reads &gt; user writes &gt; batch.</li>
+<li><strong>LIFO (Last-In-First-Out) shedding</strong> — when the queue is too long, serve the <em>newest</em> requests, drop the <em>oldest</em>. Counter-intuitive but <strong>the oldest request's user has already given up</strong> (closed the browser tab); serving them is wasted work.</li>
+</ol>
+<p><strong>Brownout vs blackout:</strong> Prefer brownout (degrade non-critical features) to blackout (whole-service down).</p>
+<h2 id="2e-operations-trade-offs">2E. Operations Trade-offs</h2>
+<h3 id="multi-region-active-passive-vs-active-active">Multi-Region: Active-Passive vs Active-Active</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Active-Passive</th>
+<th>Active-Active</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Cost</strong></td>
+<td>2×</td>
+<td>2×</td>
+</tr>
+<tr>
+<td><strong>Failover</strong></td>
+<td>Manual or DNS, ~minutes</td>
+<td>Automatic, ~seconds</td>
+</tr>
+<tr>
+<td><strong>Data sync</strong></td>
+<td>Async replication</td>
+<td>Multi-master or per-region with reconciliation</td>
+</tr>
+<tr>
+<td><strong>Complexity</strong></td>
+<td>Low</td>
+<td>High (conflict resolution; user routing)</td>
+</tr>
+<tr>
+<td><strong>RTO</strong></td>
+<td>minutes-hours</td>
+<td>seconds-minutes</td>
+</tr>
+<tr>
+<td><strong>RPO</strong></td>
+<td>seconds-minutes (async lag)</td>
+<td>depends — can be near-zero with sync</td>
+</tr>
+<tr>
+<td><strong>Conflict possibility</strong></td>
+<td>None (writes only in one region)</td>
+<td>Real (need CRDT, LWW, or business-level merge)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The honest answer:</strong> Most companies <em>think</em> they're active-active, but their data layer is single-region. They can serve reads globally, but writes go to one region.</p>
+<h3 id="routing-geo-dns-vs-anycast">Routing: Geo-DNS vs Anycast</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Geo-DNS</th>
+<th>Anycast</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Mechanism</strong></td>
+<td>DNS returns nearest region's IP.</td>
+<td>Many regions advertise the <em>same</em> IP via BGP; routers pick.</td>
+</tr>
+<tr>
+<td><strong>Failover speed</strong></td>
+<td>Bounded by TTL (often minutes).</td>
+<td>Sub-second (BGP convergence).</td>
+</tr>
+<tr>
+<td><strong>Stickiness</strong></td>
+<td>Per-DNS-cache (ISP, browser). Up to TTL.</td>
+<td>Per-flow; can flap mid-session.</td>
+</tr>
+<tr>
+<td><strong>Use</strong></td>
+<td>App tier (HTTP/HTTPS via CDN).</td>
+<td>Authoritative DNS (Route 53), edge gateways (Cloudflare).</td>
+</tr>
+</tbody>
+</table>
+<h3 id="observability-sampling">Observability: Sampling</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Head-based</th>
+<th>Tail-based</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Decision time</strong></td>
+<td>Start of trace.</td>
+<td>End of trace.</td>
+</tr>
+<tr>
+<td><strong>Throws away</strong></td>
+<td>A fraction of <em>all</em> traces.</td>
+<td>Sampled non-interesting traces; <strong>always keeps errors and slow traces</strong>.</td>
+</tr>
+<tr>
+<td><strong>Cost</strong></td>
+<td>Cheap.</td>
+<td>Memory: must buffer trace until end.</td>
+</tr>
+<tr>
+<td><strong>Use</strong></td>
+<td>High-volume normal-case observation.</td>
+<td>Debugging — keeps the rare interesting traces.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="cardinality-charity-majors-honeycomb">Cardinality (Charity Majors / Honeycomb)</h3>
+<blockquote>
+<p>"Cardinality is the number of unique values per dimension. High-cardinality dimensions like user-id, request-id, build-id are exactly the dimensions you most want to debug with — and they are exactly the ones legacy metrics tools cannot handle." — Charity Majors</p>
+</blockquote>
+<p><strong>Trade-off:</strong>
+- Metrics (Prometheus, etc.) are <em>cheap</em> but cap cardinality (each label combination is a new time series).
+- Wide events / structured logs (Honeycomb, Lightstep, ClickHouse) handle high cardinality but cost more.</p>
+<p><strong>Rule:</strong> Don't put <code>user_id</code> as a Prometheus label. Do put it in the wide event for tracing.</p>
+<hr>

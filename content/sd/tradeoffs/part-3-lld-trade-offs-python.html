@@ -1,0 +1,367 @@
+<h1 id="part-3-lld-trade-offs-python">PART 3 — LLD Trade-offs (Python)</h1>
+<blockquote>
+<p>Code targets Python 3.11+. All snippets are runnable. Source patterns: Brandon Rhodes (<code>python-patterns.guide</code>), the <code>dataclasses</code> and <code>abc</code> stdlib docs, and battle-tested industry usage.</p>
+</blockquote>
+<h2 id="31-solid-in-python-with-abcs">3.1 SOLID in Python (with ABCs)</h2>
+<h3 id="single-responsibility-srp">Single Responsibility (SRP)</h3>
+<p>A class should have one reason to change. In Python, this is often enforced by <strong>module boundaries</strong>, not class hierarchy.</p>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Bad: a User that does too much</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">User</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="o">...</span>      <span class="c1"># persistence</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">send_email</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="o">...</span> <span class="c1"># comms</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">render_html</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="o">...</span><span class="c1"># presentation</span>
+
+<span class="c1"># Better: separate by responsibility</span>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">User</span><span class="p">:</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">UserRepository</span><span class="p">:</span>    <span class="c1"># persistence</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="p">:</span> <span class="n">User</span><span class="p">):</span> <span class="o">...</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">UserMailer</span><span class="p">:</span>        <span class="c1"># comms</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">send_welcome</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="p">:</span> <span class="n">User</span><span class="p">):</span> <span class="o">...</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">UserView</span><span class="p">:</span>          <span class="c1"># presentation</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="p">:</span> <span class="n">User</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span> <span class="o">...</span>
+</code></pre></div>
+
+<p><strong>Trade-off:</strong> More files, more glue. <strong>Worth it</strong> when each responsibility changes for <em>different</em> reasons.</p>
+<h3 id="liskov-substitution-the-squarerectangle-trap">Liskov Substitution — the Square/Rectangle trap</h3>
+<div class="codehilite"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Rectangle</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">w</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">h</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">w</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">h</span> <span class="o">=</span> <span class="n">w</span><span class="p">,</span> <span class="n">h</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_width</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">w</span><span class="p">):</span>  <span class="bp">self</span><span class="o">.</span><span class="n">w</span> <span class="o">=</span> <span class="n">w</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_height</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">h</span> <span class="o">=</span> <span class="n">h</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">area</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>   <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">w</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">h</span>
+
+<span class="c1"># LSP violation: Square IS-A Rectangle? No — Square breaks Rectangle&#39;s invariants.</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Square</span><span class="p">(</span><span class="n">Rectangle</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_width</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">w</span><span class="p">):</span>  <span class="bp">self</span><span class="o">.</span><span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">h</span> <span class="o">=</span> <span class="n">w</span>     <span class="c1"># surprise!</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_height</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">h</span> <span class="o">=</span> <span class="n">h</span>     <span class="c1"># surprise!</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">stretch</span><span class="p">(</span><span class="n">r</span><span class="p">:</span> <span class="n">Rectangle</span><span class="p">):</span>
+    <span class="n">r</span><span class="o">.</span><span class="n">set_width</span><span class="p">(</span><span class="mi">10</span><span class="p">);</span> <span class="n">r</span><span class="o">.</span><span class="n">set_height</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">r</span><span class="o">.</span><span class="n">area</span><span class="p">()</span> <span class="o">==</span> <span class="mi">50</span>    <span class="c1"># FAILS for Square — area becomes 25</span>
+</code></pre></div>
+
+<p><strong>Fix:</strong> Don't model "is-a" by inheritance when invariants differ. Use <strong>composition</strong> or separate types.</p>
+<h3 id="interface-segregation-via-abcs-protocols">Interface Segregation via ABCs / Protocols</h3>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Protocol</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Readable</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span> <span class="o">...</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Writable</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span> <span class="o">...</span>
+
+<span class="c1"># A function that only reads: depend only on Readable</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">hash_file</span><span class="p">(</span><span class="n">f</span><span class="p">:</span> <span class="n">Readable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span> <span class="o">...</span>
+</code></pre></div>
+
+<p><strong>Trade-off:</strong> ABCs (<code>abc.ABC</code>) enforce inheritance; <code>Protocol</code> enables structural typing (duck typing for type checkers). <strong><code>Protocol</code> is preferred</strong> in modern Python — looser coupling, easier testing.</p>
+<h2 id="32-property-vs-direct-attribute-access">3.2 <code>@property</code> vs Direct Attribute Access</h2>
+<div class="codehilite"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Temperature</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">celsius</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_celsius</span> <span class="o">=</span> <span class="n">celsius</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">celsius</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span> <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_celsius</span>
+
+    <span class="nd">@celsius</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">celsius</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">v</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">273.15</span><span class="p">:</span> <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;below absolute zero&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_celsius</span> <span class="o">=</span> <span class="n">v</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fahrenheit</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_celsius</span> <span class="o">*</span> <span class="mi">9</span><span class="o">/</span><span class="mi">5</span> <span class="o">+</span> <span class="mi">32</span>
+</code></pre></div>
+
+<p><strong>Pythonic principle ("uniform access"):</strong> Start with public attributes. Promote to <code>@property</code> <em>only when</em> you need validation or computation, with <strong>no caller change</strong> required. This is one of Python's superpowers — Java needs getters/setters everywhere defensively.</p>
+<h2 id="33-singleton-vs-borg-vs-module">3.3 Singleton vs Borg vs Module</h2>
+<p>Brandon Rhodes' verdict (<code>python-patterns.guide</code>): <em>"In Python, the Singleton pattern is unnecessary — modules ARE singletons."</em></p>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Approach 1: Module-level (idiomatic — preferred)</span>
+<span class="c1"># config.py</span>
+<span class="n">_settings</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;db_url&quot;</span><span class="p">:</span> <span class="s2">&quot;...&quot;</span><span class="p">}</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="n">k</span><span class="p">):</span> <span class="k">return</span> <span class="n">_settings</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">set</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span> <span class="n">_settings</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+
+<span class="c1"># Approach 2: Singleton via __new__</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Config</span><span class="p">:</span>
+    <span class="n">_instance</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_instance</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">_instance</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_instance</span>
+
+<span class="c1"># Approach 3: Borg (shared state, multiple instances)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Borg</span><span class="p">:</span>
+    <span class="n">_shared_state</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span> <span class="o">=</span> <span class="n">Borg</span><span class="o">.</span><span class="n">_shared_state</span>
+</code></pre></div>
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Pros</th>
+<th>Cons</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Module</td>
+<td>Simple; tests can <code>monkeypatch</code>.</td>
+<td>Hard to have configurable instance.</td>
+</tr>
+<tr>
+<td>Singleton</td>
+<td>Familiar from Java.</td>
+<td>Hard to test (can't reset between tests).</td>
+</tr>
+<tr>
+<td>Borg</td>
+<td>Shared state, multiple instances.</td>
+<td>Confusing to readers.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Recommendation:</strong> Use modules. If you need a class for configurability, accept that <strong>you have a class with two instances during tests</strong> and inject it.</p>
+<h2 id="34-factory-function-vs-abstract-factory">3.4 Factory: Function vs Abstract Factory</h2>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Function-style (Pythonic)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">make_logger</span><span class="p">(</span><span class="n">kind</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">kind</span> <span class="o">==</span> <span class="s2">&quot;json&quot;</span><span class="p">:</span> <span class="k">return</span> <span class="n">JsonLogger</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">kind</span> <span class="o">==</span> <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="k">return</span> <span class="n">TextLogger</span><span class="p">()</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">kind</span><span class="p">)</span>
+
+<span class="c1"># Abstract Factory (when you need *families* of related objects)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">UIFactory</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">make_button</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Button</span><span class="p">:</span> <span class="o">...</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">make_window</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Window</span><span class="p">:</span> <span class="o">...</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">MacFactory</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">make_button</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="k">return</span> <span class="n">MacButton</span><span class="p">()</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">make_window</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="k">return</span> <span class="n">MacWindow</span><span class="p">()</span>
+</code></pre></div>
+
+<p><strong>Trade-off:</strong> Functions for one product type; Abstract Factory when product families must stay consistent.</p>
+<h2 id="35-strategy-function-based-vs-class-based">3.5 Strategy: Function-based vs Class-based</h2>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Class-based (when state)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">CompressionStrategy</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compress</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span> <span class="o">...</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">GzipStrategy</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">6</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">level</span> <span class="o">=</span> <span class="n">level</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compress</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span> <span class="kn">import</span><span class="w"> </span><span class="nn">gzip</span><span class="p">;</span> <span class="k">return</span> <span class="n">gzip</span><span class="o">.</span><span class="n">compress</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">level</span><span class="p">)</span>
+
+<span class="c1"># Function-based (when stateless — preferred when possible)</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">gzip</span><span class="o">,</span><span class="w"> </span><span class="nn">lzma</span>
+<span class="n">strategies</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;gzip&quot;</span><span class="p">:</span> <span class="n">gzip</span><span class="o">.</span><span class="n">compress</span><span class="p">,</span> <span class="s2">&quot;lzma&quot;</span><span class="p">:</span> <span class="n">lzma</span><span class="o">.</span><span class="n">compress</span><span class="p">}</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">strategies</span><span class="p">[</span><span class="s2">&quot;gzip&quot;</span><span class="p">](</span><span class="n">data</span><span class="p">)</span>
+</code></pre></div>
+
+<p><strong>In Python, functions are first-class.</strong> Don't make a class for a single method without state. (<code>__call__</code> exists when you need both.)</p>
+<h2 id="36-observer-vs-pub-sub">3.6 Observer vs Pub-Sub</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Observer (in-process)</th>
+<th>Pub-Sub (decoupled / distributed)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Coupling</strong></td>
+<td>Subject knows observers (or via list).</td>
+<td>Through a broker (Redis, Kafka, AsyncIO event loop).</td>
+</tr>
+<tr>
+<td><strong>Sync/async</strong></td>
+<td>Usually sync.</td>
+<td>Usually async.</td>
+</tr>
+<tr>
+<td><strong>Process boundary</strong></td>
+<td>Same process.</td>
+<td>Same or distributed.</td>
+</tr>
+</tbody>
+</table>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Observer (sync, in-process)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Subject</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">_obs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">subscribe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">_obs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">notify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_obs</span><span class="p">:</span> <span class="n">fn</span><span class="p">(</span><span class="n">ev</span><span class="p">)</span>
+
+<span class="c1"># Pub-Sub via asyncio</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">AsyncBus</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">_subs</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">subscribe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">topic</span><span class="p">,</span> <span class="n">q</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">_subs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">topic</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">publish</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">topic</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_subs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">topic</span><span class="p">,</span> <span class="p">[]):</span> <span class="k">await</span> <span class="n">q</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+</code></pre></div>
+
+<h2 id="37-state-pattern-vs-ifelif">3.7 State Pattern vs if/elif</h2>
+<div class="codehilite"><pre><span></span><code><span class="c1"># if/elif: fine for 2-3 states</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">VendingMachine</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="s2">&quot;idle&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">insert</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="s2">&quot;idle&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="s2">&quot;has_money&quot;</span><span class="p">;</span> <span class="k">return</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="s2">&quot;has_money&quot;</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;already inserted&quot;</span><span class="p">);</span> <span class="k">return</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="s2">&quot;dispensing&quot;</span><span class="p">:</span> <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;wait&quot;</span><span class="p">)</span>
+    <span class="c1"># ... 7 more methods × 4 states = 28 if/elif branches</span>
+
+<span class="c1"># State pattern (when many states × many transitions)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">State</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">insert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m</span><span class="p">:</span> <span class="s2">&quot;VendingMachine&quot;</span><span class="p">):</span> <span class="o">...</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">select</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span> <span class="o">...</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">dispense</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span> <span class="o">...</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">IdleState</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">insert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span> <span class="n">m</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">HasMoneyState</span><span class="p">()</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">select</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;insert money first&quot;</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">dispense</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span> <span class="k">pass</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">HasMoneyState</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">insert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;already inserted&quot;</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">select</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span> <span class="n">m</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">DispensingState</span><span class="p">()</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">dispense</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span> <span class="k">pass</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">VendingMachine</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">IdleState</span><span class="p">()</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">insert</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+</code></pre></div>
+
+<p><strong>Heuristic:</strong> ≤3 states or ≤3 transitions → if/elif. ≥4 states with many transitions → State pattern.</p>
+<h2 id="38-dataclass-vs-named-tuple-vs-attrs-vs-pydantic">3.8 <code>dataclass</code> vs Named Tuple vs <code>attrs</code> vs Pydantic</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Mutability</th>
+<th>Validation</th>
+<th>Speed</th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>NamedTuple</strong></td>
+<td>Immutable</td>
+<td>None</td>
+<td>Fast (tuple).</td>
+<td>Lightweight records.</td>
+</tr>
+<tr>
+<td><strong><code>@dataclass</code></strong></td>
+<td>Mutable (or <code>frozen=True</code>)</td>
+<td>None (use <code>__post_init__</code>).</td>
+<td>Standard.</td>
+<td><strong>Default for internal classes.</strong></td>
+</tr>
+<tr>
+<td><strong><code>attrs</code></strong></td>
+<td>Both</td>
+<td>Validators built-in.</td>
+<td>Faster than dataclass.</td>
+<td>Heavy domain models pre-Pydantic.</td>
+</tr>
+<tr>
+<td><strong>Pydantic</strong></td>
+<td>Mutable</td>
+<td>Strong (parses &amp; coerces).</td>
+<td>Slower (validation).</td>
+<td><strong>API boundaries</strong> — DTOs, request/response.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Rule of thumb:</strong> <code>dataclass</code> inside, <strong>Pydantic</strong> at the edges (API/serialization).</p>
+<h2 id="39-__slots__-when-the-memory-saving-matters">3.9 <code>__slots__</code>: When the Memory Saving Matters</h2>
+<div class="codehilite"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Point</span><span class="p">:</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span>
+</code></pre></div>
+
+<ul>
+<li>~40-50% memory reduction per instance.</li>
+<li>Forbids adding attributes at runtime.</li>
+<li>Cannot multiply-inherit from non-<code>__slots__</code> classes.</li>
+</ul>
+<p><strong>Use when:</strong> Millions of instances. Otherwise, the readability cost &gt; benefit.</p>
+<h2 id="310-repository-pattern-worth-it-in-python">3.10 Repository Pattern: Worth It in Python?</h2>
+<div class="codehilite"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">UserRepository</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">User</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="p">:</span> <span class="n">User</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">SqlUserRepository</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conn</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">conn</span> <span class="o">=</span> <span class="n">conn</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="p">):</span> <span class="o">...</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="p">):</span> <span class="o">...</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">InMemoryUserRepository</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">_d</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="p">):</span> <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">_d</span><span class="p">[</span><span class="n">user</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">user</span>
+</code></pre></div>
+
+<p><strong>Pros:</strong> Test with in-memory; swap DB. <strong>Cons:</strong> Layers of indirection. <strong>In Python</strong>, monkeypatching often does the same job — you can directly patch <code>db.execute</code> in tests. <strong>Use Repository when:</strong> business logic is genuinely DB-agnostic (DDD-style domain layer).</p>
+<h2 id="311-dependency-injection-constructor-vs-setter-vs-parameter">3.11 Dependency Injection: Constructor vs Setter vs Parameter</h2>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Constructor (preferred — required deps)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">OrderService</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">repo</span><span class="p">:</span> <span class="n">OrderRepository</span><span class="p">,</span> <span class="n">mailer</span><span class="p">:</span> <span class="n">Mailer</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">repo</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mailer</span> <span class="o">=</span> <span class="n">repo</span><span class="p">,</span> <span class="n">mailer</span>
+
+<span class="c1"># Setter (optional deps that may change post-construction — rare in Python)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">OrderService</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span> <span class="o">=</span> <span class="n">NoOpMetrics</span><span class="p">()</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span> <span class="o">=</span> <span class="n">m</span>
+
+<span class="c1"># Parameter (per-call)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">process_order</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="n">repo</span><span class="p">:</span> <span class="n">OrderRepository</span><span class="p">):</span> <span class="o">...</span>
+</code></pre></div>
+
+<p>Python rarely needs DI frameworks. Constructor injection + manual wiring in <code>main()</code> is enough for most apps. Use <code>dependency-injector</code> or <code>wired</code> only at scale.</p>
+<h2 id="312-decorator-chaining">3.12 Decorator Chaining</h2>
+<div class="codehilite"><pre><span></span><code><span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/items&quot;</span><span class="p">)</span>        <span class="c1"># outermost (last-applied)</span>
+<span class="nd">@auth_required</span>
+<span class="nd">@rate_limit</span><span class="p">(</span><span class="n">per_min</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="nd">@cached</span><span class="p">(</span><span class="n">ttl</span><span class="o">=</span><span class="mi">60</span><span class="p">)</span>             <span class="c1"># innermost (first-applied)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">list_items</span><span class="p">():</span> <span class="o">...</span>
+</code></pre></div>
+
+<p><strong>Trade-off:</strong> Order matters. <code>cached</code> inside <code>rate_limit</code> means cached responses <em>don't</em> count against rate limit; reverse the order if they should. Always document order in big comment when it matters.</p>
+<h2 id="313-__eq__-and-__hash__-together">3.13 <code>__eq__</code> and <code>__hash__</code> Together</h2>
+<p>If you override <code>__eq__</code>, you MUST address <code>__hash__</code> (Python defaults <code>__hash__</code> to None when <code>__eq__</code> is overridden, making the class unhashable). For dataclasses: <code>@dataclass(frozen=True, eq=True)</code> makes them hashable.</p>
+<h2 id="314-async-vs-threads-vs-multiprocessing">3.14 Async vs Threads vs Multiprocessing</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>When</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong><code>asyncio</code></strong></td>
+<td>I/O-bound, many connections (10k+ concurrent).</td>
+</tr>
+<tr>
+<td><strong><code>threading</code></strong></td>
+<td>I/O-bound, fewer connections, blocking libraries (no async support). GIL means CPU work is <em>not</em> parallel.</td>
+</tr>
+<tr>
+<td><strong><code>multiprocessing</code></strong></td>
+<td>CPU-bound. Bypasses GIL. Cost: pickling overhead, no shared memory unless explicit.</td>
+</tr>
+<tr>
+<td><strong><code>concurrent.futures</code></strong></td>
+<td>Highest-level API; <code>ThreadPoolExecutor</code> and <code>ProcessPoolExecutor</code>.</td>
+</tr>
+</tbody>
+</table>
+<p>In Python 3.13+ free-threaded build, threads can run CPU-bound truly in parallel — watch this space.</p>
+<hr>

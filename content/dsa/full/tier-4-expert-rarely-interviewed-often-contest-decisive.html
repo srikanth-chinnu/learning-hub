@@ -1,0 +1,121 @@
+<h1 id="tier-4-expert-rarely-interviewed-often-contest-decisive">TIER 4 — Expert (rarely interviewed, often contest-decisive)</h1>
+<blockquote>
+<p>Goals at this tier: recognize when these tools are <strong>necessary</strong> (not just applicable). Code by reference to a known-good template. Memorize complexity, not implementation lines.</p>
+</blockquote>
+<h2 id="41-heavylight-decomposition-hld">4.1 Heavy–light decomposition (HLD)</h2>
+<p><strong>Idea.</strong> Decompose tree into chains so that any root-to-leaf path crosses <code>O(log n)</code> chains. Each chain → segment tree → path queries in <code>O(log² n)</code>.
+<strong>When.</strong> Path queries/updates on a tree (max edge, sum, etc.). <code>n ≤ 10⁵</code>.
+<strong>Pitfall.</strong> Edge vs. vertex weights — different indexing. Use a known template (KACTL).
+<strong>Problem.</strong> SPOJ QTREE, CF tree path problems.</p>
+<h2 id="42-centroid-decomposition">4.2 Centroid decomposition</h2>
+<p><strong>Idea.</strong> Recursively root the tree at its centroid. Build a hierarchy where any path is decomposed at some centroid. <code>O(n log n)</code> build.
+<strong>When.</strong> Counting paths with property X (length ≤ K, length = K, etc.).
+<strong>Pitfall.</strong> Inclusion–exclusion to avoid double-counting paths within the same subtree.
+<strong>Problem.</strong> Count pairs of nodes within distance K; CF "Xenia and Tree."</p>
+<h2 id="43-persistent-segment-tree">4.3 Persistent segment tree</h2>
+<p><strong>Idea.</strong> Each update creates a new version sharing unchanged nodes — tree of segment trees. Space <code>O((n + q) log n)</code>.
+<strong>When.</strong> Offline queries on previous versions; k-th smallest in subarray; "wavelet tree alternative."
+<strong>Pitfall.</strong> Memory pressure — pre-allocate; CP-Algorithms page is currently 404, prefer USACO Guide.
+<strong>Problem.</strong> SPOJ MKTHNUM (k-th in range), Codeforces persistent counting problems.</p>
+<h2 id="44-segment-tree-beats-ji-driver-segment-tree">4.4 Segment tree beats (Ji Driver Segment Tree)</h2>
+<p><strong>Idea.</strong> Lazy with multiple tags: <code>chmin/chmax</code> plus sum. Amortized <code>O(n log² n)</code>.
+<strong>When.</strong> Range chmin/chmax with sum/max queries.
+<strong>Pitfall.</strong> Implementation is long and error-prone — use only when nothing simpler works.
+<strong>Problem.</strong> HDU 5306 "Gorgeous Sequence."</p>
+<h2 id="45-wavelet-tree">4.5 Wavelet tree</h2>
+<p><strong>Idea.</strong> Binary recursion over value bits with bit vectors at each level — answers k-th smallest, range count, range less-than in <code>O(log V)</code>.
+<strong>When.</strong> Static array, lots of order-statistics queries.
+<strong>Alternative.</strong> Persistent segment tree (4.3) is often simpler in CP.
+<strong>Problem.</strong> SPOJ KQUERY.</p>
+<h2 id="46-linkcut-tree-splay-based">4.6 Link–cut tree (Splay-based)</h2>
+<p><strong>Idea.</strong> Dynamic forest with <code>link/cut/path-aggregate</code> in amortized <code>O(log n)</code>.
+<strong>When.</strong> Online dynamic-connectivity / dynamic-MST. Rarely needed; offline approaches with DSU on rollback often suffice.
+<strong>Pitfall.</strong> Splay tree subtle. Use a known template.
+<strong>Problem.</strong> Codeforces "Dynamic MST"; SPOJ DYNACON1.</p>
+<h2 id="47-suffix-array-lcp-kasai">4.7 Suffix array + LCP (Kasai)</h2>
+<p><strong>Idea.</strong> Sorted array of all suffixes; LCP array via Kasai's algorithm. Build <code>O(n log n)</code> (or <code>O(n log² n)</code> with sort). LCP enables substring counting, longest repeated substring, etc.
+<strong>When.</strong> Multiple substring queries on a fixed string.
+<strong>Pitfall.</strong> SA-IS gives <code>O(n)</code> but is rarely necessary.
+<strong>Problem.</strong> SPOJ DISUBSTR (count distinct substrings).</p>
+<h2 id="48-suffix-automaton-sam">4.8 Suffix automaton (SAM)</h2>
+<p><strong>Idea.</strong> Smallest DFA accepting <em>all</em> substrings of a string. <code>O(n)</code> build with <code>len</code> and <code>link</code> arrays. Counts distinct substrings, finds longest common substring of two strings, etc.
+<strong>When.</strong> You need distinct-substring stats or LCS of two strings in <code>O(n)</code>.
+<strong>Pitfall.</strong> Reference implementations vary — pick one and stick to it (Um_nik blog 70018 has a clean version).
+<strong>Problem.</strong> Distinct Substrings, LCS of two strings, Number of Occurrences.</p>
+<h2 id="49-ahocorasick">4.9 Aho–Corasick</h2>
+<p><strong>Idea.</strong> Trie + KMP-style failure links. Multi-pattern matching in <code>O(n + Σ |p_i|)</code>.
+<strong>When.</strong> Many patterns scanned over a single text — virus scanners, DNA search.
+<strong>Pitfall.</strong> Building "go" function with BFS over the trie.
+<strong>Problem.</strong> Multi-pattern substring search; "censored words."</p>
+<h2 id="410-fft-ntt">4.10 FFT / NTT</h2>
+<p><strong>Idea.</strong> Multiply two polynomials in <code>O(n log n)</code>. NTT (Number Theoretic Transform) avoids floating-point error using a prime modulus.
+<strong>When.</strong> Convolutions: number of ways to form sum, polynomial multiplication, big-integer multiplication.
+<strong>Pitfall.</strong> Floating-point precision in FFT; modulus choice in NTT (998244353 is friendly).
+<strong>Problem.</strong> Polynomial multiplication, count subsets with given sum (large ranges).</p>
+<h2 id="411-min-cost-max-flow-mcmf">4.11 Min-cost max-flow (MCMF)</h2>
+<p><strong>Idea.</strong> Send flow along shortest (by cost) augmenting paths — SPFA or Bellman–Ford for paths with negative edges (residuals).
+<strong>When.</strong> Assignment problems, scheduling with costs, transportation.
+<strong>Pitfall.</strong> Don't use MCMF when min-cut/Hungarian is enough. Use a known template (KACTL, e-maxx).
+<strong>Problem.</strong> UVA 10806 "Dijkstra Dijkstra."</p>
+<h2 id="412-hopcroftkarp-bipartite-matching">4.12 Hopcroft–Karp (bipartite matching)</h2>
+<p><strong>Idea.</strong> Find augmenting paths via BFS layers, then DFS — <code>O(E √V)</code>.
+<strong>When.</strong> Bipartite matching at scale.
+<strong>Pitfall.</strong> Plain Hungarian-style DFS is <code>O(VE)</code> — usually fast enough; HK only when <code>V, E ~ 10⁵</code>.
+<strong>Problem.</strong> Bipartite matching, vertex cover.</p>
+<h2 id="413-2-sat">4.13 2-SAT</h2>
+<p><strong>Idea.</strong> Boolean SAT with clauses of size 2. Reduce to implication graph; satisfiable iff no variable and its negation are in the same SCC. <code>O(V + E)</code> via Kosaraju/Tarjan.
+<strong>When.</strong> "Either A or B is true" pairwise constraints.
+<strong>Pitfall.</strong> Index gymnastics: variable <code>i</code> true → node <code>2i</code>; false → <code>2i+1</code>.
+<strong>Problem.</strong> Codeforces "Yet Another 2-SAT" problems.</p>
+<h2 id="414-convex-hull-trick-li-chao-tree">4.14 Convex hull trick / Li Chao tree</h2>
+<p><strong>Idea.</strong> Maintain lower envelope of lines; query min/max at <code>x</code> in <code>O(log n)</code>. Li Chao = generic version on segment tree.
+<strong>When.</strong> DP transition <code>dp[i] = min(dp[j] + a[j] * b[i] + c[i])</code> — linear in <code>b[i]</code>.
+<strong>Pitfall.</strong> Lines must be monotone for the simple stack version; Li Chao works in general.
+<strong>Problem.</strong> USACO Cuckoo Hashing, CF DP optimization tasks.</p>
+<h2 id="415-digit-dp">4.15 Digit DP</h2>
+<p><strong>Idea.</strong> DP over digits of a number with state <code>(position, tight, leading_zero, ...)</code>.
+<strong>When.</strong> Count integers ≤ N with property X.
+<strong>Pitfall.</strong> <code>tight</code> flag must propagate carefully; treat leading zero separately.
+<strong>Problem.</strong> Count numbers with no two consecutive equal digits; CSES Counting Numbers.</p>
+<h2 id="416-dp-on-broken-profile-broken-contour">4.16 DP on broken profile (broken contour)</h2>
+<p><strong>Idea.</strong> State = bitmask of one row's column "profile" being filled. Transition fills cells column by column.
+<strong>When.</strong> Tile a grid <code>n × m</code> with dominoes/L-trominoes (<code>m ≤ ~15</code>).
+<strong>Pitfall.</strong> The transition table is the whole problem — generate it with bit DP carefully.
+<strong>Problem.</strong> SPOJ "GNY07H," domino tilings.</p>
+<h2 id="417-mos-algorithm-with-updates">4.17 Mo's algorithm (with updates)</h2>
+<p><strong>Idea.</strong> Offline range queries; sort queries by <code>(block of L, R)</code>. Each query <code>O(√n)</code> amortized.
+<strong>With updates</strong> — three-dimensional sort <code>(L block, R block, time)</code> → <code>O(n^{5/3})</code>.
+<strong>When.</strong> Offline range mode/distinct-count queries.
+<strong>Pitfall.</strong> Block size √n is non-negotiable; tune for the specific problem.
+<strong>Problem.</strong> SPOJ DQUERY (distinct elements in range).</p>
+<h2 id="418-lca-binary-lifting-euler-tour">4.18 LCA: binary lifting &amp; Euler tour</h2>
+<p><strong>Idea.</strong>
+- <strong>Binary lifting</strong> — precompute <code>up[u][k] = (2ᵏ-th ancestor of u)</code>. LCA in <code>O(log n)</code> per query, <code>O(n log n)</code> build.
+- <strong>Euler tour + RMQ</strong> — flatten tree; LCA = min depth in range. With sparse table, <code>O(1)</code> query.
+<strong>When.</strong> Many tree distance / LCA queries.
+<strong>Pitfall.</strong> Off-by-one when lifting; handle <code>depth(u) ≠ depth(v)</code> first.
+<strong>Problem.</strong> Tree distance queries; competitive HLD prerequisite.</p>
+<h2 id="419-spraguegrundy-game-theory">4.19 Sprague–Grundy / game theory</h2>
+<p><strong>Idea.</strong> Every impartial game has a <em>Grundy number</em> <code>g(s) = mex{g(s') : s → s'}</code>. Sum of independent games = XOR of Grundy numbers; first player loses iff XOR is 0.
+<strong>When.</strong> "Take-away" games, Nim variants, decomposable game positions.
+<strong>Pitfall.</strong> Only impartial games. Partizan games (chess) are out of scope.
+<strong>Problem.</strong> Nim, Staircase Nim, "Game on tree."</p>
+<h2 id="420-randomized-algorithms">4.20 Randomized algorithms</h2>
+<p><strong>Three patterns:</strong>
+- <strong>Hashing with random base/mod</strong> — defends against adversarial collision attacks.
+- <strong>Treap / random BST</strong> — amortized balanced BST without complex rotations.
+- <strong>Reservoir sampling</strong> — uniform sample of stream of unknown length: keep i-th element with prob <code>1/i</code>.</p>
+<p><strong>Example (reservoir sampling).</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">reservoir</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">stream</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">k</span><span class="p">:</span> <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">k</span> <span class="o">/</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">res</span><span class="p">[</span><span class="n">random</span><span class="o">.</span><span class="n">randrange</span><span class="p">(</span><span class="n">k</span><span class="p">)]</span> <span class="o">=</span> <span class="n">x</span>
+    <span class="k">return</span> <span class="n">res</span>
+</code></pre></div>
+
+<p><strong>Problems.</strong> Linked List Random Node, Random Pick with Weight; CF problems requiring randomization to avoid worst-case hash collision.
+<strong>Pitfall.</strong> <em>Cryptographic</em> randomness vs. PRNG — most CP problems require neither, but use random seed not 0.</p>
+<hr>

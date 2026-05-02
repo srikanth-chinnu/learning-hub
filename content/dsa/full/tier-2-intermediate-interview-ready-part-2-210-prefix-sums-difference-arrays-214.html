@@ -1,0 +1,118 @@
+<h1 id="tier-2-intermediate-interview-ready-part-2-210-prefix-sums-difference-arrays-214-interval-problems">TIER 2 — Intermediate (interview-ready) — Part 2: 2.10 Prefix sums &amp; difference arrays → 2.14 Interval problems</h1>
+<h2 id="210-prefix-sums-difference-arrays">2.10 Prefix sums &amp; difference arrays</h2>
+<p><strong>Mental model.</strong> Precompute <code>P[i] = a[0] + a[1] + ... + a[i-1]</code>. Range sum <code>[l, r] = P[r+1] - P[l]</code> in <code>O(1)</code> after <code>O(n)</code> build.</p>
+<p><strong>Difference array</strong> is the <em>inverse</em>: range update in <code>O(1)</code>, point query at end in <code>O(n)</code>.</p>
+<p><strong>Example (subarray sum equals K).</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">defaultdict</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">subarray_sum</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+    <span class="n">cnt</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">int</span><span class="p">);</span> <span class="n">cnt</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">s</span><span class="p">,</span> <span class="n">ans</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">a</span><span class="p">:</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="n">x</span>
+        <span class="n">ans</span> <span class="o">+=</span> <span class="n">cnt</span><span class="p">[</span><span class="n">s</span> <span class="o">-</span> <span class="n">k</span><span class="p">]</span>
+        <span class="n">cnt</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">ans</span>
+</code></pre></div>
+
+<p><strong>Classic problems.</strong> Subarray Sum = K, Range Sum Query Immutable, Range Sum 2D, Number of Subarrays with Bounded Max, Continuous Subarray Sum.
+<strong>Pitfall.</strong> Mixing 0-indexed and 1-indexed prefix sums in your head. Use <code>P[0] = 0</code>.
+<strong>Bridge → 2.11:</strong> what about <em>grouping</em> values rather than summing?</p>
+<h2 id="211-union-find-dsu">2.11 Union-Find (DSU)</h2>
+<p><strong>Mental model.</strong> Disjoint sets supporting <code>find(x)</code> (which set?) and <code>union(x, y)</code> (merge). With path compression + union by rank/size, both <code>O(α(n))</code> ≈ <code>O(1)</code>.</p>
+<p><strong>Example.</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">DSU</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">p</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">));</span> <span class="bp">self</span><span class="o">.</span><span class="n">sz</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">n</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">find</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">!=</span> <span class="n">x</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="n">x</span><span class="p">]]</span>   <span class="c1"># path compression</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="n">x</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">x</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">union</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+        <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">a</span> <span class="o">==</span> <span class="n">b</span><span class="p">:</span> <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sz</span><span class="p">[</span><span class="n">a</span><span class="p">]</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">sz</span><span class="p">[</span><span class="n">b</span><span class="p">]:</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">b</span><span class="p">,</span> <span class="n">a</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="n">b</span><span class="p">]</span> <span class="o">=</span> <span class="n">a</span><span class="p">;</span> <span class="bp">self</span><span class="o">.</span><span class="n">sz</span><span class="p">[</span><span class="n">a</span><span class="p">]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sz</span><span class="p">[</span><span class="n">b</span><span class="p">]</span>
+        <span class="k">return</span> <span class="kc">True</span>
+</code></pre></div>
+
+<p><strong>Classic problems.</strong> Number of Connected Components, Redundant Connection, Accounts Merge, Most Stones Removed, Kruskal's MST.
+<strong>Pitfall.</strong> Forgetting path compression makes it <code>O(log n)</code> per op. Don't use rank <em>and</em> size — pick one.
+<strong>Bridge → 2.12:</strong> strings are also a kind of tree.</p>
+<h2 id="212-tries">2.12 Tries</h2>
+<p><strong>Mental model.</strong> A 26-ary tree (or more) where each path from root encodes a string. Insert/lookup/prefix in <code>O(L)</code> where <code>L</code> is word length.</p>
+<p><strong>Example.</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Trie</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">r</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">insert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">w</span><span class="p">):</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">r</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">w</span><span class="p">:</span> <span class="n">n</span> <span class="o">=</span> <span class="n">n</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="n">n</span><span class="p">[</span><span class="s1">&#39;$&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">starts_with</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">r</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">p</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">c</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">n</span><span class="p">:</span> <span class="k">return</span> <span class="kc">False</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">n</span><span class="p">[</span><span class="n">c</span><span class="p">]</span>
+        <span class="k">return</span> <span class="kc">True</span>
+</code></pre></div>
+
+<p><strong>Classic problems.</strong> Implement Trie, Word Search II, Replace Words, Maximum XOR (binary trie), Design Search Autocomplete.
+<strong>Pitfall.</strong> Memory blowup — use arrays of 26 only when alphabet is fixed and small. Else use dict.
+<strong>Bridge → 2.13:</strong> sometimes the data structure tracks <em>order</em> rather than membership.</p>
+<h2 id="213-monotonic-stackdeque">2.13 Monotonic stack/deque</h2>
+<p><strong>Mental model.</strong> A stack/deque kept in increasing or decreasing order — when pushing, pop violators first. Each element pushed/popped at most once → amortized <code>O(n)</code>.</p>
+<p><strong>When.</strong> "Next greater/smaller element," "max in sliding window," largest rectangle in histogram, stock span.</p>
+<p><strong>Example (next greater element).</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">next_greater</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">);</span> <span class="n">res</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">n</span><span class="p">;</span> <span class="n">st</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
+        <span class="k">while</span> <span class="n">st</span> <span class="ow">and</span> <span class="n">a</span><span class="p">[</span><span class="n">st</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span> <span class="o">&lt;</span> <span class="n">x</span><span class="p">:</span>
+            <span class="n">res</span><span class="p">[</span><span class="n">st</span><span class="o">.</span><span class="n">pop</span><span class="p">()]</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="n">st</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">res</span>
+</code></pre></div>
+
+<p><strong>Example (sliding window max — monotonic deque).</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">deque</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">max_window</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+    <span class="n">dq</span><span class="p">,</span> <span class="n">out</span> <span class="o">=</span> <span class="n">deque</span><span class="p">(),</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
+        <span class="k">while</span> <span class="n">dq</span> <span class="ow">and</span> <span class="n">a</span><span class="p">[</span><span class="n">dq</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span> <span class="o">&lt;=</span> <span class="n">x</span><span class="p">:</span> <span class="n">dq</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+        <span class="n">dq</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">dq</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">i</span> <span class="o">-</span> <span class="n">k</span><span class="p">:</span> <span class="n">dq</span><span class="o">.</span><span class="n">popleft</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span> <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="n">dq</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+    <span class="k">return</span> <span class="n">out</span>
+</code></pre></div>
+
+<p><strong>Classic problems.</strong> Daily Temperatures, Next Greater II, Largest Rectangle in Histogram, Sliding Window Max, Sum of Subarray Minimums.
+<strong>Pitfall.</strong> Mixing strict/non-strict comparisons changes which duplicates are kept.
+<strong>Bridge → 2.14:</strong> intervals are 1D ranges with extra structure.</p>
+<h2 id="214-interval-problems">2.14 Interval problems</h2>
+<p><strong>Mental model.</strong> Three transformations cover most interval problems:
+1. <strong>Sort by start</strong> — for merging.
+2. <strong>Sort by end</strong> — for greedy scheduling (2.8).
+3. <strong>Sweep line / events</strong> — sort <code>(point, +1/−1)</code>, scan, accumulate.</p>
+<p><strong>Example (merge intervals).</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">merge</span><span class="p">(</span><span class="n">iv</span><span class="p">):</span>
+    <span class="n">iv</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">iv</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">out</span> <span class="ow">and</span> <span class="n">s</span> <span class="o">&lt;=</span> <span class="n">out</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]:</span> <span class="n">out</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">e</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span> <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">s</span><span class="p">,</span> <span class="n">e</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">out</span>
+</code></pre></div>
+
+<p><strong>Example (meeting rooms II — sweep line).</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">min_rooms</span><span class="p">(</span><span class="n">iv</span><span class="p">):</span>
+    <span class="n">ev</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">iv</span><span class="p">:</span> <span class="n">ev</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">s</span><span class="p">,</span> <span class="o">+</span><span class="mi">1</span><span class="p">));</span> <span class="n">ev</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">e</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">ev</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+    <span class="n">cur</span><span class="p">,</span> <span class="n">best</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">ev</span><span class="p">:</span> <span class="n">cur</span> <span class="o">+=</span> <span class="n">d</span><span class="p">;</span> <span class="n">best</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">best</span><span class="p">,</span> <span class="n">cur</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">best</span>
+</code></pre></div>
+
+<p><strong>Classic problems.</strong> Merge Intervals, Insert Interval, Meeting Rooms I &amp; II, Non-overlapping Intervals, Employee Free Time.
+<strong>Pitfall.</strong> Tie-breaking when start == end; decide whether closed/open.
+<strong>Bridge → Tier 3:</strong> what if the optimal answer requires combining many sub-decisions?</p>
+<hr>

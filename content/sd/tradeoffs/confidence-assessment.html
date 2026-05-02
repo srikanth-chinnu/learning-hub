@@ -1,0 +1,49 @@
+<h1 id="confidence-assessment">Confidence Assessment</h1>
+<table>
+<thead>
+<tr>
+<th>Section</th>
+<th>Confidence</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Mental models (Part 1)</td>
+<td><strong>High</strong></td>
+<td>Direct quotes from primary sources (Bezos shareholder letter, Dan McKinley, Fowler, AWS Builders' Library).</td>
+</tr>
+<tr>
+<td>HLD theorems (CAP/PACELC/FLP)</td>
+<td><strong>High</strong></td>
+<td>Brewer 2012 InfoQ, Abadi 2010, FLP 1985 are foundational.</td>
+</tr>
+<tr>
+<td>HLD patterns (replication, caching, queues)</td>
+<td><strong>High</strong></td>
+<td>Reflects 2024-2025 industry consensus; specific numbers (Discord, Stripe) cited from blogs.</td>
+</tr>
+<tr>
+<td>LLD Python</td>
+<td><strong>High</strong></td>
+<td>Snippets follow <code>python-patterns.guide</code> (Brandon Rhodes) and PEP 8.</td>
+</tr>
+<tr>
+<td>LLD C++</td>
+<td><strong>High</strong></td>
+<td>Aligned with C++ Core Guidelines (SHA <code>ceebda5</code>); Sean Parent / Sutter / Stroustrup quotes verified.</td>
+</tr>
+<tr>
+<td>Case studies</td>
+<td><strong>Medium-High</strong></td>
+<td>Numbers from public Discord/Stripe blogs; <em>interpretation</em> of why is mine.</td>
+</tr>
+<tr>
+<td>Decision matrices</td>
+<td><strong>Medium</strong></td>
+<td>Heuristics — <em>will</em> be wrong for some workloads. Use as starting points, not absolutes.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Where I'd be cautious:</strong> Specific "X is faster than Y by N×" claims in real systems are workload-dependent. The trade-offs themselves are durable; the <em>quantities</em> are not.</p>
+<hr>

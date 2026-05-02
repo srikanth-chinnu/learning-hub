@@ -1,0 +1,172 @@
+<h1 id="tier-2-intermediate-interview-ready-part-1-21-tree-traversals-29-bit-manipulation">TIER 2 — Intermediate (interview-ready) — Part 1: 2.1 Tree traversals → 2.9 Bit manipulation</h1>
+<h2 id="21-tree-traversals">2.1 Tree traversals</h2>
+<p><strong>Mental model.</strong> Visit every node exactly once. Three DFS orders (pre/in/post) and one BFS (level).</p>
+<p><strong>Example.</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">inorder</span><span class="p">(</span><span class="n">root</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">root</span><span class="p">:</span> <span class="k">return</span>
+    <span class="n">inorder</span><span class="p">(</span><span class="n">root</span><span class="o">.</span><span class="n">left</span><span class="p">);</span> <span class="nb">print</span><span class="p">(</span><span class="n">root</span><span class="o">.</span><span class="n">val</span><span class="p">);</span> <span class="n">inorder</span><span class="p">(</span><span class="n">root</span><span class="o">.</span><span class="n">right</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">levelorder</span><span class="p">(</span><span class="n">root</span><span class="p">):</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">deque</span>
+    <span class="n">q</span><span class="p">,</span> <span class="n">out</span> <span class="o">=</span> <span class="n">deque</span><span class="p">([</span><span class="n">root</span><span class="p">]),</span> <span class="p">[]</span>
+    <span class="k">while</span> <span class="n">q</span><span class="p">:</span>
+        <span class="n">lvl</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">q</span><span class="p">)):</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="n">popleft</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">n</span><span class="p">:</span> <span class="n">lvl</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">val</span><span class="p">);</span> <span class="n">q</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">left</span><span class="p">);</span> <span class="n">q</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">right</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">lvl</span><span class="p">:</span> <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lvl</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">out</span>
+</code></pre></div>
+
+<p><strong>Classic problems.</strong> Max Depth, Same Tree, Path Sum, Symmetric Tree, Binary Tree Level Order, Construct Tree from Preorder + Inorder.
+<strong>Pitfall.</strong> Iterative inorder is the trickiest — practice it.
+<strong>Bridge → 2.2:</strong> when the tree has order, search becomes logarithmic (on balance).</p>
+<h2 id="22-binary-search-trees">2.2 Binary search trees</h2>
+<p><strong>Mental model.</strong> For every node: <code>left &lt; node &lt; right</code>. Operations are <code>O(h)</code> where <code>h</code> is height — <code>O(log n)</code> if balanced, <code>O(n)</code> worst case.</p>
+<p><strong>When.</strong> When you need <em>ordered</em> hash-map-like operations: range queries, k-th element, predecessor/successor. Pure BSTs are rarely interview material; the <em>invariant</em> and <em>successor</em> are what matter. In practice, use <code>SortedList</code> (Python's <code>sortedcontainers</code>) or <code>std::set</code> (C++).</p>
+<p><strong>Example (validate BST).</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">is_bst</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">lo</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="s1">&#39;-inf&#39;</span><span class="p">),</span> <span class="n">hi</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">root</span><span class="p">:</span> <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">lo</span> <span class="o">&lt;</span> <span class="n">root</span><span class="o">.</span><span class="n">val</span> <span class="o">&lt;</span> <span class="n">hi</span><span class="p">):</span> <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="n">is_bst</span><span class="p">(</span><span class="n">root</span><span class="o">.</span><span class="n">left</span><span class="p">,</span> <span class="n">lo</span><span class="p">,</span> <span class="n">root</span><span class="o">.</span><span class="n">val</span><span class="p">)</span> <span class="ow">and</span> <span class="n">is_bst</span><span class="p">(</span><span class="n">root</span><span class="o">.</span><span class="n">right</span><span class="p">,</span> <span class="n">root</span><span class="o">.</span><span class="n">val</span><span class="p">,</span> <span class="n">hi</span><span class="p">)</span>
+</code></pre></div>
+
+<p><strong>Classic problems.</strong> Validate BST, Kth Smallest in BST, Lowest Common Ancestor of BST, Recover BST.
+<strong>Pitfall.</strong> Equal values — pick a convention (strict <code>&lt;</code> everywhere) and stick to it.
+<strong>Bridge → 2.3:</strong> trees are graphs without cycles.</p>
+<h2 id="23-graph-representations">2.3 Graph representations</h2>
+<p><strong>Mental model.</strong> A graph = (V, E). Three storage choices:
+- <strong>Adjacency list</strong> — <code>dict[u] -&gt; list[v]</code>. Best general purpose. <code>O(V + E)</code> space.
+- <strong>Adjacency matrix</strong> — <code>M[u][v]</code>. <code>O(V²)</code> space; <code>O(1)</code> edge lookup. Use for dense small graphs.
+- <strong>Edge list</strong> — <code>[(u,v,w)]</code>. Use for Kruskal, Bellman–Ford.</p>
+<p><strong>Example.</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">defaultdict</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">build_graph</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">edges</span><span class="p">):</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">edges</span><span class="p">:</span>
+        <span class="n">g</span><span class="p">[</span><span class="n">u</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">v</span><span class="p">,</span> <span class="n">w</span><span class="p">))</span>
+        <span class="n">g</span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">u</span><span class="p">,</span> <span class="n">w</span><span class="p">))</span>   <span class="c1"># undirected</span>
+    <span class="k">return</span> <span class="n">g</span>
+</code></pre></div>
+
+<p><strong>Pitfall.</strong> Forgetting directionality. Forgetting to handle disconnected components (loop over all vertices).
+<strong>Bridge → 2.4:</strong> how do we visit all vertices?</p>
+<h2 id="24-bfs-dfs">2.4 BFS / DFS</h2>
+<p><strong>Mental model.</strong>
+- <strong>BFS</strong> — queue, level-by-level, gives shortest path in <strong>unweighted</strong> graphs.
+- <strong>DFS</strong> — stack/recursion, depth-first, gives connectivity, cycle detection, topological order.</p>
+<p><strong>Example (DFS connected components).</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">num_components</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">g</span><span class="p">):</span>
+    <span class="n">seen</span> <span class="o">=</span> <span class="p">[</span><span class="kc">False</span><span class="p">]</span><span class="o">*</span><span class="n">n</span>
+    <span class="n">cnt</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">dfs</span><span class="p">(</span><span class="n">u</span><span class="p">):</span>
+        <span class="n">seen</span><span class="p">[</span><span class="n">u</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">g</span><span class="p">[</span><span class="n">u</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">seen</span><span class="p">[</span><span class="n">v</span><span class="p">]:</span> <span class="n">dfs</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">seen</span><span class="p">[</span><span class="n">u</span><span class="p">]:</span> <span class="n">cnt</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span> <span class="n">dfs</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">cnt</span>
+</code></pre></div>
+
+<p><strong>Classic problems.</strong> Number of Islands, Word Ladder (BFS), Course Schedule (cycle), Clone Graph, Pacific Atlantic, Surrounded Regions.
+<strong>Pitfall.</strong> BFS on weighted graph gives wrong shortest path — use Dijkstra (3.8).
+<strong>Bridge → 2.5:</strong> ordering nodes by dependency.</p>
+<h2 id="25-topological-sort">2.5 Topological sort</h2>
+<p><strong>Mental model.</strong> Linear ordering of DAG vertices such that for every edge <code>u→v</code>, <code>u</code> comes before <code>v</code>. Two algorithms: <strong>Kahn's</strong> (BFS on in-degree 0) and <strong>DFS post-order reversed</strong>.</p>
+<p><strong>Example (Kahn's).</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">deque</span><span class="p">,</span> <span class="n">defaultdict</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">topo</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">edges</span><span class="p">):</span>
+    <span class="n">g</span><span class="p">,</span> <span class="n">indeg</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">),</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">n</span>
+    <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">edges</span><span class="p">:</span>
+        <span class="n">g</span><span class="p">[</span><span class="n">u</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="p">);</span> <span class="n">indeg</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">q</span> <span class="o">=</span> <span class="n">deque</span><span class="p">(</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="k">if</span> <span class="n">indeg</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">while</span> <span class="n">q</span><span class="p">:</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="n">popleft</span><span class="p">();</span> <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">g</span><span class="p">[</span><span class="n">u</span><span class="p">]:</span>
+            <span class="n">indeg</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">-=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">indeg</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="n">q</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">out</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="o">==</span> <span class="n">n</span> <span class="k">else</span> <span class="p">[]</span>   <span class="c1"># cycle if not all included</span>
+</code></pre></div>
+
+<p><strong>Classic problems.</strong> Course Schedule I &amp; II, Alien Dictionary, Parallel Courses.
+<strong>Pitfall.</strong> Topological sort is undefined on graphs with cycles — always check.
+<strong>Bridge → 2.6:</strong> what if instead of any order, we want minimum/maximum?</p>
+<h2 id="26-heaps-priority-queues">2.6 Heaps &amp; priority queues</h2>
+<p><strong>Mental model.</strong> A complete binary tree with the heap property. <code>push</code> / <code>pop</code> in <code>O(log n)</code>, <code>top</code> in <code>O(1)</code>, <code>heapify</code> in <code>O(n)</code>.</p>
+<p><strong>When.</strong> Top-k, scheduling, Dijkstra, merge k sorted lists, median maintenance.</p>
+<p><strong>Example (top-k frequent).</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">heapq</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">Counter</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">topk</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">heapq</span><span class="o">.</span><span class="n">nlargest</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">kv</span><span class="p">:</span> <span class="n">kv</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span>
+</code></pre></div>
+
+<p><strong>Classic problems.</strong> Kth Largest, Merge K Sorted Lists, Find Median from Data Stream (two heaps), Task Scheduler, Reorganize String.
+<strong>Pitfall.</strong> Python's <code>heapq</code> is min-heap only — negate for max-heap. For tuples, all fields must be comparable.
+<strong>Bridge → 2.7:</strong> when the search tree is exponential, prune.</p>
+<h2 id="27-backtracking">2.7 Backtracking</h2>
+<p><strong>Mental model.</strong> DFS through the <em>decision tree</em>. Try a choice, recurse, undo. Prune impossible branches as early as possible.</p>
+<p><strong>Template.</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">backtrack</span><span class="p">(</span><span class="n">state</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">is_solution</span><span class="p">(</span><span class="n">state</span><span class="p">):</span> <span class="n">record</span><span class="p">(</span><span class="n">state</span><span class="p">);</span> <span class="k">return</span>
+    <span class="k">for</span> <span class="n">choice</span> <span class="ow">in</span> <span class="n">choices</span><span class="p">(</span><span class="n">state</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">feasible</span><span class="p">(</span><span class="n">choice</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span> <span class="k">continue</span>
+        <span class="n">apply</span><span class="p">(</span><span class="n">choice</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span>
+        <span class="n">backtrack</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+        <span class="n">undo</span><span class="p">(</span><span class="n">choice</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span>
+</code></pre></div>
+
+<p><strong>Example (N-Queens).</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">n_queens</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+    <span class="n">cols</span><span class="p">,</span> <span class="n">d1</span><span class="p">,</span> <span class="n">d2</span><span class="p">,</span> <span class="n">sol</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(),</span> <span class="nb">set</span><span class="p">(),</span> <span class="nb">set</span><span class="p">(),</span> <span class="p">[]</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">go</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">board</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">r</span> <span class="o">==</span> <span class="n">n</span><span class="p">:</span> <span class="n">sol</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">board</span><span class="p">[:]);</span> <span class="k">return</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">cols</span> <span class="ow">or</span> <span class="p">(</span><span class="n">r</span><span class="o">-</span><span class="n">c</span><span class="p">)</span> <span class="ow">in</span> <span class="n">d1</span> <span class="ow">or</span> <span class="p">(</span><span class="n">r</span><span class="o">+</span><span class="n">c</span><span class="p">)</span> <span class="ow">in</span> <span class="n">d2</span><span class="p">:</span> <span class="k">continue</span>
+            <span class="n">cols</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">c</span><span class="p">);</span> <span class="n">d1</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">r</span><span class="o">-</span><span class="n">c</span><span class="p">);</span> <span class="n">d2</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">r</span><span class="o">+</span><span class="n">c</span><span class="p">);</span> <span class="n">board</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+            <span class="n">go</span><span class="p">(</span><span class="n">r</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">board</span><span class="p">)</span>
+            <span class="n">cols</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">c</span><span class="p">);</span> <span class="n">d1</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">r</span><span class="o">-</span><span class="n">c</span><span class="p">);</span> <span class="n">d2</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">r</span><span class="o">+</span><span class="n">c</span><span class="p">);</span> <span class="n">board</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+    <span class="n">go</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">[])</span>
+    <span class="k">return</span> <span class="n">sol</span>
+</code></pre></div>
+
+<p><strong>Classic problems.</strong> N-Queens, Sudoku Solver, Word Search, Combination Sum, Permutations II, Letter Combinations.
+<strong>Pitfall.</strong> Forgetting to undo state. Slicing lists <code>cur[:]</code> to copy is necessary when storing.
+<strong>Bridge → 2.8:</strong> sometimes the optimal local choice <em>is</em> the global solution.</p>
+<h2 id="28-greedy-with-proof">2.8 Greedy with proof</h2>
+<p><strong>Mental model.</strong> Make the locally best choice. Works <em>only when</em> an exchange argument or matroid structure guarantees optimality.</p>
+<p><strong>Two proof techniques:</strong>
+- <strong>Exchange argument</strong> — if there's a better solution, you can transform it into the greedy one without loss.
+- <strong>Stays-ahead</strong> — at every step the greedy is at least as good as any other.</p>
+<p><strong>Example (interval scheduling — max non-overlapping).</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">max_meetings</span><span class="p">(</span><span class="n">intervals</span><span class="p">):</span>
+    <span class="n">intervals</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>   <span class="c1"># sort by END</span>
+    <span class="n">end</span><span class="p">,</span> <span class="n">cnt</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;-inf&#39;</span><span class="p">),</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">intervals</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">s</span> <span class="o">&gt;=</span> <span class="n">end</span><span class="p">:</span> <span class="n">cnt</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span> <span class="n">end</span> <span class="o">=</span> <span class="n">e</span>
+    <span class="k">return</span> <span class="n">cnt</span>
+</code></pre></div>
+
+<p><strong>Classic problems.</strong> Activity Selection, Jump Game II, Gas Station, Task Scheduler, Minimum Number of Arrows to Burst Balloons.
+<strong>Pitfall.</strong> Untested greediness — most "obvious" greedy ideas are wrong (counterexample: coin change with coins {1,3,4} for amount 6).
+<strong>Bridge → 2.9:</strong> sometimes the operations themselves are bitwise.</p>
+<h2 id="29-bit-manipulation">2.9 Bit manipulation</h2>
+<p><strong>Mental model.</strong> Treat ints as bitsets. Operations: <code>&amp;</code> (and), <code>|</code> (or), <code>^</code> (xor), <code>~</code> (not), <code>&lt;&lt;</code> <code>&gt;&gt;</code> (shift). XOR with itself = 0; XOR with 0 = self.</p>
+<p><strong>Tricks worth memorizing:</strong>
+- <code>x &amp; (x-1)</code> → clears lowest set bit.
+- <code>x &amp; -x</code> → isolates lowest set bit.
+- <code>x ^ y</code> → bits where they differ.
+- <code>(x &gt;&gt; i) &amp; 1</code> → i-th bit.
+- Iterate subsets of mask: <code>s = m; while s &gt; 0: ...; s = (s - 1) &amp; m</code>.</p>
+<p><strong>Example (single number — every other appears twice).</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">single_number</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">a</span><span class="p">:</span> <span class="n">r</span> <span class="o">^=</span> <span class="n">x</span>
+    <span class="k">return</span> <span class="n">r</span>
+</code></pre></div>
+
+<p><strong>Classic problems.</strong> Single Number I/II/III, Number of 1 Bits, Counting Bits, Sum of Two Integers without <code>+</code>, Maximum XOR (with trie).
+<strong>Pitfall.</strong> Negative numbers in Python are arbitrary precision — use <code>&amp; 0xFFFFFFFF</code> for fixed-width emulation.
+<strong>Bridge → 2.10:</strong> XOR is to addition what...</p>

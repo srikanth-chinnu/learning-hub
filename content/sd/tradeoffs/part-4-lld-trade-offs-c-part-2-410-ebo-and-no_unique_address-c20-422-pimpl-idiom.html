@@ -1,0 +1,305 @@
+<h1 id="part-4-lld-trade-offs-c-part-2-410-ebo-and-no_unique_address-c20-422-pimpl-idiom">PART 4 — LLD Trade-offs (C++) — Part 2: 4.10 EBO and <code>[[no_unique_address]]</code> (C++20) → 4.22 PIMPL Idiom</h1>
+<h2 id="410-ebo-and-no_unique_address-c20">4.10 EBO and <code>[[no_unique_address]]</code> (C++20)</h2>
+<div class="codehilite"><pre><span></span><code><span class="c1">// Pre-C++20 EBO: empty bases occupy 0 bytes</span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">Allocator</span><span class="w"> </span><span class="p">{};</span><span class="w">   </span><span class="c1">// empty</span>
+<span class="k">template</span><span class="o">&lt;</span><span class="k">class</span><span class="w"> </span><span class="nc">A</span><span class="o">&gt;</span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">Container</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="n">A</span><span class="w"> </span><span class="p">{</span><span class="w">   </span><span class="c1">// EBO: A contributes 0 bytes</span>
+<span class="w">    </span><span class="kt">int</span><span class="o">*</span><span class="w"> </span><span class="n">data_</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="c1">// C++20: [[no_unique_address]] for members</span>
+<span class="k">template</span><span class="o">&lt;</span><span class="k">class</span><span class="w"> </span><span class="nc">A</span><span class="o">&gt;</span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">Container2</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="p">[[</span><span class="n">no_unique_address</span><span class="p">]]</span><span class="w"> </span><span class="n">A</span><span class="w"> </span><span class="n">alloc</span><span class="p">;</span><span class="w">   </span><span class="c1">// 0 bytes if A is empty</span>
+<span class="w">    </span><span class="kt">int</span><span class="o">*</span><span class="w"> </span><span class="n">data_</span><span class="p">;</span>
+<span class="p">};</span>
+</code></pre></div>
+
+<h2 id="411-stack-vs-heap-raii">4.11 Stack vs Heap; RAII</h2>
+<div class="codehilite"><pre><span></span><code><span class="c1">// Stack — automatic, fast, scope-bound</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">f</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">array</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="mi">1024</span><span class="o">&gt;</span><span class="w"> </span><span class="n">a</span><span class="p">;</span><span class="w">       </span><span class="c1">// 4 KB on stack — instant</span>
+<span class="w">    </span><span class="n">process</span><span class="p">(</span><span class="n">a</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="c1">// Heap — flexible size, slower allocation</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">g</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="n">v</span><span class="p">(</span><span class="n">n</span><span class="p">);</span><span class="w">         </span><span class="c1">// n*4 bytes on heap</span>
+<span class="w">    </span><span class="n">process</span><span class="p">(</span><span class="n">v</span><span class="p">);</span>
+<span class="p">}</span><span class="w">                                  </span><span class="c1">// RAII cleans up</span>
+</code></pre></div>
+
+<p><strong>Rule of thumb:</strong>
+- &lt; 1 KB AND known at compile-time → stack.
+- &gt; 1 KB OR variable size → heap (via vector/unique_ptr).
+- Stack overflow on Windows: ~1 MB default. Linux: ~8 MB.</p>
+<h2 id="412-container-choice-stroustrup-gotw-4">4.12 Container Choice (Stroustrup GotW #4)</h2>
+<blockquote>
+<p>"If in doubt, use <code>std::vector</code>." — Bjarne Stroustrup</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>Container</th>
+<th>Random access</th>
+<th>Insert/erase mid</th>
+<th>Insert end</th>
+<th>Memory</th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>std::vector</code></td>
+<td>O(1)</td>
+<td>O(n)</td>
+<td>Amortized O(1)</td>
+<td>Contiguous; cache-friendly</td>
+<td><strong>Default.</strong></td>
+</tr>
+<tr>
+<td><code>std::deque</code></td>
+<td>O(1)</td>
+<td>O(n)</td>
+<td>O(1) front+back</td>
+<td>Chunked</td>
+<td>Front+back insert.</td>
+</tr>
+<tr>
+<td><code>std::list</code></td>
+<td>O(n)</td>
+<td>O(1) (with iter)</td>
+<td>O(1)</td>
+<td>Node-per-element; cache-unfriendly</td>
+<td>Almost never.</td>
+</tr>
+<tr>
+<td><code>std::array&lt;T,N&gt;</code></td>
+<td>O(1)</td>
+<td>n/a</td>
+<td>n/a</td>
+<td>Stack</td>
+<td>Compile-time-fixed size.</td>
+</tr>
+<tr>
+<td><code>std::unordered_map</code></td>
+<td>n/a</td>
+<td>O(1) avg</td>
+<td>O(1) avg</td>
+<td>Hash table</td>
+<td>Lookup-by-key.</td>
+</tr>
+<tr>
+<td><code>std::map</code></td>
+<td>n/a</td>
+<td>O(log n)</td>
+<td>O(log n)</td>
+<td>Red-black tree</td>
+<td>Sorted iteration.</td>
+</tr>
+<tr>
+<td><code>std::flat_map</code> (C++23)</td>
+<td>n/a</td>
+<td>O(n)</td>
+<td>O(n)</td>
+<td>Sorted vector</td>
+<td>Read-heavy with few inserts.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why <code>vector</code> beats <code>list</code>:</strong> Cache. Even O(n) linear scans on <code>vector</code> beat O(1) <code>list</code> traversal because of cache prefetching. The only time <code>list</code> wins is when you have stable iterators across mutations.</p>
+<h2 id="413-unordered_map-vs-map-cache-behavior">4.13 <code>unordered_map</code> vs <code>map</code>: Cache Behavior</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th><code>map</code> (RB-tree)</th>
+<th><code>unordered_map</code> (hashtable)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Lookup</td>
+<td>O(log n)</td>
+<td>O(1) avg, O(n) worst</td>
+</tr>
+<tr>
+<td>Order</td>
+<td>Sorted</td>
+<td>Unspecified</td>
+</tr>
+<tr>
+<td>Memory</td>
+<td>~3 pointers/node</td>
+<td>Buckets + linked lists/probing</td>
+</tr>
+<tr>
+<td>Cache</td>
+<td>Bad (pointer chasing)</td>
+<td>OK on hot keys</td>
+</tr>
+</tbody>
+</table>
+<p><strong>For hot small maps (≤ 100 entries), a sorted <code>vector&lt;pair&lt;K,V&gt;&gt;</code> with <code>std::lower_bound</code> often beats both</strong> — fully contiguous, no allocations.</p>
+<h2 id="414-sbo-sso">4.14 SBO / SSO</h2>
+<p><code>std::string</code> typically reserves 15-23 bytes inline (Small String Optimization). For <code>&lt;</code> that size, no heap allocation. Same idea in <code>std::function</code> (typically 16-32 bytes inline). Implication: don't worry about strings up to ~22 chars; they're free.</p>
+<h2 id="415-stdarraytn-vs-stdvectort">4.15 <code>std::array&lt;T,N&gt;</code> vs <code>std::vector&lt;T&gt;</code></h2>
+<div class="codehilite"><pre><span></span><code><span class="n">std</span><span class="o">::</span><span class="n">array</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="o">&gt;</span><span class="w"> </span><span class="n">point</span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">};</span><span class="w">   </span><span class="c1">// size baked at compile time</span>
+<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="n">dynamic</span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">};</span><span class="w">    </span><span class="c1">// heap; size at runtime</span>
+</code></pre></div>
+
+<p><strong>Use array when:</strong> Size is known at compile time and small. <strong>Use vector when:</strong> Size unknown or large. Both work in <code>constexpr</code> (vector since C++20).</p>
+<h2 id="416-memory-pools-pmr-c17">4.16 Memory Pools / PMR (C++17)</h2>
+<div class="codehilite"><pre><span></span><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;memory_resource&gt;</span>
+
+<span class="n">std</span><span class="o">::</span><span class="n">pmr</span><span class="o">::</span><span class="n">monotonic_buffer_resource</span><span class="w"> </span><span class="nf">pool</span><span class="p">(</span><span class="mi">4096</span><span class="p">);</span><span class="w">   </span><span class="c1">// bump allocator</span>
+<span class="n">std</span><span class="o">::</span><span class="n">pmr</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="n">v</span><span class="p">{</span><span class="o">&amp;</span><span class="n">pool</span><span class="p">};</span>
+<span class="n">v</span><span class="p">.</span><span class="n">reserve</span><span class="p">(</span><span class="mi">100</span><span class="p">);</span><span class="w">   </span><span class="c1">// allocates from pool</span>
+<span class="n">v</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="mi">42</span><span class="p">);</span>
+<span class="c1">// pool destroyed at end of scope — bulk free; no per-element delete</span>
+</code></pre></div>
+
+<p><strong>Trade-off:</strong> Massive allocation throughput; lifetime constraints (everything in pool freed at once). Used for parsers, request-scoped allocations, game frame allocators.</p>
+<p>Also: <code>std::pmr::pool_options</code> for sized pools, <code>std::pmr::synchronized_pool_resource</code> for thread-safe.</p>
+<h2 id="417-false-sharing-and-alignas64">4.17 False Sharing and <code>alignas(64)</code></h2>
+<div class="codehilite"><pre><span></span><code><span class="k">struct</span><span class="w"> </span><span class="nc">BadStats</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">atomic</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="n">reads</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">atomic</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="n">writes</span><span class="p">;</span>
+<span class="w">    </span><span class="c1">// Both on same 64-byte cache line.</span>
+<span class="w">    </span><span class="c1">// Two cores hammering reads &amp; writes on different cores ping-pong the line.</span>
+<span class="p">};</span>
+
+<span class="k">struct</span><span class="w"> </span><span class="nc">GoodStats</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">alignas</span><span class="p">(</span><span class="mi">64</span><span class="p">)</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">atomic</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="n">reads</span><span class="p">;</span>
+<span class="w">    </span><span class="k">alignas</span><span class="p">(</span><span class="mi">64</span><span class="p">)</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">atomic</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="n">writes</span><span class="p">;</span>
+<span class="w">    </span><span class="c1">// Each on its own cache line — independent.</span>
+<span class="p">};</span>
+</code></pre></div>
+
+<p><strong>Cost:</strong> Memory (64 bytes per atomic instead of 4). <strong>Benefit:</strong> Often 10-100× throughput improvement on contended counters.</p>
+<h2 id="418-constexpr-vs-runtime">4.18 <code>constexpr</code> vs Runtime</h2>
+<div class="codehilite"><pre><span></span><code><span class="k">constexpr</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">factorial</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">factorial</span><span class="p">(</span><span class="n">n</span><span class="mi">-1</span><span class="p">);</span><span class="w"> </span><span class="p">}</span>
+<span class="k">constexpr</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">factorial</span><span class="p">(</span><span class="mi">5</span><span class="p">);</span><span class="w">   </span><span class="c1">// 120 — computed at compile time</span>
+
+<span class="c1">// With consteval (C++20): MUST be compile-time.</span>
+<span class="k">consteval</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">square</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">x</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="k">constexpr</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">square</span><span class="p">(</span><span class="mi">7</span><span class="p">);</span><span class="w">   </span><span class="c1">// OK, compile time</span>
+<span class="c1">// int z = square(runtime_var);  // ERROR — must be constant</span>
+</code></pre></div>
+
+<p><strong>Trade-off:</strong> Compile time goes up; runtime goes down. Pre-compute lookup tables, hashes, dispatch tables.</p>
+<h2 id="419-concurrency-stdthread-vs-stdasync-vs-thread-pool-vs-stdjthread">4.19 Concurrency: <code>std::thread</code> vs <code>std::async</code> vs Thread Pool vs <code>std::jthread</code></h2>
+<div class="codehilite"><pre><span></span><code><span class="c1">// std::thread — manual lifecycle</span>
+<span class="n">std</span><span class="o">::</span><span class="kr">thread</span><span class="w"> </span><span class="nf">t</span><span class="p">([]</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">work</span><span class="p">();</span><span class="w"> </span><span class="p">});</span>
+<span class="n">t</span><span class="p">.</span><span class="n">join</span><span class="p">();</span><span class="w">   </span><span class="c1">// forget this and you abort()</span>
+
+<span class="c1">// std::jthread (C++20) — RAII; auto-joins; supports cooperative cancellation</span>
+<span class="n">std</span><span class="o">::</span><span class="n">jthread</span><span class="w"> </span><span class="nf">jt</span><span class="p">([](</span><span class="n">std</span><span class="o">::</span><span class="n">stop_token</span><span class="w"> </span><span class="n">st</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">st</span><span class="p">.</span><span class="n">stop_requested</span><span class="p">())</span><span class="w"> </span><span class="n">work</span><span class="p">();</span>
+<span class="p">});</span>
+<span class="c1">// no join needed; destructor handles it</span>
+
+<span class="c1">// std::async — high-level; can run sync or async (impl-defined)</span>
+<span class="k">auto</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">async</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">launch</span><span class="o">::</span><span class="n">async</span><span class="p">,</span><span class="w"> </span><span class="p">[]{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">compute</span><span class="p">();</span><span class="w"> </span><span class="p">});</span>
+<span class="kt">int</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">f</span><span class="p">.</span><span class="n">get</span><span class="p">();</span>
+
+<span class="c1">// Thread pool — best for many short tasks (stdlib doesn&#39;t ship one until C++26 executors)</span>
+</code></pre></div>
+
+<p><strong>Heuristic:</strong> Use <code>jthread</code> for new code (C++20+). Use a thread-pool library (<code>folly</code>, <code>taskflow</code>) for parallel-task workloads. Avoid raw <code>std::thread</code> outside of trivial cases.</p>
+<h2 id="420-locks-vs-atomics-memory-order">4.20 Locks vs Atomics — Memory Order</h2>
+<div class="codehilite"><pre><span></span><code><span class="n">std</span><span class="o">::</span><span class="n">atomic</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="n">counter</span><span class="p">{</span><span class="mi">0</span><span class="p">};</span>
+<span class="n">counter</span><span class="p">.</span><span class="n">fetch_add</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">memory_order_relaxed</span><span class="p">);</span><span class="w">   </span><span class="c1">// counter, no ordering</span>
+<span class="n">counter</span><span class="p">.</span><span class="n">fetch_add</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">memory_order_acquire</span><span class="p">);</span><span class="w">   </span><span class="c1">// for synchronized loads</span>
+
+<span class="c1">// Mutex — heavier but easier to reason about</span>
+<span class="n">std</span><span class="o">::</span><span class="n">mutex</span><span class="w"> </span><span class="n">m</span><span class="p">;</span>
+<span class="n">std</span><span class="o">::</span><span class="n">lock_guard</span><span class="w"> </span><span class="nf">lock</span><span class="p">(</span><span class="n">m</span><span class="p">);</span><span class="w">   </span><span class="c1">// RAII; unlocks on scope exit</span>
+</code></pre></div>
+
+<table>
+<thead>
+<tr>
+<th><code>memory_order</code></th>
+<th>Guarantee</th>
+<th>Cost</th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>relaxed</code></td>
+<td>Atomicity only.</td>
+<td>Cheapest.</td>
+<td>Counters where ordering doesn't matter.</td>
+</tr>
+<tr>
+<td><code>consume</code></td>
+<td>(largely deprecated; treat as acquire)</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>acquire</code></td>
+<td>This load + later ops can't move before.</td>
+<td>One barrier.</td>
+<td>Reading a flag set by another thread.</td>
+</tr>
+<tr>
+<td><code>release</code></td>
+<td>This store + earlier ops can't move after.</td>
+<td>One barrier.</td>
+<td>Setting a flag readers will check.</td>
+</tr>
+<tr>
+<td><code>acq_rel</code></td>
+<td>Both.</td>
+<td>Two barriers.</td>
+<td>RMW operations.</td>
+</tr>
+<tr>
+<td><code>seq_cst</code></td>
+<td>Total order across all threads.</td>
+<td>Most expensive.</td>
+<td><strong>Default.</strong> Most readable. Use unless profiled otherwise.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Rule:</strong> Start with <code>seq_cst</code>. Profile. Relax only on hot paths and prove correctness.</p>
+<h2 id="421-stdshared_mutex-reader-writer">4.21 <code>std::shared_mutex</code>: Reader-Writer</h2>
+<div class="codehilite"><pre><span></span><code><span class="n">std</span><span class="o">::</span><span class="n">shared_mutex</span><span class="w"> </span><span class="n">m</span><span class="p">;</span>
+<span class="p">{</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">shared_lock</span><span class="w"> </span><span class="nf">r</span><span class="p">(</span><span class="n">m</span><span class="p">);</span><span class="w"> </span><span class="cm">/* many readers OK */</span><span class="w"> </span><span class="p">}</span>
+<span class="p">{</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">unique_lock</span><span class="w"> </span><span class="nf">w</span><span class="p">(</span><span class="n">m</span><span class="p">);</span><span class="w"> </span><span class="cm">/* exclusive writer */</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
+
+<p><strong>Trade-off:</strong> Heavier than <code>mutex</code>; pays off only when reader work is <strong>substantial</strong> AND <strong>frequent</strong> — otherwise contended exclusive-mode RW locks lose to plain <code>mutex</code>. Rule of thumb: don't use unless reader hold time ≫ writer hold time AND readers ≫ writers.</p>
+<h2 id="422-pimpl-idiom">4.22 PIMPL Idiom</h2>
+<div class="codehilite"><pre><span></span><code><span class="c1">// widget.h — public header; no implementation details</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Widget</span><span class="w"> </span><span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+<span class="w">    </span><span class="n">Widget</span><span class="p">();</span>
+<span class="w">    </span><span class="o">~</span><span class="n">Widget</span><span class="p">();</span>
+<span class="w">    </span><span class="n">Widget</span><span class="p">(</span><span class="n">Widget</span><span class="o">&amp;&amp;</span><span class="p">)</span><span class="w"> </span><span class="k">noexcept</span><span class="p">;</span>
+<span class="w">    </span><span class="n">Widget</span><span class="o">&amp;</span><span class="w"> </span><span class="k">operator</span><span class="o">=</span><span class="p">(</span><span class="n">Widget</span><span class="o">&amp;&amp;</span><span class="p">)</span><span class="w"> </span><span class="k">noexcept</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="nf">render</span><span class="p">();</span>
+<span class="k">private</span><span class="o">:</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">Impl</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">Impl</span><span class="o">&gt;</span><span class="w"> </span><span class="n">p_</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="c1">// widget.cpp</span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">Widget</span><span class="o">::</span><span class="n">Impl</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">width</span><span class="p">,</span><span class="w"> </span><span class="n">height</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Pixel</span><span class="o">&gt;</span><span class="w"> </span><span class="n">pixels</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="nf">do_render</span><span class="p">();</span>
+<span class="p">};</span>
+<span class="n">Widget</span><span class="o">::</span><span class="n">Widget</span><span class="p">()</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">p_</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">make_unique</span><span class="o">&lt;</span><span class="n">Impl</span><span class="o">&gt;</span><span class="p">())</span><span class="w"> </span><span class="p">{}</span>
+<span class="n">Widget</span><span class="o">::~</span><span class="n">Widget</span><span class="p">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">default</span><span class="p">;</span><span class="w">   </span><span class="c1">// MUST be in .cpp where Impl is complete</span>
+<span class="n">Widget</span><span class="o">::</span><span class="n">Widget</span><span class="p">(</span><span class="n">Widget</span><span class="o">&amp;&amp;</span><span class="p">)</span><span class="w"> </span><span class="k">noexcept</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">default</span><span class="p">;</span>
+<span class="n">Widget</span><span class="o">&amp;</span><span class="w"> </span><span class="n">Widget</span><span class="o">::</span><span class="k">operator</span><span class="o">=</span><span class="p">(</span><span class="n">Widget</span><span class="o">&amp;&amp;</span><span class="p">)</span><span class="w"> </span><span class="k">noexcept</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">default</span><span class="p">;</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">Widget::render</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">p_</span><span class="o">-&gt;</span><span class="n">do_render</span><span class="p">();</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
+
+<p><strong>Pros:</strong> Stable ABI; faster compilation (no #includes leak); hide implementation.
+<strong>Cons:</strong> Heap allocation per object; one indirection per call. Used heavily by Qt, libraries with stable ABI requirements.</p>
+<hr>

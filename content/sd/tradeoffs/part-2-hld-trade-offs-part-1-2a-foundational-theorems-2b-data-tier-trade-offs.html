@@ -1,0 +1,450 @@
+<h1 id="part-2-hld-trade-offs-part-1-2a-foundational-theorems-2b-data-tier-trade-offs">PART 2 — HLD Trade-offs — Part 1: 2A. Foundational Theorems → 2B. Data Tier Trade-offs</h1>
+<h2 id="2a-foundational-theorems">2A. Foundational Theorems</h2>
+<h3 id="cap-brewer-2000-proven-by-gilbert-lynch-2002">CAP (Brewer, 2000; proven by Gilbert &amp; Lynch 2002)</h3>
+<p>In the presence of a <strong>network Partition</strong>, you must choose between <strong>Consistency</strong> (all nodes see the same data) and <strong>Availability</strong> (every request gets a response).</p>
+<p><strong>The 2012 revision (Brewer, IEEE Computer / InfoQ):</strong></p>
+<blockquote>
+<p>"The 2 of 3 formulation was always misleading because it tended to oversimplify the tensions among properties. ... The modern CAP goal should be to maximize combinations of consistency and availability that make sense for the specific application."</p>
+</blockquote>
+<p><strong>Practical reading:</strong>
+- Partitions are <strong>rare</strong> (within a datacenter) but <strong>inevitable</strong> (cross-region).
+- "Choose CP or AP" is the wrong frame. Real systems choose <strong>per-operation</strong> — strong-consistency for writes to the order ledger, eventual for the recommendation feed.
+- During non-partition operation, the choice is between <strong>latency and consistency</strong> (PACELC).</p>
+<h3 id="pacelc-daniel-abadi-2010">PACELC (Daniel Abadi, 2010)</h3>
+<blockquote>
+<p>"If there is a Partition (P), how does the system trade off Availability and Consistency (A and C); else (E), when the system is running normally in the absence of partitions, how does the system trade off Latency (L) and Consistency (C)?"</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>System</th>
+<th>Partition behavior</th>
+<th>Normal behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dynamo / Cassandra / Riak</td>
+<td>PA (sacrifice C for A)</td>
+<td>EL (sacrifice C for low L)</td>
+</tr>
+<tr>
+<td>BigTable / HBase / MongoDB (default)</td>
+<td>PC (sacrifice A for C)</td>
+<td>EC (sacrifice L for C)</td>
+</tr>
+<tr>
+<td>MySQL / Postgres (single primary)</td>
+<td>PC</td>
+<td>EC</td>
+</tr>
+<tr>
+<td>Spanner</td>
+<td>PC (CP)</td>
+<td>EC (Paxos round-trip cost)</td>
+</tr>
+<tr>
+<td>PNUTS (Yahoo)</td>
+<td>PA</td>
+<td>EC</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Interview gold:</strong> Quote PACELC, not just CAP. It signals you understand the <em>latency</em> axis even when nothing is broken.</p>
+<h3 id="flp-impossibility-fischer-lynch-paterson-1985">FLP Impossibility (Fischer, Lynch, Paterson, 1985)</h3>
+<p>In an <strong>asynchronous</strong> system with even <strong>one</strong> crash failure, you cannot have a <strong>deterministic</strong> consensus algorithm that is <em>both</em> always-safe AND always-live.</p>
+<p><strong>What this means in practice:</strong> Paxos, Raft, etc., are <strong>safe</strong> (never wrong) but only <strong>live with a synchrony assumption</strong> (e.g., timeouts). They can stall during network instability. This is why your Raft cluster sometimes "elects forever" during a flaky network.</p>
+<h2 id="2b-data-tier-trade-offs">2B. Data Tier Trade-offs</h2>
+<h3 id="acid-vs-base">ACID vs BASE</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>ACID (RDBMS)</th>
+<th>BASE (NoSQL)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>A</strong></td>
+<td>Atomic</td>
+<td>Basically Available</td>
+</tr>
+<tr>
+<td><strong>C</strong></td>
+<td>Consistent</td>
+<td>Soft state</td>
+</tr>
+<tr>
+<td><strong>I</strong></td>
+<td>Isolated</td>
+<td>Eventually consistent</td>
+</tr>
+<tr>
+<td><strong>D</strong></td>
+<td>Durable</td>
+<td>(also durable, usually)</td>
+</tr>
+</tbody>
+</table>
+<p>Werner Vogels (Amazon CTO): <em>"In an environment where we accept that consistency may be eventual, we get higher availability, better partition tolerance and lower latency."</em></p>
+<p><strong>Rule of thumb:</strong> Money, inventory, identity → ACID. Counts, feeds, recommendations, analytics → BASE.</p>
+<h3 id="replication-trade-offs">Replication Trade-offs</h3>
+<h4 id="master-slave-single-leader">Master-slave (single-leader)</h4>
+<ul>
+<li><strong>Pros:</strong> Simple, strong consistency on master, easy to reason about. Postgres streaming replication, MySQL binlog.</li>
+<li><strong>Cons:</strong> Master is SPOF (until failover); writes don't scale; replica lag = stale reads.</li>
+</ul>
+<h4 id="multi-master">Multi-master</h4>
+<ul>
+<li><strong>Pros:</strong> Writes scale; survives leader loss.</li>
+<li><strong>Cons:</strong> <strong>Conflict resolution</strong> is the swamp. Last-write-wins loses data. CRDTs work for some types (counters, sets) but not arbitrary records.</li>
+</ul>
+<h4 id="leaderless-dynamo-style">Leaderless (Dynamo-style)</h4>
+<ul>
+<li><strong>Pros:</strong> No leader to fail; tunable consistency via R+W&gt;N.</li>
+<li><strong>Cons:</strong> Read-repair / anti-entropy adds complexity; can serve stale reads even with quorum.</li>
+</ul>
+<h4 id="sync-vs-async-replication">Sync vs Async replication</h4>
+<ul>
+<li><strong>Sync:</strong> Write doesn't ack until N replicas durable. <strong>Latency cost:</strong> at minimum one cross-region RTT (~70ms US east↔west). <strong>Benefit:</strong> zero RPO (no data loss on primary failure).</li>
+<li><strong>Async:</strong> Fast writes, <strong>non-zero RPO</strong> — if primary dies, you can lose the last few seconds.</li>
+<li><strong>Semi-sync:</strong> Compromise; ack after one replica gets it. MySQL's default for production HA.</li>
+</ul>
+<h3 id="sharding-partitioning-trade-offs">Sharding (Partitioning) Trade-offs</h3>
+<table>
+<thead>
+<tr>
+<th>Strategy</th>
+<th>Pros</th>
+<th>Cons</th>
+<th>When to use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Hash partitioning</strong></td>
+<td>Even distribution; simple.</td>
+<td>No range scans; resharding is painful (consistent hashing helps).</td>
+<td>UUIDs, user IDs.</td>
+</tr>
+<tr>
+<td><strong>Range partitioning</strong></td>
+<td>Range scans cheap; ordered iteration.</td>
+<td>Hot spots (e.g., <code>created_at</code> shard burning).</td>
+<td>Time-series, lexicographic keys.</td>
+</tr>
+<tr>
+<td><strong>Geo / directory</strong></td>
+<td>Locality; data residency.</td>
+<td>Manual shard management; rebalancing.</td>
+<td>GDPR / per-region products.</td>
+</tr>
+<tr>
+<td><strong>Composite (hash-of-prefix + range)</strong></td>
+<td>Spread + locality.</td>
+<td>Complex.</td>
+<td>Cassandra's partition+clustering keys.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The hot-shard problem:</strong> If 1% of users generate 50% of traffic (Pareto), hash partitioning <em>still</em> concentrates them on one shard. Solutions: <strong>sub-shard hot keys</strong> (e.g., <code>user:42:shard_3</code>), <strong>add a randomized suffix</strong>, or <strong>route hot keys to dedicated shards</strong>.</p>
+<h3 id="caching-five-patterns">Caching: Five Patterns</h3>
+<table>
+<thead>
+<tr>
+<th>Pattern</th>
+<th>Read path</th>
+<th>Write path</th>
+<th>Consistency</th>
+<th>Pros</th>
+<th>Cons</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Cache-aside (lazy load)</strong></td>
+<td>App checks cache → miss → load DB → fill cache.</td>
+<td>App writes DB and <strong>invalidates</strong> cache.</td>
+<td>Eventual.</td>
+<td>Most flexible; cache failure ≠ app failure.</td>
+<td>Stale on race conditions; thundering herd on miss.</td>
+</tr>
+<tr>
+<td><strong>Read-through</strong></td>
+<td>App calls cache; cache loads on miss.</td>
+<td>Same as cache-aside.</td>
+<td>Eventual.</td>
+<td>App code is simpler.</td>
+<td>Cache library coupling.</td>
+</tr>
+<tr>
+<td><strong>Write-through</strong></td>
+<td>Same as read-through.</td>
+<td>App writes cache → cache writes DB synchronously.</td>
+<td>Strong.</td>
+<td>No stale reads.</td>
+<td>Higher write latency.</td>
+</tr>
+<tr>
+<td><strong>Write-back / write-behind</strong></td>
+<td>Cache.</td>
+<td>App writes cache; cache asynchronously flushes to DB.</td>
+<td>Eventual; data loss if cache crashes.</td>
+<td>Massive write throughput.</td>
+<td>Durability risk.</td>
+</tr>
+<tr>
+<td><strong>Write-around</strong></td>
+<td>Cache-aside.</td>
+<td>App writes DB only; cache filled lazily on next read.</td>
+<td>Eventual.</td>
+<td>Avoids cache pollution from rarely-read writes.</td>
+<td>First read after write is a miss.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="cache-invalidation-the-real-hard-problem">Cache Invalidation: The Real Hard Problem</h3>
+<blockquote>
+<p>"There are only two hard things in Computer Science: cache invalidation and naming things." — Phil Karlton</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>Strategy</th>
+<th>Pros</th>
+<th>Cons</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>TTL</strong></td>
+<td>Trivial.</td>
+<td>Stale until expiry; thundering herd on expiry.</td>
+</tr>
+<tr>
+<td><strong>Explicit invalidation on write</strong></td>
+<td>Fresh.</td>
+<td>Easy to miss a write path; no global view.</td>
+</tr>
+<tr>
+<td><strong>Versioned keys</strong> (<code>user:42:v17</code>)</td>
+<td>Atomically swap.</td>
+<td>Stale entries linger (need eviction or LRU).</td>
+</tr>
+<tr>
+<td><strong>Write-through</strong></td>
+<td>Always fresh.</td>
+<td>Coupled write path.</td>
+</tr>
+<tr>
+<td><strong>Pub/sub invalidation</strong> (Redis keyspace events)</td>
+<td>Multi-region.</td>
+<td>Eventual; messages can be lost.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Meta TAO:</strong> Achieved cache hit rates of 99.99999999% (10 nines) by combining a write-through layer with a leaderless invalidation broadcast. Quote from the team: <em>"Going from six nines to ten nines was about eliminating the categories of bug, not optimizing the average case."</em></p>
+<h3 id="cache-stampede-thundering-herd">Cache Stampede / Thundering Herd</h3>
+<p>When a hot key expires, <em>every</em> request misses simultaneously and stampedes the database.</p>
+<p><strong>Mitigations:</strong>
+1. <strong>Singleflight</strong> — only one request per key fetches; the rest wait. Go's <code>singleflight.Group</code> is the canonical implementation.
+2. <strong>Probabilistic early expiration</strong> — refresh with probability that increases as TTL approaches.
+3. <strong>Stale-while-revalidate</strong> — serve the stale value while refreshing in the background.
+4. <strong>Coalescing at the cache layer</strong> — Discord uses request coalescing inside their cache service so 1M concurrent reads of the same expired key result in 1 DB read.
+5. <strong>Pre-warm</strong> — daemon refreshes hot keys before they expire.</p>
+<h3 id="cache-eviction-lru-lfu-arc-tinylfu">Cache Eviction: LRU / LFU / ARC / TinyLFU</h3>
+<table>
+<thead>
+<tr>
+<th>Algorithm</th>
+<th>Recency</th>
+<th>Frequency</th>
+<th>Use when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>LRU</strong></td>
+<td>✓</td>
+<td>✗</td>
+<td>General-purpose; most common.</td>
+</tr>
+<tr>
+<td><strong>LFU</strong></td>
+<td>✗</td>
+<td>✓</td>
+<td>Workloads with stable popularity (e.g., CDN edge).</td>
+</tr>
+<tr>
+<td><strong>ARC</strong></td>
+<td>✓</td>
+<td>✓ (adaptive)</td>
+<td>Database buffer pools (Postgres considers it; ZFS ships it).</td>
+</tr>
+<tr>
+<td><strong>TinyLFU / W-TinyLFU</strong></td>
+<td>✓</td>
+<td>✓ (sketched)</td>
+<td>Modern caches (Caffeine, Ristretto). Very low metadata overhead via Bloom-style sketches.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="message-queues-kafka-vs-rabbitmq-vs-sqs-vs-pulsar-vs-nats">Message Queues: Kafka vs RabbitMQ vs SQS vs Pulsar vs NATS</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Kafka</th>
+<th>RabbitMQ</th>
+<th>SQS</th>
+<th>Pulsar</th>
+<th>NATS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Model</strong></td>
+<td>Distributed log</td>
+<td>Broker (smart)</td>
+<td>Managed queue</td>
+<td>Distributed log + queue</td>
+<td>Pub/sub + JetStream</td>
+</tr>
+<tr>
+<td><strong>Ordering</strong></td>
+<td>Per partition</td>
+<td>Per queue</td>
+<td>FIFO mode</td>
+<td>Per partition</td>
+<td>Per subject (with JS)</td>
+</tr>
+<tr>
+<td><strong>Throughput</strong></td>
+<td>100k–1M msg/s/partition</td>
+<td>20–50k/queue</td>
+<td>High but per-shard</td>
+<td>Comparable to Kafka</td>
+<td>Very high (single-digit μs)</td>
+</tr>
+<tr>
+<td><strong>Latency</strong></td>
+<td>5–30 ms</td>
+<td>&lt;1 ms</td>
+<td>10–100 ms</td>
+<td>5–30 ms</td>
+<td>&lt;1 ms</td>
+</tr>
+<tr>
+<td><strong>Retention</strong></td>
+<td>Long (TB-scale)</td>
+<td>Short (queue empties)</td>
+<td>14 days max</td>
+<td>Tiered (long)</td>
+<td>Configurable</td>
+</tr>
+<tr>
+<td><strong>Push vs Pull</strong></td>
+<td><strong>Pull</strong></td>
+<td>Push</td>
+<td>Pull</td>
+<td>Both</td>
+<td>Push</td>
+</tr>
+<tr>
+<td><strong>Use case</strong></td>
+<td>Event sourcing, streaming, log aggregation</td>
+<td>Task queues, RPC, work distribution</td>
+<td>Cloud-native simple queueing</td>
+<td>Multi-tenant, geo-replication</td>
+<td>Microservice mesh, IoT</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why Kafka uses pull:</strong> Pull is structural backpressure — slow consumers can't be overwhelmed; they just lag. Push systems require careful credit/flow-control protocols (RabbitMQ has them, but they're hard).</p>
+<h3 id="delivery-semantics">Delivery Semantics</h3>
+<table>
+<thead>
+<tr>
+<th>Semantic</th>
+<th>What it means</th>
+<th>How</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>At-most-once</strong></td>
+<td>Send and forget.</td>
+<td>UDP-style, fire-and-forget.</td>
+</tr>
+<tr>
+<td><strong>At-least-once</strong></td>
+<td>Will retry until ack. <strong>Duplicates possible.</strong></td>
+<td>Default for most queues. Requires idempotent consumers.</td>
+</tr>
+<tr>
+<td><strong>Exactly-once</strong></td>
+<td>Each message processed exactly once.</td>
+<td><strong>Hard.</strong> Kafka transactions (within Kafka). End-to-end requires idempotent consumers + dedup.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The Outbox Pattern (poor man's exactly-once across DB+queue):</strong>
+1. App opens DB transaction.
+2. Writes business row + a row to <code>outbox</code> table — atomically.
+3. Separate poller reads <code>outbox</code>, publishes to queue, marks row as published.</p>
+<p>Avoids 2PC (which is operationally horrible and has well-known FLP-related liveness issues). Used by Stripe, Shopify, many event-sourced systems.</p>
+<h3 id="lambda-vs-kappa-architectures">Lambda vs Kappa Architectures</h3>
+<p><strong>Lambda (Marz, 2011):</strong> Two parallel pipelines — batch (correct, slow) and speed (approximate, fast). Query layer merges.
+- <strong>Pro:</strong> Reprocess history when logic changes.
+- <strong>Con:</strong> Two codebases, two operational stacks, eventual consistency between layers.</p>
+<p><strong>Kappa (Kreps, 2014, <em>Questioning the Lambda Architecture</em>):</strong> One stream pipeline. Reprocess by replaying the log from offset 0.</p>
+<blockquote>
+<p>"If you can replay your log, you don't need a separate batch pipeline." — Jay Kreps</p>
+</blockquote>
+<p><strong>When Lambda still wins:</strong> Heavy ML training jobs that need full historical scans on a different engine (Spark) than the streaming engine (Flink).</p>
+<h3 id="coordination-avoidance-i-confluence-bailis-et-al-vldb-2015">Coordination Avoidance / I-Confluence (Bailis et al., VLDB 2015)</h3>
+<p>The cheapest distributed system is the one that doesn't coordinate. <strong>Coordination-free</strong> operations include:
+- Counter increments (CRDT).
+- Adding to a set (CRDT G-Set).
+- Append-only logs.
+- Idempotent inserts with UUID PKs.</p>
+<p><strong>Coordination required:</strong>
+- Unique constraints (username taken?).
+- Bank transfer with negative-balance check.
+- Inventory decrement when stock approaches 0.</p>
+<p><strong>Design principle:</strong> Push coordination to the <em>boundary</em> of the system (one Postgres row holds the unique constraint) and keep the hot path coordination-free.</p>
+<h3 id="consensus-paxos-raft-zab-multi-paxos">Consensus: Paxos / Raft / ZAB / Multi-Paxos</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Paxos</strong> (Lamport 1998)</td>
+<td>Foundational. Hard to implement correctly.</td>
+</tr>
+<tr>
+<td><strong>Multi-Paxos</strong></td>
+<td>Streamlined Paxos for log replication.</td>
+</tr>
+<tr>
+<td><strong>Raft</strong> (Ongaro &amp; Ousterhout 2014)</td>
+<td>Designed for understandability. etcd, Consul, TiKV. <strong>Default choice today.</strong></td>
+</tr>
+<tr>
+<td><strong>ZAB</strong></td>
+<td>ZooKeeper.</td>
+</tr>
+<tr>
+<td><strong>PBFT / HotStuff</strong></td>
+<td>Byzantine — needed only for blockchain or hostile environments.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Crash-fail vs Byzantine:</strong>
+- Crash-fail: nodes either work correctly or stop. Tolerate <code>f</code> failures with <code>2f+1</code> nodes.
+- Byzantine: nodes can lie. Tolerate <code>f</code> with <code>3f+1</code> nodes. <strong>3× the cost.</strong> Almost no internal corporate system needs this.</p>

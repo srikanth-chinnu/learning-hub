@@ -115,6 +115,262 @@ def slug(name: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
 
 
+def derive_difficulty(tag: str, item_id: str) -> str:
+    t = (tag or "").lower()
+    iid = (item_id or "").lower()
+    # ID-based overrides (catch chunked items where tag is generic '5-min').
+    if "tier-1" in iid or "/beginner" in iid:    return "beginner"
+    if "tier-2" in iid or "/intermediate" in iid: return "intermediate"
+    if "tier-3" in iid or "/advanced" in iid:    return "advanced"
+    if "tier-4" in iid or "/expert" in iid:      return "expert"
+    if "/meta" in iid:                           return "all-levels"
+    if "tradeoffs" in iid or "trade-off" in iid: return "advanced"
+    if t == "tier-1": return "beginner"
+    if t == "tier-2": return "intermediate"
+    if t == "tier-3": return "advanced"
+    if t == "tier-4": return "expert"
+    if t == "5-min":  return "all-levels"
+    if t == "plan":   return "all-levels"
+    if t == "overview" or t == "index": return "all-levels"
+    if t == "deep-dive":  return "advanced"
+    if t == "curriculum": return "all-levels"
+    if t == "reference":  return "all-levels"
+    if "5min" in iid or "5-minute" in iid: return "all-levels"
+    return "all-levels"
+
+
+def slugify(s: str, max_len: int = 80) -> str:
+    s = s.lower()
+    s = re.sub(r"[^\w\s-]", "", s)
+    s = re.sub(r"\s+", "-", s).strip("-")
+    s = re.sub(r"-+", "-", s)
+    if len(s) > max_len:
+        s = s[:max_len].rstrip("-")
+    return s or "section"
+
+
+def split_md_by_h1(text: str):
+    """Split markdown by top-level H1, respecting fenced code blocks."""
+    lines = text.split("\n")
+    in_fence = False
+    sections = []
+    current_title = None
+    current_lines = []
+    preamble_lines = []
+    for ln in lines:
+        stripped = ln.lstrip()
+        if stripped.startswith("```") or stripped.startswith("~~~"):
+            in_fence = not in_fence
+            (current_lines if current_title is not None else preamble_lines).append(ln)
+            continue
+        if not in_fence and ln.startswith("# ") and not ln.startswith("## "):
+            if current_title is not None:
+                sections.append((current_title, "\n".join(current_lines).rstrip()))
+            current_title = ln[2:].strip()
+            current_lines = []
+        else:
+            (current_lines if current_title is not None else preamble_lines).append(ln)
+    if current_title is not None:
+        sections.append((current_title, "\n".join(current_lines).rstrip()))
+    preamble = "\n".join(preamble_lines).rstrip()
+    return preamble, sections
+
+
+def split_h1_body_by_h2(body: str):
+    """Split an H1 section's body by H2 boundaries, respecting fenced code blocks."""
+    lines = body.split("\n")
+    in_fence = False
+    sections = []
+    cur_title = None
+    cur_lines = []
+    pre_lines = []
+    for ln in lines:
+        stripped = ln.lstrip()
+        if stripped.startswith("```") or stripped.startswith("~~~"):
+            in_fence = not in_fence
+            (cur_lines if cur_title is not None else pre_lines).append(ln)
+            continue
+        if not in_fence and ln.startswith("## ") and not ln.startswith("### "):
+            if cur_title is not None:
+                sections.append((cur_title, "\n".join(cur_lines).rstrip()))
+            cur_title = ln[3:].strip()
+            cur_lines = []
+        else:
+            (cur_lines if cur_title is not None else pre_lines).append(ln)
+    if cur_title is not None:
+        sections.append((cur_title, "\n".join(cur_lines).rstrip()))
+    return "\n".join(pre_lines).rstrip(), sections
+
+
+def _word_count(s: str) -> int:
+    return len(re.findall(r"\b\w+\b", s))
+
+
+def smart_chunks_for_h1(title: str, body: str,
+                        target_words: int = 1100,
+                        max_words: int = 1700):
+    """Return list of (chunk_title, chunk_body) pairs.
+
+    Sections that fit within ``max_words`` stay as a single chunk. Larger
+    sections are split by H2 with consecutive sub-sections merged until they
+    approach ``target_words``. Small sub-sections never become 1-minute
+    standalone pages.
+    """
+    if _word_count(body) <= max_words:
+        return [(title, body)]
+
+    pre, h2_sections = split_h1_body_by_h2(body)
+    if not h2_sections:
+        return [(title, body)]
+
+    chunks = []
+    buf_titles: list[str] = []
+    buf_parts: list[str] = []
+    buf_words = 0
+    part_idx = 1
+
+    if pre:
+        buf_parts.append(pre)
+        buf_words += _word_count(pre)
+
+    def _flush():
+        nonlocal buf_titles, buf_parts, buf_words, part_idx
+        if not buf_titles and not buf_parts:
+            return
+        first = buf_titles[0] if buf_titles else "Intro"
+        last = buf_titles[-1] if buf_titles else first
+        if len(buf_titles) > 1 and first != last:
+            chunk_title = f"{title} — Part {part_idx}: {first} → {last}"
+        else:
+            chunk_title = f"{title} — Part {part_idx}: {first}"
+        chunks.append((chunk_title, "\n\n".join(buf_parts).strip()))
+        part_idx += 1
+        buf_titles = []
+        buf_parts = []
+        buf_words = 0
+
+    for h2_title, h2_body in h2_sections:
+        h2_block = f"## {h2_title}\n\n{h2_body}".rstrip()
+        h2_words = _word_count(h2_block)
+        next_total = buf_words + h2_words
+        # Only flush on overflow when the running buffer is already substantive.
+        # Otherwise grow past the soft cap rather than emit a sliver chunk.
+        if buf_words >= int(target_words * 0.7) and next_total > int(target_words * 1.4):
+            _flush()
+        buf_titles.append(h2_title)
+        buf_parts.append(h2_block)
+        buf_words += h2_words
+        if buf_words >= target_words:
+            _flush()
+    _flush()
+
+    if len(chunks) <= 1:
+        return [(title, body)]
+    return chunks
+
+
+def render_split_source(src: Path, base_id: str, master_title: str,
+                        master_tag: str = "curriculum",
+                        chunk_tag: str = "5-min"):
+    """Render src as one master 'index' page + one page per top-level H1 section."""
+    text = src.read_text(encoding="utf-8")
+    preamble, sections = split_md_by_h1(text)
+
+    # Build the master/index page: preamble + a "Sections" list linking to each chunk.
+    intro_md = preamble or f"# {master_title}\n"
+    if not intro_md.lstrip().startswith("#"):
+        intro_md = f"# {master_title}\n\n" + intro_md
+
+    items = []
+
+    # If there's only one or zero H1s, fall back to a single-page render.
+    if len(sections) <= 1:
+        return [render_source(src, base_id, master_title, tag=master_tag)]
+
+    # Expand oversized H1 sections into "Part N" sub-chunks (~5-7 min each).
+    expanded: list[tuple[str, str]] = []
+    h1_to_subchunks: dict[str, list[tuple[str, str]]] = {}
+    for h1_title, h1_body in sections:
+        sub = smart_chunks_for_h1(h1_title, h1_body)
+        h1_to_subchunks[h1_title] = sub
+        expanded.extend(sub)
+
+    section_links_md = "\n\n## Sections in this guide\n\n"
+    counter = 1
+    for h1_title, _ in sections:
+        sub = h1_to_subchunks[h1_title]
+        if len(sub) == 1:
+            sub_title, _ = sub[0]
+            slug = slugify(sub_title)
+            section_links_md += f"{counter}. [{sub_title}](#/{base_id}/{slug})\n"
+            counter += 1
+        else:
+            section_links_md += f"{counter}. **{h1_title}**\n"
+            counter += 1
+            for sub_title, _ in sub:
+                slug = slugify(sub_title)
+                section_links_md += f"   - [{sub_title}](#/{base_id}/{slug})\n"
+    intro_md = intro_md.rstrip() + section_links_md + "\n"
+
+    # Render the master index synthetically (no source file write-back).
+    intro_html, intro_headings = render_md(intro_md)
+    intro_words = len(re.findall(r"\b\w+\b", intro_md))
+    intro_read_min = max(1, round(intro_words / 220))
+    intro_rel = Path("content") / (base_id + ".html")
+    (HUB / intro_rel).parent.mkdir(parents=True, exist_ok=True)
+    (HUB / intro_rel).write_text(intro_html, encoding="utf-8")
+    intro_summary = first_paragraph(intro_md) or master_title
+
+    # Register synthetic master page under the original src path so cross-doc links resolve.
+    try:
+        src_rel = src.resolve().relative_to(SOURCES).as_posix()
+        LINK_MAP[src_rel] = base_id
+    except ValueError:
+        pass
+
+    items.append({
+        "id": base_id,
+        "title": master_title,
+        "src": intro_rel.as_posix(),
+        "anchors": intro_headings,
+        "summary": intro_summary,
+        "tag": master_tag,
+        "difficulty": derive_difficulty(master_tag, base_id),
+        "words": intro_words,
+        "read_min": intro_read_min,
+    })
+
+    # Render each (sub-)chunk as its own page.
+    for chunk_title, chunk_body in expanded:
+        slug = slugify(chunk_title)
+        item_id = f"{base_id}/{slug}"
+        chunk_md = f"# {chunk_title}\n\n{chunk_body}\n"
+        chunk_html, chunk_headings = render_md(chunk_md)
+        chunk_words = len(re.findall(r"\b\w+\b", chunk_md))
+        chunk_read_min = max(1, round(chunk_words / 220))
+        chunk_summary = first_paragraph(chunk_body) or chunk_title
+
+        rel_out = Path("content") / (item_id + ".html")
+        out = HUB / rel_out
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(chunk_html, encoding="utf-8")
+        RENDERED_PAGES.append((out, src.resolve()))
+
+        items.append({
+            "id": item_id,
+            "title": chunk_title,
+            "src": rel_out.as_posix(),
+            "anchors": chunk_headings,
+            "summary": chunk_summary,
+            "tag": chunk_tag,
+            "difficulty": derive_difficulty(chunk_tag, item_id),
+            "words": chunk_words,
+            "read_min": chunk_read_min,
+        })
+
+    return items
+
+
 def render_source(src: Path, item_id: str, default_title: str, tag: str = ""):
     text = src.read_text(encoding="utf-8")
     html, headings = render_md(text)
@@ -144,6 +400,7 @@ def render_source(src: Path, item_id: str, default_title: str, tag: str = ""):
         "anchors": headings,
         "summary": summary,
         "tag": tag,
+        "difficulty": derive_difficulty(tag, item_id),
         "words": word_count,
         "read_min": read_min,
     }
@@ -239,9 +496,21 @@ def build_manifest():
     dsa_track = {"id": "dsa", "title": "DSA & Problem Solving", "icon": "🧠", "groups": []}
     dsa_src = SOURCES / "dsa.md"
     if dsa_src.exists():
-        item = render_source(dsa_src, "dsa/full", "DSA Curriculum", tag="curriculum")
-        dsa_track["groups"].append({"title": "Curriculum", "items": [item]})
-        flat.append(item)
+        dsa_items = render_split_source(
+            dsa_src,
+            base_id="dsa/full",
+            master_title="DSA Curriculum — Index",
+            master_tag="curriculum",
+            chunk_tag="5-min",
+        )
+        if len(dsa_items) > 1:
+            # First item is the index, rest are chunks.
+            dsa_track["groups"].append({"title": "Curriculum", "items": [dsa_items[0]]})
+            dsa_track["groups"].append({"title": "5-Minute Reads", "items": dsa_items[1:]})
+            flat.extend(dsa_items)
+        else:
+            dsa_track["groups"].append({"title": "Curriculum", "items": dsa_items})
+            flat.extend(dsa_items)
     tracks.append(dsa_track)
 
     # -- System Design ----------------------------------------------------- #
@@ -267,19 +536,19 @@ def build_manifest():
 
     deepdive_items = []
     if (sd_src / "tradeoffs-deep-dive.md").exists():
-        deepdive_items.append(render_source(sd_src / "tradeoffs-deep-dive.md",
-                                            "sd/tradeoffs", "Trade-offs Deep Dive",
-                                            tag="deep-dive"))
+        deepdive_items = render_split_source(
+            sd_src / "tradeoffs-deep-dive.md",
+            base_id="sd/tradeoffs",
+            master_title="Trade-offs Deep Dive — Index",
+            master_tag="deep-dive",
+            chunk_tag="5-min",
+        )
 
+    # External references (books / repos / papers) are intentionally NOT
+    # included in the manifest. Source files remain on disk for personal use,
+    # but the hub focuses on internal 5-minute reads so users don't bounce
+    # to long external lists.
     ref_items = []
-    for fname, item_id, deflt in [
-        ("books-and-courses.md", "sd/books",  "Books & Courses"),
-        ("github-repos.md",      "sd/repos",  "GitHub Repos"),
-        ("seminal-papers.md",    "sd/papers", "Seminal Papers"),
-    ]:
-        f = sd_src / fname
-        if f.exists():
-            ref_items.append(render_source(f, item_id, deflt, tag="reference"))
 
     five_dir = sd_src / "5-minute-reads"
     five_items = []
@@ -305,14 +574,15 @@ def build_manifest():
         sd_track["groups"].append({"title": "Tiers", "items": tier_items})
         flat.extend(tier_items)
     if deepdive_items:
-        sd_track["groups"].append({"title": "Deep Dive", "items": deepdive_items})
+        if len(deepdive_items) > 1:
+            sd_track["groups"].append({"title": "Trade-offs", "items": [deepdive_items[0]]})
+            sd_track["groups"].append({"title": "Trade-offs · 5-Min Reads", "items": deepdive_items[1:]})
+        else:
+            sd_track["groups"].append({"title": "Trade-offs", "items": deepdive_items})
         flat.extend(deepdive_items)
     if five_items:
         sd_track["groups"].append({"title": "5-Minute Reads", "items": five_items})
         flat.extend(five_items)
-    if ref_items:
-        sd_track["groups"].append({"title": "References", "items": ref_items})
-        flat.extend(ref_items)
     tracks.append(sd_track)
 
     # Order index for prev/next
@@ -320,6 +590,17 @@ def build_manifest():
         it["order"] = i
         it["prev"] = flat[i - 1]["id"] if i > 0 else None
         it["next"] = flat[i + 1]["id"] if i < len(flat) - 1 else None
+
+    # Aggregate per-track totals (read_min, item count, difficulty distribution)
+    for tr in tracks:
+        items = [it for g in tr["groups"] for it in g["items"]]
+        tr["total_min"] = sum(it.get("read_min", 0) for it in items)
+        tr["total_items"] = len(items)
+        diff_counts = {}
+        for it in items:
+            d = it.get("difficulty", "all-levels")
+            diff_counts[d] = diff_counts.get(d, 0) + 1
+        tr["difficulty_counts"] = diff_counts
 
     return {"tracks": tracks, "flat": flat}
 
@@ -1219,6 +1500,262 @@ body[data-sidebar="open"] .sidebar-backdrop { display: block; }
     transition-duration: .001ms !important;
   }
 }
+
+/* ------- Path A additions: difficulty, time, your-path, wizard ------- */
+
+/* difficulty badges */
+.diff-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  letter-spacing: .3px;
+  text-transform: uppercase;
+}
+.diff-beginner    { background: rgba(63,185,80,.10);  color: var(--good); border-color: rgba(63,185,80,.35); }
+.diff-intermediate{ background: rgba(88,166,255,.10); color: var(--link); border-color: rgba(88,166,255,.35); }
+.diff-advanced    { background: rgba(210,153,34,.12); color: var(--warn); border-color: rgba(210,153,34,.35); }
+.diff-expert      { background: rgba(248,81,73,.10);  color: var(--bad);  border-color: rgba(248,81,73,.35); }
+.diff-all-levels  { background: rgba(139,148,158,.12); color: var(--text-dim); border-color: var(--border); }
+
+/* small inline difficulty dot for sidebar items */
+.sidebar a.item .diff-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+  flex-shrink: 0;
+  background: var(--text-dim);
+}
+.sidebar a.item .diff-dot.diff-beginner    { background: var(--good); }
+.sidebar a.item .diff-dot.diff-intermediate{ background: var(--link); }
+.sidebar a.item .diff-dot.diff-advanced    { background: var(--warn); }
+.sidebar a.item .diff-dot.diff-expert      { background: var(--bad);  }
+
+/* track card time line */
+.track-time {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: 6px;
+}
+.track-time strong { color: var(--text); }
+.diff-bar {
+  display: flex;
+  height: 4px;
+  border-radius: 2px;
+  overflow: hidden;
+  margin: 8px 0 4px;
+  background: var(--bg-elev-2);
+}
+.diff-bar > span { display: block; height: 100%; }
+.diff-bar > .diff-beginner    { background: var(--good); }
+.diff-bar > .diff-intermediate{ background: var(--link); }
+.diff-bar > .diff-advanced    { background: var(--warn); }
+.diff-bar > .diff-expert      { background: var(--bad);  }
+.diff-bar > .diff-all-levels  { background: var(--text-dim); }
+.diff-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+.diff-legend .lg-dot {
+  display: inline-block;
+  width: 8px; height: 8px; border-radius: 50%;
+  vertical-align: middle; margin-right: 4px;
+}
+
+/* "Your path" card on home */
+.your-path-card {
+  background: linear-gradient(135deg, rgba(88,166,255,.14), rgba(63,185,80,.10));
+  border: 1px solid rgba(88,166,255,.35);
+  border-radius: 14px;
+  padding: 22px 24px;
+  margin-bottom: 22px;
+}
+.your-path-card .head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.your-path-card h2 {
+  margin: 0;
+  font-size: 20px;
+}
+.your-path-card .subtitle {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin: 2px 0 0;
+}
+.your-path-card .actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.your-path-card ol {
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 8px;
+}
+.your-path-card ol li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 13px;
+  transition: border-color .15s, transform .1s;
+}
+.your-path-card ol li:hover { border-color: var(--link); transform: translateX(2px); }
+.your-path-card ol li.done { opacity: .55; }
+.your-path-card ol li .num {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-dim);
+  width: 22px;
+  flex-shrink: 0;
+}
+.your-path-card ol li.done .num::before { content: "✓ "; color: var(--good); }
+.your-path-card ol li a {
+  color: var(--text);
+  text-decoration: none;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.your-path-card ol li a:hover { color: var(--link); }
+.your-path-card ol li .it-title {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.your-path-card ol li .it-meta {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+.your-path-card .summary-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: 10px;
+}
+.your-path-card .summary-row .pill {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 2px 10px;
+  border-radius: 999px;
+}
+
+/* onboarding wizard */
+.wizard-step { display: none; }
+.wizard-step.active { display: block; }
+.wizard-progress {
+  display: flex;
+  gap: 6px;
+  margin: 0 0 20px;
+}
+.wizard-progress .dot {
+  flex: 1;
+  height: 4px;
+  background: var(--bg-elev-2);
+  border-radius: 2px;
+  transition: background .2s;
+}
+.wizard-progress .dot.active { background: var(--link); }
+.wizard-progress .dot.done   { background: var(--good); }
+.wizard-question {
+  font-size: 17px;
+  font-weight: 600;
+  margin: 0 0 6px;
+}
+.wizard-help {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin: 0 0 16px;
+}
+.wizard-options {
+  display: grid;
+  gap: 10px;
+}
+.wizard-options button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 14px 16px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  transition: border-color .15s, background .15s, transform .1s;
+}
+.wizard-options button:hover {
+  border-color: var(--link);
+  background: var(--bg-elev-2);
+}
+.wizard-options button.selected {
+  border-color: var(--link);
+  background: rgba(88,166,255,.10);
+}
+.wizard-options button strong { font-size: 14px; }
+.wizard-options button span { font-size: 12px; color: var(--text-dim); }
+.wizard-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 18px;
+  gap: 8px;
+}
+.wizard-foot .skip {
+  background: transparent;
+  border: 0;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 12px;
+  text-decoration: underline;
+}
+.wizard-foot .skip:hover { color: var(--text); }
+
+/* welcome popup (first-time prompt) */
+.welcome-prompt {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--link);
+  border-radius: 10px;
+  margin-bottom: 22px;
+}
+.welcome-prompt .ico { font-size: 24px; }
+.welcome-prompt .body { flex: 1; }
+.welcome-prompt h3 { margin: 0 0 2px; font-size: 15px; }
+.welcome-prompt p { margin: 0; font-size: 13px; color: var(--text-dim); }
+.welcome-prompt .actions { display: flex; gap: 8px; flex-shrink: 0; }
 """
 
 APP_JS = r"""
@@ -1392,8 +1929,11 @@ APP_JS = r"""
           a.dataset.itemId = it.id;
           if (done.has(it.id)) a.classList.add("done");
           if (currentId === it.id) a.classList.add("active");
-          const meta = it.read_min ? `<span class="item-meta">${it.read_min} min read</span>` : "";
-          a.innerHTML = `<span class="check"></span><span class="title-line">${escape(it.title)}</span>${meta}`;
+          const diffDot = it.difficulty
+            ? `<span class="diff-dot diff-${it.difficulty}" title="${it.difficulty.replace('-', ' ')}"></span>`
+            : "";
+          const meta = it.read_min ? `<span class="item-meta">${it.read_min} min</span>` : "";
+          a.innerHTML = `<span class="check"></span>${diffDot}<span class="title-line">${escape(it.title)}</span>${meta}`;
           body.appendChild(a);
         }
       }
@@ -1695,12 +2235,18 @@ APP_JS = r"""
       const total = items.length;
       const pct = total ? Math.round((dn / total) * 100) : 0;
       const first = items.find(it => !done.has(it.id)) || items[0];
+      const totalMin = t.total_min || items.reduce((s, it) => s + (it.read_min || 0), 0);
+      const remainingMin = items.filter(it => !done.has(it.id)).reduce((s, it) => s + (it.read_min || 0), 0);
+      const desc = (
+        t.id === "roadmap" ? "Read this first. Four-phase plan with kill switches." :
+        t.id === "dsa"     ? "Beginner → Intermediate → Advanced → Expert, broken into 5-minute reads." :
+                             "Tiers, 20 five-minute reads, and a trade-offs deep dive — all chunked into bite-sized articles."
+      );
       return `
         <div class="card">
           <h3>${t.icon} ${escape(t.title)}</h3>
-          <p>${escape(t.id === "roadmap" ? "Read this first. Four-phase plan with kill switches." :
-                      t.id === "dsa"     ? "77 topics across Beginner → Intermediate → Advanced → Expert + Meta." :
-                                          "Tiers, 20 five-minute reads, trade-offs deep dive, books and papers.")}</p>
+          <p>${escape(desc)}</p>
+          <div class="track-time">⏱ <strong>~${totalMin} min</strong> total · ${remainingMin} min remaining · ${total} topics</div>
           <div class="progress-line"><span>${dn}/${total}</span><div class="bar"><span style="width:${pct}%"></span></div><span>${pct}%</span></div>
           <a class="go" href="#/${first ? first.id : ""}">${dn > 0 ? "Continue →" : "Start →"}</a>
         </div>`;

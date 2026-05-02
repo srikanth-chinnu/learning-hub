@@ -1,0 +1,330 @@
+<h1 id="part-4-lld-trade-offs-c-part-1-41-parameter-passing-cg-f16-f17-f18-f19-f20-49-inheritance-vs-composition-cg-c120-c121">PART 4 — LLD Trade-offs (C++) — Part 1: 4.1 Parameter Passing (CG F.16, F.17, F.18, F.19, F.20) → 4.9 Inheritance vs Composition (CG C.120, C.121)</h1>
+<blockquote>
+<p>Code targets C++17/20. References: ISO C++ Core Guidelines (<code>isocpp/CppCoreGuidelines</code>, SHA <code>ceebda5</code>), Sean Parent's talks ("Better Code: Runtime Polymorphism"), Stroustrup, and Herb Sutter (GotW).</p>
+</blockquote>
+<h2 id="41-parameter-passing-cg-f16-f17-f18-f19-f20">4.1 Parameter Passing (CG F.16, F.17, F.18, F.19, F.20)</h2>
+<table>
+<thead>
+<tr>
+<th>Category</th>
+<th>Signature</th>
+<th>When</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Cheap to copy (≤16 bytes)</strong></td>
+<td><code>void f(int x)</code></td>
+<td>Always pass by value.</td>
+</tr>
+<tr>
+<td><strong>In, may copy</strong></td>
+<td><code>void f(string s)</code></td>
+<td>Pass by value if you'll <em>store</em> it (move from parameter).</td>
+</tr>
+<tr>
+<td><strong>In, no copy</strong></td>
+<td><code>void f(const string&amp; s)</code></td>
+<td>Read-only access; cheaper than copy.</td>
+</tr>
+<tr>
+<td><strong>In-out</strong></td>
+<td><code>void f(string&amp; s)</code></td>
+<td>Mutates.</td>
+</tr>
+<tr>
+<td><strong>Forward</strong></td>
+<td><code>template&lt;class T&gt; void f(T&amp;&amp; x)</code></td>
+<td>Forwarding reference; <code>std::forward&lt;T&gt;(x)</code> inside.</td>
+</tr>
+<tr>
+<td><strong>Move-only sink</strong></td>
+<td><code>void f(string&amp;&amp; s)</code></td>
+<td>Caller must <code>std::move</code>.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The "store it?" rule (Herb Sutter):</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="c1">// &quot;Sink&quot; — going to be stored:</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">Customer::set_name</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">name_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">n</span><span class="p">);</span><span class="w"> </span><span class="p">}</span><span class="w">  </span><span class="c1">// pass by value</span>
+
+<span class="c1">// &quot;Observer&quot; — only reads:</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">log</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span><span class="w"> </span><span class="n">s</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">s</span><span class="p">;</span><span class="w"> </span><span class="p">}</span><span class="w">                 </span><span class="c1">// const ref</span>
+</code></pre></div>
+
+<h2 id="42-move-semantics-rvonrvo">4.2 Move Semantics &amp; RVO/NRVO</h2>
+<div class="codehilite"><pre><span></span><code><span class="c1">// RVO: compiler elides the copy of the return value.</span>
+<span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="nf">make_greeting</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="s">&quot;hello&quot;</span><span class="p">;</span><span class="w"> </span><span class="p">}</span><span class="w">   </span><span class="c1">// no copy, no move</span>
+
+<span class="c1">// NRVO: named return value optimization.</span>
+<span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="nf">build</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;hello&quot;</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">s</span><span class="p">;</span><span class="w">   </span><span class="c1">// compiler elides; do NOT std::move(s)!</span>
+<span class="p">}</span>
+
+<span class="c1">// F.48: ANTI-PATTERN — disables NRVO!</span>
+<span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="nf">build_bad</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;hello&quot;</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">s</span><span class="p">);</span><span class="w">   </span><span class="c1">// BAD: forces a move; prevents elision</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<blockquote>
+<p>"Don't <code>std::move</code> a local variable in <code>return</code>. NRVO will elide entirely; move only forces a less-efficient copy." — C++ Core Guidelines F.48</p>
+</blockquote>
+<h2 id="43-rule-of-035-cg-c20-c21">4.3 Rule of 0/3/5 (CG C.20, C.21)</h2>
+<p><strong>Rule of 0:</strong> Don't define ANY of the special members. Let the compiler generate them; rely on RAII members (<code>unique_ptr</code>, <code>vector</code>, etc.) to handle resources.</p>
+<div class="codehilite"><pre><span></span><code><span class="c1">// Rule of 0 — preferred</span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">Document</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">title</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Page</span><span class="o">&gt;</span><span class="w"> </span><span class="n">pages</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">Index</span><span class="o">&gt;</span><span class="w"> </span><span class="n">index</span><span class="p">;</span><span class="w">   </span><span class="c1">// owns; non-copyable</span>
+<span class="w">    </span><span class="c1">// Compiler generates correct copy/move. No work for me.</span>
+<span class="p">};</span>
+</code></pre></div>
+
+<p><strong>Rule of 5:</strong> If you must define one of the five (destructor, copy ctor/op, move ctor/op), define them all (or <code>=delete</code> / <code>=default</code> deliberately).</p>
+<div class="codehilite"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">FileHandle</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">FILE</span><span class="o">*</span><span class="w"> </span><span class="n">fp_</span><span class="p">;</span>
+<span class="k">public</span><span class="o">:</span>
+<span class="w">    </span><span class="k">explicit</span><span class="w"> </span><span class="n">FileHandle</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">path</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">fp_</span><span class="p">(</span><span class="n">fopen</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;r&quot;</span><span class="p">))</span><span class="w"> </span><span class="p">{}</span>
+<span class="w">    </span><span class="o">~</span><span class="n">FileHandle</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">fp_</span><span class="p">)</span><span class="w"> </span><span class="n">fclose</span><span class="p">(</span><span class="n">fp_</span><span class="p">);</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="n">FileHandle</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">FileHandle</span><span class="o">&amp;</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">delete</span><span class="p">;</span>
+<span class="w">    </span><span class="n">FileHandle</span><span class="o">&amp;</span><span class="w"> </span><span class="k">operator</span><span class="o">=</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">FileHandle</span><span class="o">&amp;</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">delete</span><span class="p">;</span>
+<span class="w">    </span><span class="n">FileHandle</span><span class="p">(</span><span class="n">FileHandle</span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">o</span><span class="p">)</span><span class="w"> </span><span class="k">noexcept</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">fp_</span><span class="p">(</span><span class="n">o</span><span class="p">.</span><span class="n">fp_</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">o</span><span class="p">.</span><span class="n">fp_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">nullptr</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="n">FileHandle</span><span class="o">&amp;</span><span class="w"> </span><span class="k">operator</span><span class="o">=</span><span class="p">(</span><span class="n">FileHandle</span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">o</span><span class="p">)</span><span class="w"> </span><span class="k">noexcept</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="k">this</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">o</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">fp_</span><span class="p">)</span><span class="w"> </span><span class="n">fclose</span><span class="p">(</span><span class="n">fp_</span><span class="p">);</span><span class="w"> </span><span class="n">fp_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">o</span><span class="p">.</span><span class="n">fp_</span><span class="p">;</span><span class="w"> </span><span class="n">o</span><span class="p">.</span><span class="n">fp_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">nullptr</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="o">*</span><span class="k">this</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">};</span>
+</code></pre></div>
+
+<p><strong>Better still:</strong> wrap the resource in <code>std::unique_ptr&lt;FILE, decltype(&amp;fclose)&gt;</code> and apply Rule of 0.</p>
+<h2 id="44-smart-pointers-cg-r20-r30">4.4 Smart Pointers (CG R.20-R.30)</h2>
+<table>
+<thead>
+<tr>
+<th>Smart pointer</th>
+<th>Ownership</th>
+<th>Cost</th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>std::unique_ptr&lt;T&gt;</code></td>
+<td>Single owner.</td>
+<td>Zero overhead vs raw pointer.</td>
+<td><strong>Default.</strong> Most owners are unique.</td>
+</tr>
+<tr>
+<td><code>std::shared_ptr&lt;T&gt;</code></td>
+<td>Shared (refcount).</td>
+<td>Atomic refcount; control block (~16-24 bytes).</td>
+<td>When ownership is genuinely shared (e.g., DAG of objects).</td>
+</tr>
+<tr>
+<td><code>std::weak_ptr&lt;T&gt;</code></td>
+<td>Non-owning observer of <code>shared_ptr</code>.</td>
+<td>One atomic check on <code>lock()</code>.</td>
+<td>Break cycles; cache references.</td>
+</tr>
+<tr>
+<td>Raw pointer <code>T*</code></td>
+<td>Non-owning.</td>
+<td>Free.</td>
+<td>Function parameters that never own.</td>
+</tr>
+<tr>
+<td>Raw reference <code>T&amp;</code></td>
+<td>Non-owning, non-null.</td>
+<td>Free.</td>
+<td>Function parameters that never own and can't be null.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Decision tree:</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="nx">Need</span><span class="w"> </span><span class="nx">ownership</span><span class="p">?</span>
+<span class="err">├─</span><span class="w"> </span><span class="nx">Yes</span>
+<span class="err">│</span><span class="w">  </span><span class="err">├─</span><span class="w"> </span><span class="nx">Single</span><span class="w"> </span><span class="nx">owner</span><span class="p">?</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="nx">unique_ptr</span>
+<span class="err">│</span><span class="w">  </span><span class="err">└─</span><span class="w"> </span><span class="nx">Shared</span><span class="p">?</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="nx">shared_ptr</span><span class="w"> </span><span class="p">(</span><span class="k">and</span><span class="w"> </span><span class="nx">weak_ptr</span><span class="w"> </span><span class="nx">to</span><span class="w"> </span><span class="k">break</span><span class="w"> </span><span class="nx">cycles</span><span class="p">)</span>
+<span class="err">└─</span><span class="w"> </span><span class="nx">No</span><span class="w"> </span><span class="p">(</span><span class="nx">just</span><span class="w"> </span><span class="k">observe</span><span class="p">)</span>
+<span class="w">   </span><span class="err">├─</span><span class="w"> </span><span class="nx">Can</span><span class="w"> </span><span class="nx">be</span><span class="w"> </span><span class="nx">null</span><span class="p">?</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="nx">T</span><span class="o">*</span>
+<span class="w">   </span><span class="err">└─</span><span class="w"> </span><span class="nx">Always</span><span class="w"> </span><span class="nx">valid</span><span class="p">?</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="nx">T</span><span class="o">&amp;</span><span class="w"> </span><span class="p">(</span><span class="k">or</span><span class="w"> </span><span class="nx">std</span><span class="o">::</span><span class="nx">reference_wrapper</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="nx">storage</span><span class="p">)</span>
+</code></pre></div>
+
+<p><strong><code>std::make_shared</code> vs <code>std::shared_ptr&lt;T&gt;(new T())</code>:</strong> Prefer <code>make_shared</code> — single allocation for control block + object (cache-friendlier, exception-safer).</p>
+<h2 id="45-stdoptionalt-vs-sentinel-values-vs-exceptions">4.5 <code>std::optional&lt;T&gt;</code> vs Sentinel Values vs Exceptions</h2>
+<div class="codehilite"><pre><span></span><code><span class="n">std</span><span class="o">::</span><span class="n">optional</span><span class="o">&lt;</span><span class="n">User</span><span class="o">&gt;</span><span class="w"> </span><span class="n">find_user</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">id</span><span class="p">);</span><span class="w">  </span><span class="c1">// explicit &quot;may be missing&quot;</span>
+
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="w"> </span><span class="n">u</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">find_user</span><span class="p">(</span><span class="mi">42</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">use</span><span class="p">(</span><span class="o">*</span><span class="n">u</span><span class="p">);</span>
+<span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// not found</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th>When</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>optional&lt;T&gt;</code></td>
+<td>"May not exist" is normal. Look-ups, parses.</td>
+</tr>
+<tr>
+<td>Sentinel (<code>-1</code>, <code>nullptr</code>, <code>""</code>)</td>
+<td>C-era; ambiguous. Avoid in new code.</td>
+</tr>
+<tr>
+<td>Exception</td>
+<td><strong>Truly exceptional</strong>, not control flow. File-not-found-when-expected; OOM.</td>
+</tr>
+<tr>
+<td><code>expected&lt;T, E&gt;</code> (C++23)</td>
+<td>"May fail with reason X" — replaces optional + error code.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="46-stdvariant-vs-inheritance">4.6 <code>std::variant</code> vs Inheritance</h2>
+<div class="codehilite"><pre><span></span><code><span class="c1">// Closed set of types — variant</span>
+<span class="k">using</span><span class="w"> </span><span class="n">Shape</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">variant</span><span class="o">&lt;</span><span class="n">Circle</span><span class="p">,</span><span class="w"> </span><span class="n">Square</span><span class="p">,</span><span class="w"> </span><span class="n">Triangle</span><span class="o">&gt;</span><span class="p">;</span>
+<span class="kt">double</span><span class="w"> </span><span class="nf">area</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">Shape</span><span class="o">&amp;</span><span class="w"> </span><span class="n">s</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">visit</span><span class="p">([](</span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">x</span><span class="p">.</span><span class="n">area</span><span class="p">();</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">s</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="c1">// Open set — virtual</span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">Shape</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">virtual</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="nf">area</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="k">virtual</span><span class="w"> </span><span class="o">~</span><span class="n">Shape</span><span class="p">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">default</span><span class="p">;</span><span class="w"> </span><span class="p">};</span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">Circle</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">Shape</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">};</span>
+</code></pre></div>
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Variant</th>
+<th>Inheritance</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Add new type</strong></td>
+<td>Recompile all <code>visit</code>s.</td>
+<td>Just inherit.</td>
+</tr>
+<tr>
+<td><strong>Layout</strong></td>
+<td>Stack; size = max(types) + tag.</td>
+<td>Heap (usually); pointer indirection.</td>
+</tr>
+<tr>
+<td><strong>Performance</strong></td>
+<td>Compiler can devirtualize visits.</td>
+<td>Virtual call cost (~few ns + cache miss).</td>
+</tr>
+<tr>
+<td><strong>Best for</strong></td>
+<td>Closed AST nodes, state machines.</td>
+<td>Plugin systems, framework hooks.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="47-sean-parent-value-semantics-type-erasure">4.7 Sean Parent: Value Semantics &amp; Type Erasure</h2>
+<blockquote>
+<p>"Polymorphism is not a property of the object. It is a property of the <em>use</em>. Inheritance is the base class of evil." — Sean Parent</p>
+</blockquote>
+<p>Value-semantic type erasure (lets you do polymorphism <em>without</em> a base class in user code):</p>
+<div class="codehilite"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Drawable</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">Concept</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">virtual</span><span class="w"> </span><span class="o">~</span><span class="n">Concept</span><span class="p">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">default</span><span class="p">;</span>
+<span class="w">        </span><span class="k">virtual</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">Concept</span><span class="o">&gt;</span><span class="w"> </span><span class="n">clone</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">        </span><span class="k">virtual</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">draw</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="p">};</span>
+<span class="w">    </span><span class="k">template</span><span class="o">&lt;</span><span class="k">class</span><span class="w"> </span><span class="nc">T</span><span class="o">&gt;</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">Model</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">Concept</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">T</span><span class="w"> </span><span class="n">x</span><span class="p">;</span>
+<span class="w">        </span><span class="n">Model</span><span class="p">(</span><span class="n">T</span><span class="w"> </span><span class="n">t</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">x</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">t</span><span class="p">))</span><span class="w"> </span><span class="p">{}</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">Concept</span><span class="o">&gt;</span><span class="w"> </span><span class="n">clone</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="k">override</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">make_unique</span><span class="o">&lt;</span><span class="n">Model</span><span class="o">&gt;</span><span class="p">(</span><span class="o">*</span><span class="k">this</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="kt">void</span><span class="w"> </span><span class="n">draw</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="k">override</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">x</span><span class="p">.</span><span class="n">draw</span><span class="p">();</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="p">};</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">Concept</span><span class="o">&gt;</span><span class="w"> </span><span class="n">p_</span><span class="p">;</span>
+<span class="k">public</span><span class="o">:</span>
+<span class="w">    </span><span class="k">template</span><span class="o">&lt;</span><span class="k">class</span><span class="w"> </span><span class="nc">T</span><span class="o">&gt;</span><span class="w"> </span><span class="n">Drawable</span><span class="p">(</span><span class="n">T</span><span class="w"> </span><span class="n">x</span><span class="p">)</span>
+<span class="w">        </span><span class="o">:</span><span class="w"> </span><span class="n">p_</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">make_unique</span><span class="o">&lt;</span><span class="n">Model</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span><span class="w"> </span><span class="p">{}</span>
+<span class="w">    </span><span class="n">Drawable</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">Drawable</span><span class="o">&amp;</span><span class="w"> </span><span class="n">o</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">p_</span><span class="p">(</span><span class="n">o</span><span class="p">.</span><span class="n">p_</span><span class="o">-&gt;</span><span class="n">clone</span><span class="p">())</span><span class="w"> </span><span class="p">{}</span>
+<span class="w">    </span><span class="n">Drawable</span><span class="p">(</span><span class="n">Drawable</span><span class="o">&amp;&amp;</span><span class="p">)</span><span class="w"> </span><span class="k">noexcept</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">default</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="nf">draw</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">p_</span><span class="o">-&gt;</span><span class="n">draw</span><span class="p">();</span><span class="w"> </span><span class="p">}</span>
+<span class="p">};</span>
+<span class="c1">// Now: Circle and Square don&#39;t share a base. They just need draw().</span>
+</code></pre></div>
+
+<p><strong>Trade-off:</strong> Heap allocation per instance, but <strong>value semantics</strong> (you can put <code>Drawable</code> directly in a <code>vector&lt;Drawable&gt;</code> and copy it). This is what <code>std::function</code> does internally.</p>
+<h2 id="48-polymorphism-virtual-vs-crtp-vs-stdfunction-vs-concepts">4.8 Polymorphism: virtual vs CRTP vs <code>std::function</code> vs Concepts</h2>
+<table>
+<thead>
+<tr>
+<th>Mechanism</th>
+<th>Dispatch</th>
+<th>Cost</th>
+<th>When</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>virtual</code></td>
+<td>Runtime via vtable.</td>
+<td>~1-2 ns + cache miss.</td>
+<td>Open-set polymorphism, plugins.</td>
+</tr>
+<tr>
+<td><strong>CRTP</strong> (Curiously Recurring Template Pattern)</td>
+<td>Compile-time.</td>
+<td>Zero overhead.</td>
+<td>Mixin behavior; static polymorphism.</td>
+</tr>
+<tr>
+<td><code>std::function</code></td>
+<td>Runtime + small-buffer optimization or heap.</td>
+<td>~5-15 ns.</td>
+<td>Callbacks, type-erased lambdas.</td>
+</tr>
+<tr>
+<td><strong>C++20 Concepts</strong></td>
+<td>Compile-time.</td>
+<td>Zero.</td>
+<td>Templates with readable error messages.</td>
+</tr>
+</tbody>
+</table>
+<div class="codehilite"><pre><span></span><code><span class="c1">// CRTP — static polymorphism</span>
+<span class="k">template</span><span class="o">&lt;</span><span class="k">class</span><span class="w"> </span><span class="nc">Derived</span><span class="o">&gt;</span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">Counted</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">static</span><span class="w"> </span><span class="kr">inline</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="n">Counted</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="o">++</span><span class="n">count</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="p">};</span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">Widget</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">Counted</span><span class="o">&lt;</span><span class="n">Widget</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{};</span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">Gadget</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">Counted</span><span class="o">&lt;</span><span class="n">Gadget</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{};</span>
+<span class="c1">// Widget::count and Gadget::count are independent — no virtual call.</span>
+</code></pre></div>
+
+<h2 id="49-inheritance-vs-composition-cg-c120-c121">4.9 Inheritance vs Composition (CG C.120, C.121)</h2>
+<blockquote>
+<p>"Prefer composition over inheritance." — Effective C++</p>
+</blockquote>
+<p>Inheritance is for <strong>substitutability</strong> (LSP). If you wouldn't use a <code>Derived*</code> where a <code>Base*</code> is expected, you don't want inheritance — you want composition.</p>
+<div class="codehilite"><pre><span></span><code><span class="c1">// Bad: inheriting for code reuse</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Stack</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">};</span><span class="w">  </span><span class="c1">// Stack IS-A vector? No.</span>
+
+<span class="c1">// Good: composition</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Stack</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="n">v_</span><span class="p">;</span>
+<span class="k">public</span><span class="o">:</span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="n">push</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">v_</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">x</span><span class="p">);</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">pop</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">v_</span><span class="p">.</span><span class="n">back</span><span class="p">();</span><span class="w"> </span><span class="n">v_</span><span class="p">.</span><span class="n">pop_back</span><span class="p">();</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">x</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="p">};</span>
+</code></pre></div>

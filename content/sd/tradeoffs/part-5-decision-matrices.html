@@ -1,0 +1,119 @@
+<h1 id="part-5-decision-matrices">PART 5 — Decision Matrices</h1>
+<h2 id="51-datastore-choice">5.1 Datastore Choice</h2>
+<table>
+<thead>
+<tr>
+<th>Workload</th>
+<th>Choice</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Money / orders / inventory</td>
+<td><strong>Postgres</strong></td>
+<td>ACID, mature. Default.</td>
+</tr>
+<tr>
+<td>Time-series telemetry</td>
+<td><strong>TimescaleDB</strong> or <strong>InfluxDB</strong></td>
+<td>Hypertable + downsampling.</td>
+</tr>
+<tr>
+<td>Graph traversal</td>
+<td><strong>Neo4j</strong> or <strong>Postgres + recursive CTE</strong></td>
+<td>Try Postgres first; switch only if you do real graph algos.</td>
+</tr>
+<tr>
+<td>Search</td>
+<td><strong>Elasticsearch</strong> / <strong>OpenSearch</strong> / <strong>Postgres FTS</strong></td>
+<td>Postgres FTS for ≤10M docs; ES for full-text at scale.</td>
+</tr>
+<tr>
+<td>Massive denormalized writes</td>
+<td><strong>Cassandra/ScyllaDB</strong></td>
+<td>If you actually need 100k+ writes/s/server.</td>
+</tr>
+<tr>
+<td>Caches</td>
+<td><strong>Redis</strong></td>
+<td>Boring; correct.</td>
+</tr>
+<tr>
+<td>Document store</td>
+<td><strong>Postgres <code>jsonb</code></strong></td>
+<td>Mongo only if document-first is genuinely your model.</td>
+</tr>
+<tr>
+<td>Wide-column / mixed</td>
+<td><strong>Cassandra</strong></td>
+<td>Last resort; operational tax is real.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="52-cap-decision-tree">5.2 CAP Decision Tree</h2>
+<div class="codehilite"><pre><span></span><code><span class="nv">Is</span><span class="w"> </span><span class="nv">partition</span><span class="w"> </span><span class="nv">tolerance</span><span class="w"> </span><span class="nv">optional</span>?<span class="w"> </span><span class="ss">(</span><span class="nv">single</span><span class="o">-</span><span class="nv">DC</span>,<span class="w"> </span><span class="nv">no</span><span class="w"> </span><span class="nv">network</span><span class="ss">)</span>
+├─<span class="w"> </span><span class="nv">Yes</span>:<span class="w"> </span><span class="nv">choose</span><span class="w"> </span><span class="nv">CA</span><span class="w"> </span>—<span class="w"> </span><span class="nv">i</span>.<span class="nv">e</span>.,<span class="w"> </span><span class="nv">a</span><span class="w"> </span><span class="nv">single</span><span class="o">-</span><span class="nv">node</span><span class="w"> </span><span class="nv">RDBMS</span>.
+└─<span class="w"> </span><span class="nv">No</span><span class="w"> </span><span class="ss">(</span><span class="nv">real</span><span class="w"> </span><span class="nv">distributed</span><span class="w"> </span><span class="nv">system</span><span class="ss">)</span>:<span class="w"> </span><span class="nv">choose</span><span class="w"> </span><span class="nv">between</span>
+<span class="w">   </span>├─<span class="w"> </span><span class="nv">AP</span><span class="w"> </span>—<span class="w"> </span><span class="nv">eventual</span><span class="w"> </span><span class="nv">consistency</span>
+<span class="w">   </span>│<span class="w">  </span>└─<span class="w"> </span><span class="nv">Cassandra</span>,<span class="w"> </span><span class="nv">Dynamo</span>,<span class="w"> </span><span class="nv">Riak</span>,<span class="w"> </span><span class="nv">Couchbase</span>
+<span class="w">   </span>│<span class="w">     </span><span class="nv">Use</span><span class="w"> </span><span class="nv">when</span>:<span class="w"> </span><span class="nv">availability</span><span class="w"> </span><span class="nv">matters</span><span class="w"> </span><span class="nv">more</span><span class="w"> </span><span class="nv">than</span><span class="w"> </span><span class="nv">freshness</span>
+<span class="w">   </span>│<span class="w">     </span><span class="ss">(</span><span class="nv">carts</span>,<span class="w"> </span><span class="nv">sessions</span>,<span class="w"> </span><span class="nv">reviews</span>,<span class="w"> </span><span class="nv">timelines</span><span class="ss">)</span>
+<span class="w">   </span>└─<span class="w"> </span><span class="nv">CP</span><span class="w"> </span>—<span class="w"> </span><span class="nv">strong</span><span class="w"> </span><span class="nv">consistency</span>
+<span class="w">      </span>└─<span class="w"> </span><span class="nv">Spanner</span>,<span class="w"> </span><span class="nv">etcd</span>,<span class="w"> </span><span class="nv">ZooKeeper</span>,<span class="w"> </span><span class="nv">MongoDB</span><span class="w"> </span><span class="ss">(</span><span class="nv">default</span><span class="ss">)</span>
+<span class="w">         </span><span class="nv">Use</span><span class="w"> </span><span class="nv">when</span>:<span class="w"> </span><span class="nv">correctness</span><span class="w"> </span><span class="nv">matters</span><span class="w"> </span><span class="nv">more</span><span class="w"> </span><span class="nv">than</span><span class="w"> </span><span class="k">uptime</span>
+<span class="w">         </span><span class="ss">(</span><span class="nv">ledgers</span>,<span class="w"> </span><span class="nv">identity</span>,<span class="w"> </span><span class="nv">locks</span>,<span class="w"> </span><span class="nv">leader</span><span class="w"> </span><span class="nv">election</span><span class="ss">)</span>
+</code></pre></div>
+
+<h2 id="53-smart-pointer-choice-c">5.3 Smart Pointer Choice (C++)</h2>
+<div class="codehilite"><pre><span></span><code><span class="nx">Is</span><span class="w"> </span><span class="nx">anyone</span><span class="w"> </span><span class="nx">going</span><span class="w"> </span><span class="nx">to</span><span class="w"> </span><span class="nx">own</span><span class="w"> </span><span class="nx">this</span><span class="p">?</span>
+<span class="err">├─</span><span class="w"> </span><span class="nx">No</span><span class="w"> </span><span class="p">(</span><span class="nx">just</span><span class="w"> </span><span class="k">observe</span><span class="p">)</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="nx">T</span><span class="o">*</span><span class="w"> </span><span class="k">or</span><span class="w"> </span><span class="nx">T</span><span class="o">&amp;</span>
+<span class="err">└─</span><span class="w"> </span><span class="nx">Yes</span>
+<span class="w">   </span><span class="err">├─</span><span class="w"> </span><span class="nx">One</span><span class="w"> </span><span class="nx">owner</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="nx">std</span><span class="o">::</span><span class="nx">unique_ptr</span><span class="p">&lt;</span><span class="nx">T</span><span class="p">&gt;</span>
+<span class="w">   </span><span class="err">└─</span><span class="w"> </span><span class="nx">Shared</span>
+<span class="w">      </span><span class="err">├─</span><span class="w"> </span><span class="nx">Acyclic</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="nx">std</span><span class="o">::</span><span class="nx">shared_ptr</span><span class="p">&lt;</span><span class="nx">T</span><span class="p">&gt;</span>
+<span class="w">      </span><span class="err">└─</span><span class="w"> </span><span class="nx">Cyclic</span><span class="w"> </span><span class="nx">risk</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="nx">shared_ptr</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nx">weak_ptr</span><span class="w"> </span><span class="nx">to</span><span class="w"> </span><span class="k">break</span><span class="w"> </span><span class="nx">cycle</span>
+</code></pre></div>
+
+<h2 id="54-sync-vs-async-both-languages">5.4 Sync vs Async (Both Languages)</h2>
+<div class="codehilite"><pre><span></span><code>Is the work I/O-bound?
+├─ Yes
+│  ├─ Many concurrent ops (&gt;1000)? → async (asyncio in Py; coroutines/io_uring in C++)
+│  └─ Few concurrent ops? → threads (or sync if blocking is OK)
+└─ No (CPU-bound)
+   ├─ Python → multiprocessing (GIL) or 3.13+ free-threaded
+   └─ C++ → std::jthread / thread pool / parallel STL / SIMD
+</code></pre></div>
+
+<h2 id="55-replication-strategy">5.5 Replication Strategy</h2>
+<table>
+<thead>
+<tr>
+<th>Need</th>
+<th>Strategy</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Strong consistency, single region</td>
+<td>Single primary + sync replica for HA</td>
+</tr>
+<tr>
+<td>Read scale-out within region</td>
+<td>Single primary + N async read replicas</td>
+</tr>
+<tr>
+<td>Cross-region reads</td>
+<td>Per-region read replica with async stream from primary</td>
+</tr>
+<tr>
+<td>Cross-region writes</td>
+<td>Either active-passive failover OR multi-master with conflict design (CRDT/LWW)</td>
+</tr>
+<tr>
+<td>Zero-RPO</td>
+<td>Sync replication (Paxos/Raft) — 2 of 3 nodes in different AZs</td>
+</tr>
+</tbody>
+</table>
+<hr>

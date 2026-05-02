@@ -1,0 +1,20 @@
+<h1 id="trade-offs-in-system-design-a-comprehensive-guide-hld-lld-in-python-c">Trade-offs in System Design: A Comprehensive Guide (HLD + LLD in Python &amp; C++)</h1>
+<blockquote>
+<p><strong>Companion to:</strong> <code>system-design/</code> folder (00-intro through 04-expert)
+<strong>Audience:</strong> Engineers who want to <em>reason</em> about trade-offs, not memorize them.
+<strong>How to use:</strong> Read Part 1 (mental models) once. Then dip into Parts 2–4 by topic. Use Part 5 (decision matrices) as a cheat sheet when you're actually designing.</p>
+</blockquote>
+<hr>
+<h2 id="executive-summary">Executive Summary</h2>
+<p>There is exactly one correct answer to almost every system-design interview question, and it is <strong>"it depends — on what?"</strong> The job of a senior engineer is not to know which technology is "best." It is to identify the <strong>two or three axes</strong> on which a real decision turns, articulate the <strong>trade-off curve</strong> along each axis, and then pick the point on the curve that matches the <strong>business and operational reality</strong> in front of them.</p>
+<p>This guide catalogues the trade-offs that recur in real systems:</p>
+<ul>
+<li><strong>Part 1 — Mental models.</strong> Six lenses (two-way doors, "choose boring technology," hierarchy of needs, "it depends <em>on what</em>?", monolith-first, the constant-work pattern) for thinking about <em>any</em> trade-off.</li>
+<li><strong>Part 2 — HLD trade-offs.</strong> ~40 cataloged decisions across foundational theorems (CAP/PACELC/FLP), data tier (replication, sharding, caching, queues), architecture patterns (monolith vs microservices, REST/gRPC/GraphQL, CQRS, Lambda/Kappa), resilience (circuit breakers, retries, timeouts, bulkheads, load shedding) and operations (multi-region, observability).</li>
+<li><strong>Part 3 — LLD in Python.</strong> ~20 trade-offs with runnable snippets (SOLID, Singleton/Borg/module, Factory, Strategy, Observer, State, Adapter, Builder, Repository, DI, Decorator, duck-typing, dataclasses, <code>__slots__</code>).</li>
+<li><strong>Part 4 — LLD in C++.</strong> ~26 trade-offs with snippets (parameter passing, move semantics &amp; RVO, Rule of 0/3/5, smart pointers, <code>optional</code>/<code>variant</code>/<code>any</code>, Sean-Parent value semantics, virtual vs CRTP vs <code>std::function</code> vs concepts, EBO, RAII, container choice, SBO/SSO, PMR, false sharing, <code>constexpr</code>, threads vs async, <code>mutex</code> vs atomics, PIMPL).</li>
+<li><strong>Part 5 — Decision matrices</strong> you can paste into a design doc.</li>
+<li><strong>Part 6 — Case studies.</strong> Discord's MongoDB → Cassandra → ScyllaDB migration; Stripe's online migrations methodology.</li>
+</ul>
+<p>A meta-point that runs through everything: <strong>most trade-offs are not symmetric.</strong> One side is usually a <strong>two-way door</strong> (cheap to undo) and the other a <strong>one-way door</strong> (expensive). When in doubt, take the two-way door first.</p>
+<hr>

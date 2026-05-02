@@ -1,0 +1,97 @@
+<h1 id="part-1-how-to-think-about-trade-offs">PART 1 — How to Think About Trade-offs</h1>
+<h2 id="11-the-six-mental-models">1.1 The Six Mental Models</h2>
+<h3 id="model-1-two-way-doors-vs-one-way-doors-bezos-2015-shareholder-letter">Model 1: Two-way doors vs one-way doors (Bezos, 2015 shareholder letter)</h3>
+<blockquote>
+<p>"Some decisions are consequential and irreversible or nearly irreversible — one-way doors — and these decisions must be made methodically, carefully, slowly, with great deliberation and consultation. ... But most decisions aren't like that — they are changeable, reversible — they're two-way doors." — Jeff Bezos, 2015</p>
+</blockquote>
+<p><strong>Apply it:</strong>
+- Choosing a feature flag system → two-way door (rip and replace in a sprint).
+- Choosing your primary datastore → one-way door (migrations take <em>quarters</em>; see Discord's MongoDB → Cassandra → ScyllaDB story below).
+- Choosing your event schema (Kafka topic format) → one-way door for downstream consumers; deserves design review.
+- Choosing a Python web framework → two-way door (FastAPI/Flask are largely interchangeable for CRUD).</p>
+<p><strong>The asymmetry rule:</strong> When the door is two-way, <strong>bias toward action</strong>. When it is one-way, <strong>bias toward deliberation</strong> and write it down.</p>
+<h3 id="model-2-choose-boring-technology-dan-mckinley-2015">Model 2: Choose Boring Technology (Dan McKinley, 2015)</h3>
+<blockquote>
+<p>"Let's say every company gets about three innovation tokens. You can spend these however you want, but the supply is fixed for a long time. ... If you choose to write your website in NodeJS, you just spent one of your innovation tokens. If you choose to use MongoDB, you just spent one of your innovation tokens. If you choose to use service discovery tech that's existed for a year or less, you just spent one of your innovation tokens." — Dan McKinley, <em>Choose Boring Technology</em></p>
+</blockquote>
+<p><strong>Apply it:</strong> Postgres, Redis, nginx, RabbitMQ are boring. They have known failure modes, large hiring pools, mature client libraries, and a decade of Stack Overflow answers. Spend innovation tokens on the <strong>one or two things that are actually your business differentiator</strong>, not on the database.</p>
+<p><strong>The corollary:</strong> "Boring" ≠ "outdated." Postgres in 2025 is far more capable than most NoSQL stores were in 2015. The boring tools have been <em>secretly accumulating features</em>.</p>
+<h3 id="model-3-it-depends-on-what">Model 3: "It depends — on what?"</h3>
+<p>When you say "it depends," <strong>always answer the follow-up before it's asked.</strong> The variables that almost every architecture decision turns on:</p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Why it matters</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Read:write ratio</strong></td>
+<td>99:1 reads → caching, read replicas, denormalization. 1:99 writes → log-structured storage, async pipelines.</td>
+</tr>
+<tr>
+<td><strong>Consistency requirement</strong></td>
+<td>Money/inventory → strong. Likes/views → eventual is fine.</td>
+</tr>
+<tr>
+<td><strong>Latency budget (p50, p99, p99.9)</strong></td>
+<td>&lt;10ms p99 → in-memory + same-region. &lt;1s → cross-region OK.</td>
+</tr>
+<tr>
+<td><strong>Throughput (RPS, peak vs avg)</strong></td>
+<td>10× spikes → autoscaling + queues. Steady → simpler provisioning.</td>
+</tr>
+<tr>
+<td><strong>Data size &amp; growth rate</strong></td>
+<td>TB/day → partition early. GB/year → don't bother.</td>
+</tr>
+<tr>
+<td><strong>Team size &amp; expertise</strong></td>
+<td>3 devs → monolith. 300 devs → service per team.</td>
+</tr>
+<tr>
+<td><strong>Cost sensitivity</strong></td>
+<td>Startup → cloud-managed everything. Hyperscale → buy the hardware.</td>
+</tr>
+<tr>
+<td><strong>Regulatory</strong></td>
+<td>GDPR/HIPAA/PCI → data residency, audit logs, encryption at rest.</td>
+</tr>
+<tr>
+<td><strong>Failure cost</strong></td>
+<td>Plane control system vs ad-click counter — <em>very</em> different bars.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Interview tip:</strong> Before sketching boxes and arrows, <strong>ask three of these questions</strong>. The interviewer will notice; it is the single most senior-engineering signal you can give.</p>
+<h3 id="model-4-the-hierarchy-of-needs">Model 4: The Hierarchy of Needs</h3>
+<p>Like Maslow, optimize from the bottom up. Don't tune cache sizes if your data is wrong.</p>
+<div class="codehilite"><pre><span></span><code>        ┌──────────────────────┐
+        │       Cost           │  ← optimize last
+        ├──────────────────────┤
+        │     Performance      │
+        ├──────────────────────┤
+        │     Reliability      │
+        ├──────────────────────┤
+        │     Correctness      │  ← optimize first
+        └──────────────────────┘
+</code></pre></div>
+
+<p>A 50-ms response that's wrong is worse than a 500-ms response that's right. A 99.99%-reliable system that occasionally double-charges customers is a <strong>lawsuit</strong>, not a system.</p>
+<h3 id="model-5-monolithfirst-martin-fowler-2015">Model 5: MonolithFirst (Martin Fowler, 2015)</h3>
+<blockquote>
+<p>"Almost all the successful microservice stories have started with a monolith that got too big and was broken up. Almost all the cases where I've heard of a system that was built as a microservice system from scratch, it has ended up in serious trouble." — Martin Fowler, <em>MonolithFirst</em></p>
+</blockquote>
+<p><strong>Why:</strong> You don't know the right service boundaries until you've lived with the domain. Premature decomposition fossilizes the <em>wrong</em> boundaries — and undoing them across a network boundary is a one-way door.</p>
+<p><strong>Exception:</strong> When you already have a deeply understood domain (e.g., the team is rebuilding a known system) or when the workload of one component is so different (e.g., ML inference on GPUs) that bundling it makes no sense.</p>
+<h3 id="model-6-the-constant-work-pattern-aws-builders-library">Model 6: The Constant Work Pattern (AWS Builders' Library)</h3>
+<p>A system whose load <em>doesn't change</em> under failure is more reliable than one that scales up exotic recovery code paths exactly when things are worst. AWS's Route 53 health checker pushes a <strong>full configuration</strong> to every edge every few seconds whether anything changed or not. Cost: bandwidth. Benefit: the failure path <em>is</em> the steady-state path; there are no "untested under load" code paths.</p>
+<p><strong>Apply it:</strong> Prefer a daily full snapshot over a clever incremental sync that breaks during outages.</p>
+<h2 id="12-the-three-questions-to-ask-before-any-decision">1.2 The Three Questions to Ask Before Any Decision</h2>
+<ol>
+<li><strong>What does success look like (in numbers)?</strong> — Without an SLO/budget you have no way to know if a trade-off is acceptable.</li>
+<li><strong>What's the blast radius if I'm wrong?</strong> — Is this a two-way or one-way door?</li>
+<li><strong>What's the simplest thing that could possibly work?</strong> — If the simplest thing meets (1), don't pay for more.</li>
+</ol>
+<hr>

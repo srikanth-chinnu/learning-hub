@@ -169,8 +169,11 @@
           a.dataset.itemId = it.id;
           if (done.has(it.id)) a.classList.add("done");
           if (currentId === it.id) a.classList.add("active");
-          const meta = it.read_min ? `<span class="item-meta">${it.read_min} min read</span>` : "";
-          a.innerHTML = `<span class="check"></span><span class="title-line">${escape(it.title)}</span>${meta}`;
+          const diffDot = it.difficulty
+            ? `<span class="diff-dot diff-${it.difficulty}" title="${it.difficulty.replace('-', ' ')}"></span>`
+            : "";
+          const meta = it.read_min ? `<span class="item-meta">${it.read_min} min</span>` : "";
+          a.innerHTML = `<span class="check"></span>${diffDot}<span class="title-line">${escape(it.title)}</span>${meta}`;
           body.appendChild(a);
         }
       }
@@ -472,12 +475,18 @@
       const total = items.length;
       const pct = total ? Math.round((dn / total) * 100) : 0;
       const first = items.find(it => !done.has(it.id)) || items[0];
+      const totalMin = t.total_min || items.reduce((s, it) => s + (it.read_min || 0), 0);
+      const remainingMin = items.filter(it => !done.has(it.id)).reduce((s, it) => s + (it.read_min || 0), 0);
+      const desc = (
+        t.id === "roadmap" ? "Read this first. Four-phase plan with kill switches." :
+        t.id === "dsa"     ? "Beginner → Intermediate → Advanced → Expert, broken into 5-minute reads." :
+                             "Tiers, 20 five-minute reads, and a trade-offs deep dive — all chunked into bite-sized articles."
+      );
       return `
         <div class="card">
           <h3>${t.icon} ${escape(t.title)}</h3>
-          <p>${escape(t.id === "roadmap" ? "Read this first. Four-phase plan with kill switches." :
-                      t.id === "dsa"     ? "77 topics across Beginner → Intermediate → Advanced → Expert + Meta." :
-                                          "Tiers, 20 five-minute reads, trade-offs deep dive, books and papers.")}</p>
+          <p>${escape(desc)}</p>
+          <div class="track-time">⏱ <strong>~${totalMin} min</strong> total · ${remainingMin} min remaining · ${total} topics</div>
           <div class="progress-line"><span>${dn}/${total}</span><div class="bar"><span style="width:${pct}%"></span></div><span>${pct}%</span></div>
           <a class="go" href="#/${first ? first.id : ""}">${dn > 0 ? "Continue →" : "Start →"}</a>
         </div>`;

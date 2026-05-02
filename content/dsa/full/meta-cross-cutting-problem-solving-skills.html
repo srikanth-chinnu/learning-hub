@@ -1,0 +1,166 @@
+<h1 id="meta-cross-cutting-problem-solving-skills">META — Cross-Cutting Problem-Solving Skills</h1>
+<h2 id="m1-how-to-read-a-problem">M.1 How to read a problem</h2>
+<p><strong>Routine.</strong>
+1. Read once for <em>meaning</em>.
+2. Read again writing down: input, output, constraints, examples by hand.
+3. Restate the problem in one sentence — if you can't, you don't understand it.
+4. Look at the smallest test case and <em>trace</em> the expected output.
+5. Look at the largest constraints — they tell you the target complexity (M.2).</p>
+<p><strong>Pitfall.</strong> Skipping examples is the #1 cause of wrong solutions. Compute by hand for <code>n = 1, 2, 3</code> <em>before</em> coding.</p>
+<h2 id="m2-constraints-algorithm-cheat-sheet">M.2 Constraints → algorithm cheat sheet</h2>
+<p>Use the limit on <code>n</code> to back into algorithmic budget (1 sec ≈ 10⁸ simple ops):</p>
+<table>
+<thead>
+<tr>
+<th>n</th>
+<th>Budget</th>
+<th>Likely approaches</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>≤ 11</td>
+<td>n!</td>
+<td>brute permutations</td>
+</tr>
+<tr>
+<td>≤ 20</td>
+<td>2ⁿ</td>
+<td>bitmask DP, meet-in-the-middle</td>
+</tr>
+<tr>
+<td>≤ 100</td>
+<td>n³, n² log n</td>
+<td>Floyd–Warshall, interval DP</td>
+</tr>
+<tr>
+<td>≤ 5,000</td>
+<td>n²</td>
+<td>knapsack, DP, classic 2D</td>
+</tr>
+<tr>
+<td>≤ 10⁵</td>
+<td>n log n, n √n</td>
+<td>sort, segment tree, Mo's</td>
+</tr>
+<tr>
+<td>≤ 10⁶</td>
+<td>n, n log n</td>
+<td>linear scans, sieve</td>
+</tr>
+<tr>
+<td>≤ 10⁹</td>
+<td>log n</td>
+<td>binary search, math</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The mental move:</strong> "constraints first" → trims your candidate algorithms before you waste time.</p>
+<h2 id="m3-always-brute-force-first">M.3 Always brute force first</h2>
+<p>Code the brute force, even if <code>O(n^4)</code>. Why?
+1. <strong>Correctness reference</strong> — stress test (M.7) the optimized solution against it.
+2. <strong>Reveals structure</strong> — patterns, monotonicity, redundant work.
+3. <strong>Partial credit</strong> — many problems have subtasks where brute force passes.</p>
+<p><strong>Move:</strong> never optimize a wrong solution.</p>
+<h2 id="m4-the-14-faang-patterns">M.4 The 14 FAANG patterns</h2>
+<p>Most LeetCode mediums collapse to one of:</p>
+<ol>
+<li>Two pointers</li>
+<li>Sliding window</li>
+<li>Fast &amp; slow pointers</li>
+<li>Merge intervals</li>
+<li>In-place reversal</li>
+<li>Cyclic sort</li>
+<li>BFS / DFS on tree-graph</li>
+<li>Topological sort</li>
+<li>K-way merge</li>
+<li>Top-k via heap</li>
+<li>Subsets / backtracking</li>
+<li>0/1 knapsack DP</li>
+<li>Unbounded knapsack DP</li>
+<li>LIS / LCS-style DP</li>
+</ol>
+<p>When you read a problem, ask: "which of these 14 fits?" If none — read again.</p>
+<h2 id="m5-invariants-monovariants">M.5 Invariants &amp; monovariants</h2>
+<p><strong>Invariant</strong> — a property unchanged by every operation. <strong>Monovariant</strong> — a quantity that strictly increases or decreases.</p>
+<p><strong>Examples.</strong>
+- Each turn parity flips → if you swap two adjacent elements, parity of inversion count flips. (15-puzzle solvability.)
+- Sum of array constant under "add 1 to one, subtract 1 from another."
+- Heap operations preserve heap property (invariant).</p>
+<p><strong>Move:</strong> ask "what doesn't change?" → it constrains the answer.</p>
+<h2 id="m6-reductions">M.6 Reductions</h2>
+<p>Map problem A to problem B you already know. Reduction = new problem becomes old problem in disguise.</p>
+<p><strong>Examples.</strong>
+- "Find duplicate in array of 1..n" → cycle detection in linked list (Floyd's).
+- "Course schedule" → topo sort on dependency graph.
+- "Word ladder" → BFS shortest path on string-similarity graph.
+- "K-th largest in stream" → min-heap of size K.</p>
+<p>If you don't recognize a problem, ask: "what does this look like <em>almost</em>?"</p>
+<h2 id="m7-stress-testing">M.7 Stress testing</h2>
+<p><strong>Recipe</strong> for any problem you submit:
+1. Write <strong>brute</strong> — slow but obviously correct.
+2. Write <strong>fast</strong> — your candidate solution.
+3. Write <strong>gen</strong> — random small test generator.
+4. Loop: generate, run both, diff outputs. Found a difference → minimize the test case manually.</p>
+<p>Even 5 minutes of stress testing catches more bugs than 30 minutes of staring.</p>
+<div class="codehilite"><pre><span></span><code><span class="c1"># pseudocode</span>
+<span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+    <span class="n">test</span> <span class="o">=</span> <span class="n">gen</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">brute</span><span class="p">(</span><span class="n">test</span><span class="p">)</span> <span class="o">!=</span> <span class="n">fast</span><span class="p">(</span><span class="n">test</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;MISMATCH&quot;</span><span class="p">,</span> <span class="n">test</span><span class="p">);</span> <span class="k">break</span>
+</code></pre></div>
+
+<h2 id="m8-dp-state-design">M.8 DP state design</h2>
+<p><strong>Method.</strong>
+1. What does the problem ask at the <em>end</em>? That's the answer state.
+2. What decisions remain at any moment? That's the state's "future."
+3. What information from the past affects future decisions? That's the state's "memory."
+4. Strip redundant memory — collapse symmetries.</p>
+<p><strong>Example.</strong> <em>"Paint houses, no two adjacent same color."</em> State: <code>(i, last_color)</code>. Memory of <em>which</em> houses came before is irrelevant — only the last color affects future.</p>
+<p><strong>Pitfall.</strong> State explosion = your state has too much memory. Ask "what's the minimum I need to remember?"</p>
+<h2 id="m9-timespace-tradeoffs">M.9 Time–space tradeoffs</h2>
+<ul>
+<li>Memoization buys time with space.</li>
+<li>Rolling DP (1D out of 2D) buys back space.</li>
+<li>Sparse representations save space when data is sparse.</li>
+<li>Bitsets are 64× faster than <code>bool</code> arrays for boolean DP.</li>
+</ul>
+<p><strong>Move:</strong> when stuck on TLE, look for repeated computation. When stuck on MLE, look for redundant state.</p>
+<h2 id="m10-brute-better-best-framework">M.10 Brute / Better / Best framework</h2>
+<p>Always present three solutions in interviews:
+- <strong>Brute</strong> — naive, obviously correct, with complexity.
+- <strong>Better</strong> — one optimization step (e.g., hashmap, sort, monotone trick).
+- <strong>Best</strong> — final solution at target complexity.</p>
+<p>Forces you to <em>think in steps</em>, lets the interviewer follow, and shows you can iterate.</p>
+<h2 id="m11-mock-interviews">M.11 Mock interviews</h2>
+<p>Mocks force the <em>speaking</em> skill that solo practice doesn't. Cadence:
+1. <strong>Restate</strong> the problem.
+2. <strong>Walk through</strong> a small example.
+3. <strong>Propose brute</strong> + complexity.
+4. <strong>Propose better</strong> with the optimization insight.
+5. <strong>Code</strong> with running commentary.
+6. <strong>Test</strong> with edge cases (empty, single, duplicates, max size).</p>
+<p>Pirateinterviews, Pramp, Interviewing.io, peers — pick one. Do at least 5 before a real interview.</p>
+<h2 id="m12-deliberate-practice">M.12 Deliberate practice</h2>
+<p>Untimed solving = comfort zone. Real growth requires <em>targeted</em> discomfort.</p>
+<p><strong>Routine (per day).</strong>
+- 1 problem at your <em>current</em> level (build confidence).
+- 1 problem one level above (stretch).
+- 30 min reviewing a <em>failed</em> problem from last week — re-solve from scratch, then read editorial.</p>
+<p>Volume without review = wasted reps.</p>
+<h2 id="m13-climbing-ratings">M.13 Climbing ratings</h2>
+<ul>
+<li>Codeforces 1200 → 1600: master Tier 1–2.</li>
+<li>1600 → 1900: master Tier 3 + Meta.</li>
+<li>1900 → 2200: master Tier 4 partially; learn 2 new techniques per month.</li>
+<li>2200+: speed and accuracy, not new topics.</li>
+</ul>
+<p>The bottleneck shifts: at low ratings it's <em>knowledge</em>; at high ratings it's <em>implementation speed and bug-free coding</em>.</p>
+<h2 id="m14-reading-editorials">M.14 Reading editorials</h2>
+<p><strong>Method.</strong>
+1. Try the problem cold for 30–60 min.
+2. Read editorial <em>until</em> the key idea clicks. Stop.
+3. Code the rest yourself.
+4. If you couldn't have invented the trick: write it on a notecard, "next time I see X, try Y."</p>
+<p>Reading editorials <em>before</em> trying = reading-comprehension exercise, not problem-solving.</p>
+<hr>

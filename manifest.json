@@ -61,6 +61,7 @@
               ],
               "summary": "You have ~63 KB of DSA curriculum + a system design curriculum + a tradeoffs report, all sitting in a folder. None of that is progress. Progress = problems solved + designs explained out loud.",
               "tag": "plan",
+              "difficulty": "all-levels",
               "words": 989,
               "read_min": 4,
               "order": 0,
@@ -69,7 +70,12 @@
             }
           ]
         }
-      ]
+      ],
+      "total_min": 4,
+      "total_items": 1,
+      "difficulty_counts": {
+        "all-levels": 1
+      }
     },
     {
       "id": "dsa",
@@ -81,8 +87,33 @@
           "items": [
             {
               "id": "dsa/full",
-              "title": "Data Structures & Problem Solving — From Beginner to Expert",
+              "title": "DSA Curriculum — Index",
               "src": "content/dsa/full.html",
+              "anchors": [
+                {
+                  "level": 2,
+                  "id": "sections-in-this-guide",
+                  "text": "Sections in this guide"
+                }
+              ],
+              "summary": "1. Data Structures & Problem Solving — From Beginner to Expert 2. TIER 1 — Beginner (foundations you cannot skip) 3. TIER 2 — Intermediate (interview-ready) - TIER 2 — Intermediate (interview-ready) — Part 1: 2.1 Tree…",
+              "tag": "curriculum",
+              "difficulty": "all-levels",
+              "words": 277,
+              "read_min": 1,
+              "order": 1,
+              "prev": "roadmap/main",
+              "next": "dsa/full/data-structures-problem-solving-from-beginner-to-expert"
+            }
+          ]
+        },
+        {
+          "title": "5-Minute Reads",
+          "items": [
+            {
+              "id": "dsa/full/data-structures-problem-solving-from-beginner-to-expert",
+              "title": "Data Structures & Problem Solving — From Beginner to Expert",
+              "src": "content/dsa/full/data-structures-problem-solving-from-beginner-to-expert.html",
               "anchors": [
                 {
                   "level": 2,
@@ -98,7 +129,22 @@
                   "level": 2,
                   "id": "curriculum-index",
                   "text": "Curriculum Index"
-                },
+                }
+              ],
+              "summary": "1. Don't read linearly. Pick the tier matching your current ceiling. If you cannot solve LeetCode Mediums consistently, you belong in Tier 1–2 regardless of years of experience. 2. One read = one topic = one solved…",
+              "tag": "5-min",
+              "difficulty": "all-levels",
+              "words": 583,
+              "read_min": 3,
+              "order": 2,
+              "prev": "dsa/full",
+              "next": "dsa/full/tier-1-beginner-foundations-you-cannot-skip"
+            },
+            {
+              "id": "dsa/full/tier-1-beginner-foundations-you-cannot-skip",
+              "title": "TIER 1 — Beginner (foundations you cannot skip)",
+              "src": "content/dsa/full/tier-1-beginner-foundations-you-cannot-skip.html",
+              "anchors": [
                 {
                   "level": 2,
                   "id": "11-big-o-thinking",
@@ -153,7 +199,22 @@
                   "level": 2,
                   "id": "111-linked-lists",
                   "text": "1.11 Linked lists"
-                },
+                }
+              ],
+              "summary": "TIER 1 — Beginner (foundations you cannot skip)",
+              "tag": "5-min",
+              "difficulty": "beginner",
+              "words": 1437,
+              "read_min": 7,
+              "order": 3,
+              "prev": "dsa/full/data-structures-problem-solving-from-beginner-to-expert",
+              "next": "dsa/full/tier-2-intermediate-interview-ready-part-1-21-tree-traversals-29-bit-manipulatio"
+            },
+            {
+              "id": "dsa/full/tier-2-intermediate-interview-ready-part-1-21-tree-traversals-29-bit-manipulatio",
+              "title": "TIER 2 — Intermediate (interview-ready) — Part 1: 2.1 Tree traversals → 2.9 Bit manipulation",
+              "src": "content/dsa/full/tier-2-intermediate-interview-ready-part-1-21-tree-traversals-29-bit-manipulatio.html",
+              "anchors": [
                 {
                   "level": 2,
                   "id": "21-tree-traversals",
@@ -198,7 +259,22 @@
                   "level": 2,
                   "id": "29-bit-manipulation",
                   "text": "2.9 Bit manipulation"
-                },
+                }
+              ],
+              "summary": "def levelorder(root): from collections import deque q, out = deque([root]), [] while q: lvl = [] for in range(len(q)): n = q.popleft() if n: lvl.append(n.val); q.append(n.left); q.append(n.right) if lvl:…",
+              "tag": "5-min",
+              "difficulty": "intermediate",
+              "words": 1218,
+              "read_min": 6,
+              "order": 4,
+              "prev": "dsa/full/tier-1-beginner-foundations-you-cannot-skip",
+              "next": "dsa/full/tier-2-intermediate-interview-ready-part-2-210-prefix-sums-difference-arrays-214"
+            },
+            {
+              "id": "dsa/full/tier-2-intermediate-interview-ready-part-2-210-prefix-sums-difference-arrays-214",
+              "title": "TIER 2 — Intermediate (interview-ready) — Part 2: 2.10 Prefix sums & difference arrays → 2.14 Interval problems",
+              "src": "content/dsa/full/tier-2-intermediate-interview-ready-part-2-210-prefix-sums-difference-arrays-214.html",
+              "anchors": [
                 {
                   "level": 2,
                   "id": "210-prefix-sums-difference-arrays",
@@ -223,7 +299,22 @@
                   "level": 2,
                   "id": "214-interval-problems",
                   "text": "2.14 Interval problems"
-                },
+                }
+              ],
+              "summary": "TIER 2 — Intermediate (interview-ready) — Part 2: 2.10 Prefix sums & difference arrays → 2.14 Interval problems",
+              "tag": "5-min",
+              "difficulty": "intermediate",
+              "words": 770,
+              "read_min": 4,
+              "order": 5,
+              "prev": "dsa/full/tier-2-intermediate-interview-ready-part-1-21-tree-traversals-29-bit-manipulatio",
+              "next": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-1-31-dp-first-principles-37"
+            },
+            {
+              "id": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-1-31-dp-first-principles-37",
+              "title": "TIER 3 — Advanced (DP, shortest paths, segment trees) — Part 1: 3.1 DP: first principles → 3.7 Bitmask DP",
+              "src": "content/dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-1-31-dp-first-principles-37.html",
+              "anchors": [
                 {
                   "level": 2,
                   "id": "31-dp-first-principles",
@@ -258,7 +349,22 @@
                   "level": 2,
                   "id": "37-bitmask-dp",
                   "text": "3.7 Bitmask DP"
-                },
+                }
+              ],
+              "summary": "def fibbot(n): if n < 2: return n a, b = 0, 1 for in range(n - 1): a, b = b, a + b return b Pitfall. Wrong state. Add or remove a dimension deliberately (see M.8). Bridge → 3.2: simplest case is a 1D state.",
+              "tag": "5-min",
+              "difficulty": "advanced",
+              "words": 1126,
+              "read_min": 5,
+              "order": 6,
+              "prev": "dsa/full/tier-2-intermediate-interview-ready-part-2-210-prefix-sums-difference-arrays-214",
+              "next": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-2-38-dijkstra-314-lazy-prop"
+            },
+            {
+              "id": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-2-38-dijkstra-314-lazy-prop",
+              "title": "TIER 3 — Advanced (DP, shortest paths, segment trees) — Part 2: 3.8 Dijkstra → 3.14 Lazy propagation",
+              "src": "content/dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-2-38-dijkstra-314-lazy-prop.html",
+              "anchors": [
                 {
                   "level": 2,
                   "id": "38-dijkstra",
@@ -293,7 +399,22 @@
                   "level": 2,
                   "id": "314-lazy-propagation",
                   "text": "3.14 Lazy propagation"
-                },
+                }
+              ],
+              "summary": "TIER 3 — Advanced (DP, shortest paths, segment trees) — Part 2: 3.8 Dijkstra → 3.14 Lazy propagation",
+              "tag": "5-min",
+              "difficulty": "advanced",
+              "words": 1239,
+              "read_min": 6,
+              "order": 7,
+              "prev": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-1-31-dp-first-principles-37",
+              "next": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-3-315-kmp-318-a-search"
+            },
+            {
+              "id": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-3-315-kmp-318-a-search",
+              "title": "TIER 3 — Advanced (DP, shortest paths, segment trees) — Part 3: 3.15 KMP → 3.18 A* search",
+              "src": "content/dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-3-315-kmp-318-a-search.html",
+              "anchors": [
                 {
                   "level": 2,
                   "id": "315-kmp",
@@ -313,7 +434,22 @@
                   "level": 2,
                   "id": "318-a-search",
                   "text": "3.18 A* search"
-                },
+                }
+              ],
+              "summary": "TIER 3 — Advanced (DP, shortest paths, segment trees) — Part 3: 3.15 KMP → 3.18 A* search",
+              "tag": "5-min",
+              "difficulty": "advanced",
+              "words": 547,
+              "read_min": 2,
+              "order": 8,
+              "prev": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-2-38-dijkstra-314-lazy-prop",
+              "next": "dsa/full/tier-4-expert-rarely-interviewed-often-contest-decisive"
+            },
+            {
+              "id": "dsa/full/tier-4-expert-rarely-interviewed-often-contest-decisive",
+              "title": "TIER 4 — Expert (rarely interviewed, often contest-decisive)",
+              "src": "content/dsa/full/tier-4-expert-rarely-interviewed-often-contest-decisive.html",
+              "anchors": [
                 {
                   "level": 2,
                   "id": "41-heavylight-decomposition-hld",
@@ -413,7 +549,22 @@
                   "level": 2,
                   "id": "420-randomized-algorithms",
                   "text": "4.20 Randomized algorithms"
-                },
+                }
+              ],
+              "summary": "TIER 4 — Expert (rarely interviewed, often contest-decisive)",
+              "tag": "5-min",
+              "difficulty": "expert",
+              "words": 1265,
+              "read_min": 6,
+              "order": 9,
+              "prev": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-3-315-kmp-318-a-search",
+              "next": "dsa/full/meta-cross-cutting-problem-solving-skills"
+            },
+            {
+              "id": "dsa/full/meta-cross-cutting-problem-solving-skills",
+              "title": "META — Cross-Cutting Problem-Solving Skills",
+              "src": "content/dsa/full/meta-cross-cutting-problem-solving-skills.html",
+              "anchors": [
                 {
                   "level": 2,
                   "id": "m1-how-to-read-a-problem",
@@ -483,7 +634,22 @@
                   "level": 2,
                   "id": "m14-reading-editorials",
                   "text": "M.14 Reading editorials"
-                },
+                }
+              ],
+              "summary": "1. Two pointers 2. Sliding window 3. Fast & slow pointers 4. Merge intervals 5. In-place reversal 6. Cyclic sort 7. BFS / DFS on tree-graph 8. Topological sort 9. K-way merge 10. Top-k via heap 11. Subsets /…",
+              "tag": "5-min",
+              "difficulty": "all-levels",
+              "words": 966,
+              "read_min": 4,
+              "order": 10,
+              "prev": "dsa/full/tier-4-expert-rarely-interviewed-often-contest-decisive",
+              "next": "dsa/full/practice-plan"
+            },
+            {
+              "id": "dsa/full/practice-plan",
+              "title": "Practice Plan",
+              "src": "content/dsa/full/practice-plan.html",
+              "anchors": [
                 {
                   "level": 2,
                   "id": "4-week-sprint-zero-solid-intermediate",
@@ -498,24 +664,63 @@
                   "level": 2,
                   "id": "6-month-plan-advanced-expert",
                   "text": "6+ month plan (advanced → expert)"
-                },
+                }
+              ],
+              "summary": "By end of Week 4 you should pass most LeetCode mediums in 25 minutes.",
+              "tag": "5-min",
+              "difficulty": "all-levels",
+              "words": 165,
+              "read_min": 1,
+              "order": 11,
+              "prev": "dsa/full/meta-cross-cutting-problem-solving-skills",
+              "next": "dsa/full/resources"
+            },
+            {
+              "id": "dsa/full/resources",
+              "title": "Resources",
+              "src": "content/dsa/full/resources.html",
+              "anchors": [],
+              "summary": "Resources",
+              "tag": "5-min",
+              "difficulty": "all-levels",
+              "words": 133,
+              "read_min": 1,
+              "order": 12,
+              "prev": "dsa/full/practice-plan",
+              "next": "dsa/full/footnotes-confidence"
+            },
+            {
+              "id": "dsa/full/footnotes-confidence",
+              "title": "Footnotes & Confidence",
+              "src": "content/dsa/full/footnotes-confidence.html",
+              "anchors": [
                 {
                   "level": 2,
                   "id": "you-dont-have-a-knowledge-problem-you-have-a-follow-through-problem",
                   "text": "You don't have a knowledge problem. You have a follow-through problem."
                 }
               ],
-              "summary": "1. Don't read linearly. Pick the tier matching your current ceiling. If you cannot solve LeetCode Mediums consistently, you belong in Tier 1–2 regardless of years of experience. 2. One read = one topic = one solved…",
-              "tag": "curriculum",
-              "words": 9657,
-              "read_min": 44,
-              "order": 1,
-              "prev": "roadmap/main",
+              "summary": "You now have 77 topics, examples, problems, and a plan. The bookshelf is full. So was it last time. The question isn't which topic should I study next? — that's a procrastination dressed up as planning.",
+              "tag": "5-min",
+              "difficulty": "all-levels",
+              "words": 280,
+              "read_min": 1,
+              "order": 13,
+              "prev": "dsa/full/resources",
               "next": "sd/overview"
             }
           ]
         }
-      ]
+      ],
+      "total_min": 47,
+      "total_items": 13,
+      "difficulty_counts": {
+        "all-levels": 6,
+        "beginner": 1,
+        "intermediate": 2,
+        "advanced": 3,
+        "expert": 1
+      }
     },
     {
       "id": "sd",
@@ -603,10 +808,11 @@
               ],
               "summary": "The 5-minute-reads/ folder contains 20 short, focused primers — each designed to be read in 5 minutes or less while giving you a working understanding of one concept.",
               "tag": "overview",
+              "difficulty": "all-levels",
               "words": 890,
               "read_min": 4,
-              "order": 2,
-              "prev": "dsa/full",
+              "order": 14,
+              "prev": "dsa/full/footnotes-confidence",
               "next": "sd/tier-beginner"
             }
           ]
@@ -762,9 +968,10 @@
               ],
               "summary": "By the end of Phase 1 you'll be able to: - Explain DNS, HTTP, TCP, UDP, load balancers, and CDN like a pro - Reason about vertical vs horizontal scaling and stateless services - Choose between SQL and NoSQL with sound…",
               "tag": "tier-1",
+              "difficulty": "beginner",
               "words": 1194,
               "read_min": 5,
-              "order": 3,
+              "order": 15,
               "prev": "sd/overview",
               "next": "sd/tier-intermediate"
             },
@@ -896,9 +1103,10 @@
               ],
               "summary": "By the end of Phase 2 you'll be able to: - Design Twitter, WhatsApp, Uber, and YouTube at a credible level - Choose data models, partitioning strategies, and caching layers deliberately - Reason about trade-offs in…",
               "tag": "tier-2",
+              "difficulty": "intermediate",
               "words": 1399,
               "read_min": 6,
-              "order": 4,
+              "order": 16,
               "prev": "sd/tier-beginner",
               "next": "sd/tier-advanced"
             },
@@ -1175,9 +1383,10 @@
               ],
               "summary": "This is where you stop being someone who uses distributed systems and start being someone who understands them.",
               "tag": "tier-3",
+              "difficulty": "advanced",
               "words": 1754,
               "read_min": 8,
-              "order": 5,
+              "order": 17,
               "prev": "sd/tier-intermediate",
               "next": "sd/tier-expert"
             },
@@ -1304,27 +1513,68 @@
               ],
               "summary": "There's no graduation. Expertise compounds with every system you ship and every post-mortem you read.",
               "tag": "tier-4",
+              "difficulty": "expert",
               "words": 1873,
               "read_min": 9,
-              "order": 6,
+              "order": 18,
               "prev": "sd/tier-advanced",
               "next": "sd/tradeoffs"
             }
           ]
         },
         {
-          "title": "Deep Dive",
+          "title": "Trade-offs",
           "items": [
             {
               "id": "sd/tradeoffs",
-              "title": "Trade-offs in System Design: A Comprehensive Guide (HLD + LLD in Python & C++)",
+              "title": "Trade-offs Deep Dive — Index",
               "src": "content/sd/tradeoffs.html",
+              "anchors": [
+                {
+                  "level": 2,
+                  "id": "sections-in-this-guide",
+                  "text": "Sections in this guide"
+                }
+              ],
+              "summary": "1. Trade-offs in System Design: A Comprehensive Guide (HLD + LLD in Python & C++) 2. PART 1 — How to Think About Trade-offs 3. PART 2 — HLD Trade-offs - PART 2 — HLD Trade-offs — Part 1: 2A. Foundational Theorems → 2B.…",
+              "tag": "deep-dive",
+              "difficulty": "advanced",
+              "words": 281,
+              "read_min": 1,
+              "order": 19,
+              "prev": "sd/tier-expert",
+              "next": "sd/tradeoffs/trade-offs-in-system-design-a-comprehensive-guide-hld-lld-in-python-c"
+            }
+          ]
+        },
+        {
+          "title": "Trade-offs · 5-Min Reads",
+          "items": [
+            {
+              "id": "sd/tradeoffs/trade-offs-in-system-design-a-comprehensive-guide-hld-lld-in-python-c",
+              "title": "Trade-offs in System Design: A Comprehensive Guide (HLD + LLD in Python & C++)",
+              "src": "content/sd/tradeoffs/trade-offs-in-system-design-a-comprehensive-guide-hld-lld-in-python-c.html",
               "anchors": [
                 {
                   "level": 2,
                   "id": "executive-summary",
                   "text": "Executive Summary"
-                },
+                }
+              ],
+              "summary": "There is exactly one correct answer to almost every system-design interview question, and it is \"it depends — on what?\" The job of a senior engineer is not to know which technology is \"best.\" It is to identify the two…",
+              "tag": "5-min",
+              "difficulty": "advanced",
+              "words": 379,
+              "read_min": 2,
+              "order": 20,
+              "prev": "sd/tradeoffs",
+              "next": "sd/tradeoffs/part-1-how-to-think-about-trade-offs"
+            },
+            {
+              "id": "sd/tradeoffs/part-1-how-to-think-about-trade-offs",
+              "title": "PART 1 — How to Think About Trade-offs",
+              "src": "content/sd/tradeoffs/part-1-how-to-think-about-trade-offs.html",
+              "anchors": [
                 {
                   "level": 2,
                   "id": "11-the-six-mental-models",
@@ -1364,7 +1614,22 @@
                   "level": 2,
                   "id": "12-the-three-questions-to-ask-before-any-decision",
                   "text": "1.2 The Three Questions to Ask Before Any Decision"
-                },
+                }
+              ],
+              "summary": "When you say \"it depends,\" always answer the follow-up before it's asked. The variables that almost every architecture decision turns on:",
+              "tag": "5-min",
+              "difficulty": "advanced",
+              "words": 857,
+              "read_min": 4,
+              "order": 21,
+              "prev": "sd/tradeoffs/trade-offs-in-system-design-a-comprehensive-guide-hld-lld-in-python-c",
+              "next": "sd/tradeoffs/part-2-hld-trade-offs-part-1-2a-foundational-theorems-2b-data-tier-trade-offs"
+            },
+            {
+              "id": "sd/tradeoffs/part-2-hld-trade-offs-part-1-2a-foundational-theorems-2b-data-tier-trade-offs",
+              "title": "PART 2 — HLD Trade-offs — Part 1: 2A. Foundational Theorems → 2B. Data Tier Trade-offs",
+              "src": "content/sd/tradeoffs/part-2-hld-trade-offs-part-1-2a-foundational-theorems-2b-data-tier-trade-offs.html",
+              "anchors": [
                 {
                   "level": 2,
                   "id": "2a-foundational-theorems",
@@ -1449,7 +1714,22 @@
                   "level": 3,
                   "id": "consensus-paxos-raft-zab-multi-paxos",
                   "text": "Consensus: Paxos / Raft / ZAB / Multi-Paxos"
-                },
+                }
+              ],
+              "summary": "In the presence of a network Partition, you must choose between Consistency (all nodes see the same data) and Availability (every request gets a response).",
+              "tag": "5-min",
+              "difficulty": "advanced",
+              "words": 1616,
+              "read_min": 7,
+              "order": 22,
+              "prev": "sd/tradeoffs/part-1-how-to-think-about-trade-offs",
+              "next": "sd/tradeoffs/part-2-hld-trade-offs-part-2-2c-architecture-pattern-trade-offs-2e-operations-tr"
+            },
+            {
+              "id": "sd/tradeoffs/part-2-hld-trade-offs-part-2-2c-architecture-pattern-trade-offs-2e-operations-tr",
+              "title": "PART 2 — HLD Trade-offs — Part 2: 2C. Architecture Pattern Trade-offs → 2E. Operations Trade-offs",
+              "src": "content/sd/tradeoffs/part-2-hld-trade-offs-part-2-2c-architecture-pattern-trade-offs-2e-operations-tr.html",
+              "anchors": [
                 {
                   "level": 2,
                   "id": "2c-architecture-pattern-trade-offs",
@@ -1534,7 +1814,22 @@
                   "level": 3,
                   "id": "cardinality-charity-majors-honeycomb",
                   "text": "Cardinality (Charity Majors / Honeycomb)"
-                },
+                }
+              ],
+              "summary": "Split write model from read model. Writes go to a normalized OLTP store; reads go to denormalized projections optimized for queries.",
+              "tag": "5-min",
+              "difficulty": "advanced",
+              "words": 1197,
+              "read_min": 5,
+              "order": 23,
+              "prev": "sd/tradeoffs/part-2-hld-trade-offs-part-1-2a-foundational-theorems-2b-data-tier-trade-offs",
+              "next": "sd/tradeoffs/part-3-lld-trade-offs-python"
+            },
+            {
+              "id": "sd/tradeoffs/part-3-lld-trade-offs-python",
+              "title": "PART 3 — LLD Trade-offs (Python)",
+              "src": "content/sd/tradeoffs/part-3-lld-trade-offs-python.html",
+              "anchors": [
                 {
                   "level": 2,
                   "id": "31-solid-in-python-with-abcs",
@@ -1619,7 +1914,22 @@
                   "level": 2,
                   "id": "314-async-vs-threads-vs-multiprocessing",
                   "text": "3.14 Async vs Threads vs Multiprocessing"
-                },
+                }
+              ],
+              "summary": "class UserRepository: # persistence def save(self, user: User): ...",
+              "tag": "5-min",
+              "difficulty": "advanced",
+              "words": 1471,
+              "read_min": 7,
+              "order": 24,
+              "prev": "sd/tradeoffs/part-2-hld-trade-offs-part-2-2c-architecture-pattern-trade-offs-2e-operations-tr",
+              "next": "sd/tradeoffs/part-4-lld-trade-offs-c-part-1-41-parameter-passing-cg-f16-f17-f18-f19-f20-49-in"
+            },
+            {
+              "id": "sd/tradeoffs/part-4-lld-trade-offs-c-part-1-41-parameter-passing-cg-f16-f17-f18-f19-f20-49-in",
+              "title": "PART 4 — LLD Trade-offs (C++) — Part 1: 4.1 Parameter Passing (CG F.16, F.17, F.18, F.19, F.20) → 4.9 Inheritance vs Composition (CG C.120, C.121)",
+              "src": "content/sd/tradeoffs/part-4-lld-trade-offs-c-part-1-41-parameter-passing-cg-f16-f17-f18-f19-f20-49-in.html",
+              "anchors": [
                 {
                   "level": 2,
                   "id": "41-parameter-passing-cg-f16-f17-f18-f19-f20",
@@ -1664,7 +1974,22 @@
                   "level": 2,
                   "id": "49-inheritance-vs-composition-cg-c120-c121",
                   "text": "4.9 Inheritance vs Composition (CG C.120, C.121)"
-                },
+                }
+              ],
+              "summary": "// \"Observer\" — only reads: void log(const std::string& s) { std::cout << s; } // const ref ",
+              "tag": "5-min",
+              "difficulty": "advanced",
+              "words": 1137,
+              "read_min": 5,
+              "order": 25,
+              "prev": "sd/tradeoffs/part-3-lld-trade-offs-python",
+              "next": "sd/tradeoffs/part-4-lld-trade-offs-c-part-2-410-ebo-and-no_unique_address-c20-422-pimpl-idiom"
+            },
+            {
+              "id": "sd/tradeoffs/part-4-lld-trade-offs-c-part-2-410-ebo-and-no_unique_address-c20-422-pimpl-idiom",
+              "title": "PART 4 — LLD Trade-offs (C++) — Part 2: 4.10 EBO and `[[no_unique_address]]` (C++20) → 4.22 PIMPL Idiom",
+              "src": "content/sd/tradeoffs/part-4-lld-trade-offs-c-part-2-410-ebo-and-no_unique_address-c20-422-pimpl-idiom.html",
+              "anchors": [
                 {
                   "level": 2,
                   "id": "410-ebo-and-no_unique_address-c20",
@@ -1729,7 +2054,22 @@
                   "level": 2,
                   "id": "422-pimpl-idiom",
                   "text": "4.22 PIMPL Idiom"
-                },
+                }
+              ],
+              "summary": "// C++20: [[nouniqueaddress]] for members template<class A> struct Container2 { [[nouniqueaddress]] A alloc; // 0 bytes if A is empty int data; }; ",
+              "tag": "5-min",
+              "difficulty": "advanced",
+              "words": 1151,
+              "read_min": 5,
+              "order": 26,
+              "prev": "sd/tradeoffs/part-4-lld-trade-offs-c-part-1-41-parameter-passing-cg-f16-f17-f18-f19-f20-49-in",
+              "next": "sd/tradeoffs/part-5-decision-matrices"
+            },
+            {
+              "id": "sd/tradeoffs/part-5-decision-matrices",
+              "title": "PART 5 — Decision Matrices",
+              "src": "content/sd/tradeoffs/part-5-decision-matrices.html",
+              "anchors": [
                 {
                   "level": 2,
                   "id": "51-datastore-choice",
@@ -1754,7 +2094,22 @@
                   "level": 2,
                   "id": "55-replication-strategy",
                   "text": "5.5 Replication Strategy"
-                },
+                }
+              ],
+              "summary": "PART 5 — Decision Matrices",
+              "tag": "5-min",
+              "difficulty": "advanced",
+              "words": 324,
+              "read_min": 1,
+              "order": 27,
+              "prev": "sd/tradeoffs/part-4-lld-trade-offs-c-part-2-410-ebo-and-no_unique_address-c20-422-pimpl-idiom",
+              "next": "sd/tradeoffs/part-6-real-world-case-studies"
+            },
+            {
+              "id": "sd/tradeoffs/part-6-real-world-case-studies",
+              "title": "PART 6 — Real-World Case Studies",
+              "src": "content/sd/tradeoffs/part-6-real-world-case-studies.html",
+              "anchors": [
                 {
                   "level": 2,
                   "id": "61-discord-mongodb-cassandra-scylladb",
@@ -1766,12 +2121,41 @@
                   "text": "6.2 Stripe: Online Migrations as a Repeatable Process"
                 }
               ],
-              "summary": "There is exactly one correct answer to almost every system-design interview question, and it is \"it depends — on what?\" The job of a senior engineer is not to know which technology is \"best.\" It is to identify the two…",
-              "tag": "deep-dive",
-              "words": 8898,
-              "read_min": 40,
-              "order": 7,
-              "prev": "sd/tier-expert",
+              "summary": "Stripe's blog (Jacqueline Xu, 2017) on Online Migrations at Scale describes a four-step methodology applied to nearly every schema or store change:",
+              "tag": "5-min",
+              "difficulty": "advanced",
+              "words": 352,
+              "read_min": 2,
+              "order": 28,
+              "prev": "sd/tradeoffs/part-5-decision-matrices",
+              "next": "sd/tradeoffs/confidence-assessment"
+            },
+            {
+              "id": "sd/tradeoffs/confidence-assessment",
+              "title": "Confidence Assessment",
+              "src": "content/sd/tradeoffs/confidence-assessment.html",
+              "anchors": [],
+              "summary": "Confidence Assessment",
+              "tag": "5-min",
+              "difficulty": "advanced",
+              "words": 147,
+              "read_min": 1,
+              "order": 29,
+              "prev": "sd/tradeoffs/part-6-real-world-case-studies",
+              "next": "sd/tradeoffs/citations-references"
+            },
+            {
+              "id": "sd/tradeoffs/citations-references",
+              "title": "Citations & References",
+              "src": "content/sd/tradeoffs/citations-references.html",
+              "anchors": [],
+              "summary": "Citations & References",
+              "tag": "5-min",
+              "difficulty": "advanced",
+              "words": 339,
+              "read_min": 2,
+              "order": 30,
+              "prev": "sd/tradeoffs/confidence-assessment",
               "next": "sd/5min/index"
             }
           ]
@@ -1842,10 +2226,11 @@
               ],
               "summary": "Each read includes: - 🎯 TL;DR — the one-line takeaway - 📖 Plain English explanation - 🔑 Key trade-offs - 🏗️ Real-world example - 🚦 When to use / when NOT to use - 🔗 Where to dig deeper",
               "tag": "index",
+              "difficulty": "all-levels",
               "words": 533,
               "read_min": 2,
-              "order": 8,
-              "prev": "sd/tradeoffs",
+              "order": 31,
+              "prev": "sd/tradeoffs/citations-references",
               "next": "sd/5min/what-is-system-design"
             },
             {
@@ -1896,9 +2281,10 @@
               ],
               "summary": "When you write a small program, you're solving a problem. When you do system design, you're solving a problem and answering questions like:",
               "tag": "5-min",
+              "difficulty": "all-levels",
               "words": 563,
               "read_min": 3,
-              "order": 9,
+              "order": 32,
               "prev": "sd/5min/index",
               "next": "sd/5min/scalability-basics"
             },
@@ -1965,9 +2351,10 @@
               ],
               "summary": "Your app is becoming popular. Two roads to handle the traffic:",
               "tag": "5-min",
+              "difficulty": "all-levels",
               "words": 601,
               "read_min": 3,
-              "order": 10,
+              "order": 33,
               "prev": "sd/5min/what-is-system-design",
               "next": "sd/5min/latency-vs-throughput"
             },
@@ -2024,9 +2411,10 @@
               ],
               "summary": "Imagine a coffee shop:",
               "tag": "5-min",
+              "difficulty": "all-levels",
               "words": 620,
               "read_min": 3,
-              "order": 11,
+              "order": 34,
               "prev": "sd/5min/scalability-basics",
               "next": "sd/5min/api-styles"
             },
@@ -2103,9 +2491,10 @@
               ],
               "summary": "When two computers talk to each other over the network, they need a protocol. Three popular choices for application APIs:",
               "tag": "5-min",
+              "difficulty": "all-levels",
               "words": 538,
               "read_min": 2,
-              "order": 12,
+              "order": 35,
               "prev": "sd/5min/latency-vs-throughput",
               "next": "sd/5min/sql-vs-nosql"
             },
@@ -2177,9 +2566,10 @@
               ],
               "summary": "These have almost nothing in common with each other except \"not SQL.\"",
               "tag": "5-min",
+              "difficulty": "all-levels",
               "words": 696,
               "read_min": 3,
-              "order": 13,
+              "order": 36,
               "prev": "sd/5min/api-styles",
               "next": "sd/5min/load-balancing"
             },
@@ -2246,9 +2636,10 @@
               ],
               "summary": "You have 10 backend servers. A user sends a request. Where does it go?",
               "tag": "5-min",
+              "difficulty": "all-levels",
               "words": 658,
               "read_min": 3,
-              "order": 14,
+              "order": 37,
               "prev": "sd/5min/sql-vs-nosql",
               "next": "sd/5min/caching"
             },
@@ -2335,9 +2726,10 @@
               ],
               "summary": "Your database query takes 50ms. Same query 1 million times = a slow service.",
               "tag": "5-min",
+              "difficulty": "all-levels",
               "words": 735,
               "read_min": 3,
-              "order": 15,
+              "order": 38,
               "prev": "sd/5min/load-balancing",
               "next": "sd/5min/cdn"
             },
@@ -2424,9 +2816,10 @@
               ],
               "summary": "Your web server is in Virginia. A user in Tokyo loads your site. The packets must cross the Pacific (≈150ms each way). Multiply by 50 assets (CSS, JS, images) and the page is slow.",
               "tag": "5-min",
+              "difficulty": "all-levels",
               "words": 660,
               "read_min": 3,
-              "order": 16,
+              "order": 39,
               "prev": "sd/5min/caching",
               "next": "sd/5min/database-replication"
             },
@@ -2518,9 +2911,10 @@
               ],
               "summary": "You have one database. Two problems:",
               "tag": "5-min",
+              "difficulty": "all-levels",
               "words": 656,
               "read_min": 3,
-              "order": 17,
+              "order": 40,
               "prev": "sd/5min/cdn",
               "next": "sd/5min/database-sharding"
             },
@@ -2627,9 +3021,10 @@
               ],
               "summary": "Replication gave us many copies of the same data — great for reads, useless for writes. All writes still go to one primary.",
               "tag": "5-min",
+              "difficulty": "all-levels",
               "words": 744,
               "read_min": 3,
-              "order": 18,
+              "order": 41,
               "prev": "sd/5min/database-replication",
               "next": "sd/5min/consistent-hashing"
             },
@@ -2711,9 +3106,10 @@
               ],
               "summary": "You have 4 cache servers. You assign keys: server = hash(key) % 4.",
               "tag": "5-min",
+              "difficulty": "all-levels",
               "words": 729,
               "read_min": 3,
-              "order": 19,
+              "order": 42,
               "prev": "sd/5min/database-sharding",
               "next": "sd/5min/microservices"
             },
@@ -2790,9 +3186,10 @@
               ],
               "summary": "A monolith has nasty in-codebase complexity: tangled modules, shared dependencies, slow build times, fear of changing anything.",
               "tag": "5-min",
+              "difficulty": "all-levels",
               "words": 720,
               "read_min": 3,
-              "order": 20,
+              "order": 43,
               "prev": "sd/5min/consistent-hashing",
               "next": "sd/5min/message-queues"
             },
@@ -2894,9 +3291,10 @@
               ],
               "summary": "A user uploads a video on YouTube. What happens?",
               "tag": "5-min",
+              "difficulty": "all-levels",
               "words": 740,
               "read_min": 3,
-              "order": 21,
+              "order": 44,
               "prev": "sd/5min/microservices",
               "next": "sd/5min/rate-limiting"
             },
@@ -3008,9 +3406,10 @@
               ],
               "summary": "Without rate limiting: - A buggy client retries forever in a tight loop → DDoS yourself - A malicious bot scrapes your API → cost explosion - One customer accidentally floods → harms all other customers",
               "tag": "5-min",
+              "difficulty": "all-levels",
               "words": 808,
               "read_min": 4,
-              "order": 22,
+              "order": 45,
               "prev": "sd/5min/message-queues",
               "next": "sd/5min/cap-theorem"
             },
@@ -3102,9 +3501,10 @@
               ],
               "summary": "CAP says: a distributed system can guarantee at most two of:",
               "tag": "5-min",
+              "difficulty": "all-levels",
               "words": 755,
               "read_min": 3,
-              "order": 23,
+              "order": 46,
               "prev": "sd/5min/rate-limiting",
               "next": "sd/5min/consistency-models"
             },
@@ -3191,9 +3591,10 @@
               ],
               "summary": "When two people read the same data on different servers, what should they see?",
               "tag": "5-min",
+              "difficulty": "all-levels",
               "words": 756,
               "read_min": 3,
-              "order": 24,
+              "order": 47,
               "prev": "sd/5min/cap-theorem",
               "next": "sd/5min/consensus-raft-paxos"
             },
@@ -3280,9 +3681,10 @@
               ],
               "summary": "You have 5 servers. They need to agree: \"what's the next entry in our log?\"",
               "tag": "5-min",
+              "difficulty": "all-levels",
               "words": 923,
               "read_min": 4,
-              "order": 25,
+              "order": 48,
               "prev": "sd/5min/consistency-models",
               "next": "sd/5min/event-driven-and-saga"
             },
@@ -3384,9 +3786,10 @@
               ],
               "summary": "If any service is slow or down, the whole chain fails.",
               "tag": "5-min",
+              "difficulty": "all-levels",
               "words": 774,
               "read_min": 4,
-              "order": 26,
+              "order": 49,
               "prev": "sd/5min/consensus-raft-paxos",
               "next": "sd/5min/resilience-patterns"
             },
@@ -3503,9 +3906,10 @@
               ],
               "summary": "You have 10 microservices. Service B starts responding slowly. Service A calls B, A's threads pile up waiting. Service C calls A, C's threads pile up waiting. The whole system grinds to a halt.",
               "tag": "5-min",
+              "difficulty": "all-levels",
               "words": 884,
               "read_min": 4,
-              "order": 27,
+              "order": 50,
               "prev": "sd/5min/event-driven-and-saga",
               "next": "sd/5min/observability"
             },
@@ -3582,632 +3986,25 @@
               ],
               "summary": "A user reports: \"The site is slow.\" You have 100 microservices. Where's the problem?",
               "tag": "5-min",
+              "difficulty": "all-levels",
               "words": 943,
               "read_min": 4,
-              "order": 28,
+              "order": 51,
               "prev": "sd/5min/resilience-patterns",
-              "next": "sd/books"
-            }
-          ]
-        },
-        {
-          "title": "References",
-          "items": [
-            {
-              "id": "sd/books",
-              "title": "📚 Books, Courses & YouTube Channels",
-              "src": "content/sd/books.html",
-              "anchors": [
-                {
-                  "level": 2,
-                  "id": "books-the-essential-reading-list",
-                  "text": "📖 Books — The Essential Reading List"
-                },
-                {
-                  "level": 3,
-                  "id": "phase-1-beginner-books",
-                  "text": "📘 Phase 1: Beginner Books"
-                },
-                {
-                  "level": 3,
-                  "id": "phase-2-intermediate-books",
-                  "text": "📗 Phase 2: Intermediate Books"
-                },
-                {
-                  "level": 3,
-                  "id": "phase-3-advanced-books",
-                  "text": "📕 Phase 3: Advanced Books"
-                },
-                {
-                  "level": 3,
-                  "id": "phase-4-expert-books",
-                  "text": "📙 Phase 4: Expert Books"
-                },
-                {
-                  "level": 2,
-                  "id": "online-courses",
-                  "text": "🎓 Online Courses"
-                },
-                {
-                  "level": 3,
-                  "id": "mit-6824-distributed-systems-free",
-                  "text": "MIT 6.824 — Distributed Systems ★★★★★ (FREE)"
-                },
-                {
-                  "level": 3,
-                  "id": "cmu-15-445-15-721-database-systems-free",
-                  "text": "CMU 15-445 / 15-721 — Database Systems ★★★★★ (FREE)"
-                },
-                {
-                  "level": 3,
-                  "id": "martin-kleppmanns-distributed-systems-course-cambridge-free",
-                  "text": "Martin Kleppmann's Distributed Systems Course (Cambridge) ★★★★★ (FREE)"
-                },
-                {
-                  "level": 3,
-                  "id": "grokking-the-system-design-interview-educativeio-paid",
-                  "text": "Grokking the System Design Interview (educative.io) — PAID"
-                },
-                {
-                  "level": 3,
-                  "id": "grokking-the-advanced-system-design-interview-educativeio-paid",
-                  "text": "Grokking the Advanced System Design Interview (educative.io) — PAID"
-                },
-                {
-                  "level": 3,
-                  "id": "algomasterio-free-paid",
-                  "text": "AlgoMaster.io — Free + Paid"
-                },
-                {
-                  "level": 3,
-                  "id": "bytebytego-paid-newsletter-course",
-                  "text": "ByteByteGo (paid newsletter / course)"
-                },
-                {
-                  "level": 3,
-                  "id": "coursera-cloud-computing-specialization-uiuc",
-                  "text": "Coursera — Cloud Computing Specialization (UIUC)"
-                },
-                {
-                  "level": 3,
-                  "id": "educative-distributed-systems-for-practitioners",
-                  "text": "Educative — Distributed Systems for Practitioners"
-                },
-                {
-                  "level": 2,
-                  "id": "youtube-channels",
-                  "text": "📺 YouTube Channels"
-                },
-                {
-                  "level": 3,
-                  "id": "top-tier-watch-regularly",
-                  "text": "🌟 Top Tier (Watch Regularly)"
-                },
-                {
-                  "level": 3,
-                  "id": "specialized",
-                  "text": "🎯 Specialized"
-                },
-                {
-                  "level": 3,
-                  "id": "academic-research",
-                  "text": "🎓 Academic / Research"
-                },
-                {
-                  "level": 2,
-                  "id": "blogs-newsletters",
-                  "text": "📰 Blogs & Newsletters"
-                },
-                {
-                  "level": 3,
-                  "id": "engineering-blogs-read-weekly",
-                  "text": "Engineering Blogs (Read Weekly)"
-                },
-                {
-                  "level": 3,
-                  "id": "newsletters",
-                  "text": "Newsletters"
-                },
-                {
-                  "level": 3,
-                  "id": "aggregators",
-                  "text": "Aggregators"
-                },
-                {
-                  "level": 2,
-                  "id": "recommended-reading-order",
-                  "text": "🎯 Recommended Reading Order"
-                },
-                {
-                  "level": 3,
-                  "id": "if-you-have-3-months",
-                  "text": "If you have 3 months:"
-                },
-                {
-                  "level": 3,
-                  "id": "if-you-have-6-12-months",
-                  "text": "If you have 6-12 months:"
-                },
-                {
-                  "level": 3,
-                  "id": "if-you-have-1-2-years-serious-commitment",
-                  "text": "If you have 1-2 years (serious commitment):"
-                }
-              ],
-              "summary": "← Back to System Design home",
-              "tag": "reference",
-              "words": 1435,
-              "read_min": 7,
-              "order": 29,
-              "prev": "sd/5min/observability",
-              "next": "sd/repos"
-            },
-            {
-              "id": "sd/repos",
-              "title": "🌟 Top 20 GitHub System Design Repositories",
-              "src": "content/sd/repos.html",
-              "anchors": [
-                {
-                  "level": 2,
-                  "id": "the-tier-1-essentials-start-here",
-                  "text": "🏆 The Tier-1 Essentials (Start Here)"
-                },
-                {
-                  "level": 3,
-                  "id": "1-donnemartinsystem-design-primer-346k",
-                  "text": "1. donnemartin/system-design-primer ⭐ 346K"
-                },
-                {
-                  "level": 3,
-                  "id": "2-bytebytegohqsystem-design-101-82k",
-                  "text": "2. ByteByteGoHq/system-design-101 ⭐ 82K"
-                },
-                {
-                  "level": 3,
-                  "id": "3-binhnguyennusawesome-scalability-70k",
-                  "text": "3. binhnguyennus/awesome-scalability ⭐ 70K"
-                },
-                {
-                  "level": 3,
-                  "id": "4-karanpratapsinghsystem-design-43k",
-                  "text": "4. karanpratapsingh/system-design ⭐ 43K"
-                },
-                {
-                  "level": 3,
-                  "id": "5-ashishps1awesome-system-design-resources-37k",
-                  "text": "5. ashishps1/awesome-system-design-resources ⭐ 37K"
-                },
-                {
-                  "level": 2,
-                  "id": "the-specialty-deep-dive-repos",
-                  "text": "🎓 The Specialty / Deep-Dive Repos"
-                },
-                {
-                  "level": 3,
-                  "id": "6-papers-we-lovepapers-we-love-92k",
-                  "text": "6. papers-we-love/papers-we-love ⭐ 92K"
-                },
-                {
-                  "level": 3,
-                  "id": "7-checkcheckzzsystem-design-interview-23k",
-                  "text": "7. checkcheckzz/system-design-interview ⭐ 23K"
-                },
-                {
-                  "level": 3,
-                  "id": "8-shashank88system_design-9k",
-                  "text": "8. shashank88/system_design ⭐ 9K"
-                },
-                {
-                  "level": 3,
-                  "id": "9-kilimchoiengineering-blogs-35k",
-                  "text": "9. kilimchoi/engineering-blogs ⭐ 35K"
-                },
-                {
-                  "level": 3,
-                  "id": "10-systemdesign42system-design-24k",
-                  "text": "10. systemdesign42/system-design ⭐ 24K"
-                },
-                {
-                  "level": 2,
-                  "id": "hands-on-implementation-focused",
-                  "text": "🏗️ Hands-On / Implementation Focused"
-                },
-                {
-                  "level": 3,
-                  "id": "11-ashishps1awesome-low-level-design-23k",
-                  "text": "11. ashishps1/awesome-low-level-design ⭐ 23K"
-                },
-                {
-                  "level": 3,
-                  "id": "12-madd86awesome-system-design-9k",
-                  "text": "12. madd86/awesome-system-design ⭐ 9K"
-                },
-                {
-                  "level": 3,
-                  "id": "13-simpleitanalysisdistributed-systems-6k",
-                  "text": "13. SimpleITAnalysis/Distributed-Systems ⭐ 6K"
-                },
-                {
-                  "level": 2,
-                  "id": "interview-specific",
-                  "text": "🎯 Interview-Specific"
-                },
-                {
-                  "level": 3,
-                  "id": "14-yangshuntech-interview-handbook-124k",
-                  "text": "14. yangshun/tech-interview-handbook ⭐ 124K"
-                },
-                {
-                  "level": 3,
-                  "id": "15-olshanskinterview-6k",
-                  "text": "15. Olshansk/interview ⭐ 6K"
-                },
-                {
-                  "level": 3,
-                  "id": "16-interviewingios-resources",
-                  "text": "16. interviewing.io's resources"
-                },
-                {
-                  "level": 2,
-                  "id": "by-language-specialized",
-                  "text": "🌎 By Language / Specialized"
-                },
-                {
-                  "level": 3,
-                  "id": "17-donnemartinsystem-design-primer-cn-translations-etc",
-                  "text": "17. donnemartin/system-design-primer (CN translations etc.)"
-                },
-                {
-                  "level": 3,
-                  "id": "18-jordan-cutlerpath-to-senior-engineer-handbook-22k",
-                  "text": "18. jordan-cutler/path-to-senior-engineer-handbook ⭐ 22K"
-                },
-                {
-                  "level": 3,
-                  "id": "19-vincent-liangsystemdesign-4k",
-                  "text": "19. Vincent-Liang/SystemDesign ⭐ 4K"
-                },
-                {
-                  "level": 3,
-                  "id": "20-mhxionawesome-distributed-systems-9k",
-                  "text": "20. mhxion/awesome-distributed-systems ⭐ 9K"
-                },
-                {
-                  "level": 2,
-                  "id": "quick-pick-recommendations-by-goal",
-                  "text": "📊 Quick-Pick Recommendations by Goal"
-                },
-                {
-                  "level": 2,
-                  "id": "how-to-use-these-repos-effectively",
-                  "text": "🛠️ How to Use These Repos Effectively"
-                },
-                {
-                  "level": 3,
-                  "id": "dont",
-                  "text": "❌ Don't:"
-                },
-                {
-                  "level": 3,
-                  "id": "do",
-                  "text": "✅ Do:"
-                },
-                {
-                  "level": 2,
-                  "id": "beyond-github",
-                  "text": "🔗 Beyond GitHub"
-                }
-              ],
-              "summary": "GitHub is just one channel. Don't forget: - YouTube: ByteByteGo, Gaurav Sen, Hussein Nasser, codeKarle, Tech Dummies - Books: DDIA (Kleppmann), System Design Interview (Xu), Database Internals (Petrov), Building…",
-              "tag": "reference",
-              "words": 1098,
-              "read_min": 5,
-              "order": 30,
-              "prev": "sd/books",
-              "next": "sd/papers"
-            },
-            {
-              "id": "sd/papers",
-              "title": "📄 Seminal Papers in Distributed Systems",
-              "src": "content/sd/papers.html",
-              "anchors": [
-                {
-                  "level": 2,
-                  "id": "how-to-read-a-distributed-systems-paper",
-                  "text": "⭐ How to Read a Distributed Systems Paper"
-                },
-                {
-                  "level": 2,
-                  "id": "tier-s-the-foundational-papers-read-these",
-                  "text": "🏛️ Tier S: The Foundational Papers (READ THESE)"
-                },
-                {
-                  "level": 3,
-                  "id": "1-time-clocks-and-the-ordering-of-events-in-a-distributed-system",
-                  "text": "1. Time, Clocks, and the Ordering of Events in a Distributed System"
-                },
-                {
-                  "level": 3,
-                  "id": "2-impossibility-of-distributed-consensus-with-one-faulty-process-flp",
-                  "text": "2. Impossibility of Distributed Consensus with One Faulty Process (FLP)"
-                },
-                {
-                  "level": 3,
-                  "id": "3-end-to-end-arguments-in-system-design",
-                  "text": "3. End-to-End Arguments in System Design"
-                },
-                {
-                  "level": 3,
-                  "id": "4-cap-theorem-brewer-2000-keynote-gilbert-lynch-2002-proof",
-                  "text": "4. CAP Theorem (Brewer 2000 keynote → Gilbert & Lynch 2002 proof)"
-                },
-                {
-                  "level": 2,
-                  "id": "tier-s-consensus",
-                  "text": "🤝 Tier S: Consensus"
-                },
-                {
-                  "level": 3,
-                  "id": "5-paxos-made-simple",
-                  "text": "5. Paxos Made Simple"
-                },
-                {
-                  "level": 3,
-                  "id": "6-in-search-of-an-understandable-consensus-algorithm-raft",
-                  "text": "6. In Search of an Understandable Consensus Algorithm (Raft)"
-                },
-                {
-                  "level": 3,
-                  "id": "7-zookeeper-wait-free-coordination-for-internet-scale-systems",
-                  "text": "7. ZooKeeper: Wait-free Coordination for Internet-scale Systems"
-                },
-                {
-                  "level": 3,
-                  "id": "8-the-chubby-lock-service-for-loosely-coupled-distributed-systems",
-                  "text": "8. The Chubby Lock Service for Loosely-Coupled Distributed Systems"
-                },
-                {
-                  "level": 3,
-                  "id": "9-practical-byzantine-fault-tolerance-pbft",
-                  "text": "9. Practical Byzantine Fault Tolerance (PBFT)"
-                },
-                {
-                  "level": 2,
-                  "id": "tier-a-storage-systems",
-                  "text": "💾 Tier A: Storage Systems"
-                },
-                {
-                  "level": 3,
-                  "id": "10-the-google-file-system-gfs",
-                  "text": "10. The Google File System (GFS)"
-                },
-                {
-                  "level": 3,
-                  "id": "11-mapreduce-simplified-data-processing-on-large-clusters",
-                  "text": "11. MapReduce: Simplified Data Processing on Large Clusters"
-                },
-                {
-                  "level": 3,
-                  "id": "12-bigtable-a-distributed-storage-system-for-structured-data",
-                  "text": "12. Bigtable: A Distributed Storage System for Structured Data"
-                },
-                {
-                  "level": 3,
-                  "id": "13-dynamo-amazons-highly-available-key-value-store",
-                  "text": "13. Dynamo: Amazon's Highly Available Key-value Store"
-                },
-                {
-                  "level": 3,
-                  "id": "14-spanner-googles-globally-distributed-database",
-                  "text": "14. Spanner: Google's Globally Distributed Database"
-                },
-                {
-                  "level": 3,
-                  "id": "15-f1-a-distributed-sql-database-that-scales",
-                  "text": "15. F1: A Distributed SQL Database That Scales"
-                },
-                {
-                  "level": 3,
-                  "id": "16-the-log-structured-merge-tree-lsm-tree",
-                  "text": "16. The Log-Structured Merge-Tree (LSM-Tree)"
-                },
-                {
-                  "level": 3,
-                  "id": "17-the-dataflow-model",
-                  "text": "17. The Dataflow Model"
-                },
-                {
-                  "level": 2,
-                  "id": "tier-a-streaming-logs",
-                  "text": "📡 Tier A: Streaming & Logs"
-                },
-                {
-                  "level": 3,
-                  "id": "18-kafka-a-distributed-messaging-system-for-log-processing",
-                  "text": "18. Kafka: a Distributed Messaging System for Log Processing"
-                },
-                {
-                  "level": 3,
-                  "id": "19-the-log-what-every-software-engineer-should-know-about-real-time-datas-unifying-abstraction",
-                  "text": "19. The Log: What every software engineer should know about real-time data's unifying abstraction"
-                },
-                {
-                  "level": 3,
-                  "id": "20-millwheel-fault-tolerant-stream-processing-at-internet-scale",
-                  "text": "20. Millwheel: Fault-Tolerant Stream Processing at Internet Scale"
-                },
-                {
-                  "level": 2,
-                  "id": "tier-a-observability-operations",
-                  "text": "🔍 Tier A: Observability & Operations"
-                },
-                {
-                  "level": 3,
-                  "id": "21-dapper-a-large-scale-distributed-systems-tracing-infrastructure",
-                  "text": "21. Dapper: A Large-Scale Distributed Systems Tracing Infrastructure"
-                },
-                {
-                  "level": 3,
-                  "id": "22-borg-large-scale-cluster-management-at-google",
-                  "text": "22. Borg: Large-scale cluster management at Google"
-                },
-                {
-                  "level": 3,
-                  "id": "23-omega-flexible-scalable-schedulers-for-large-compute-clusters",
-                  "text": "23. Omega: flexible, scalable schedulers for large compute clusters"
-                },
-                {
-                  "level": 2,
-                  "id": "tier-b-specialized-but-influential",
-                  "text": "🧮 Tier B: Specialized but Influential"
-                },
-                {
-                  "level": 3,
-                  "id": "24-lamport-the-part-time-parliament-paxos",
-                  "text": "24. Lamport — The Part-Time Parliament (Paxos)"
-                },
-                {
-                  "level": 3,
-                  "id": "25-raft-refloated-do-we-have-consensus",
-                  "text": "25. Raft Refloated: Do We Have Consensus?"
-                },
-                {
-                  "level": 3,
-                  "id": "26-crdts-conflict-free-replicated-data-types",
-                  "text": "26. CRDTs: Conflict-Free Replicated Data Types"
-                },
-                {
-                  "level": 3,
-                  "id": "27-calvin-fast-distributed-transactions-for-partitioned-database-systems",
-                  "text": "27. Calvin: Fast Distributed Transactions for Partitioned Database Systems"
-                },
-                {
-                  "level": 3,
-                  "id": "28-naiad-a-timely-dataflow-system",
-                  "text": "28. Naiad: A Timely Dataflow System"
-                },
-                {
-                  "level": 3,
-                  "id": "29-highly-available-transactions-virtues-and-limitations",
-                  "text": "29. Highly Available Transactions: Virtues and Limitations"
-                },
-                {
-                  "level": 3,
-                  "id": "30-coordination-avoidance-in-database-systems",
-                  "text": "30. Coordination Avoidance in Database Systems"
-                },
-                {
-                  "level": 3,
-                  "id": "31-spark-cluster-computing-with-working-sets",
-                  "text": "31. Spark: Cluster Computing with Working Sets"
-                },
-                {
-                  "level": 3,
-                  "id": "32-cassandra-a-decentralized-structured-storage-system",
-                  "text": "32. Cassandra — A Decentralized Structured Storage System"
-                },
-                {
-                  "level": 3,
-                  "id": "33-the-tao-paper-facebooks-distributed-data-store-for-the-social-graph",
-                  "text": "33. The TAO Paper — Facebook's Distributed Data Store for the Social Graph"
-                },
-                {
-                  "level": 3,
-                  "id": "34-scaling-memcache-at-facebook",
-                  "text": "34. Scaling Memcache at Facebook"
-                },
-                {
-                  "level": 3,
-                  "id": "35-photon-fault-tolerant-and-scalable-joining-of-continuous-data-streams",
-                  "text": "35. Photon: Fault-tolerant and Scalable Joining of Continuous Data Streams"
-                },
-                {
-                  "level": 2,
-                  "id": "tier-b-modern-last-decade-worth-reading",
-                  "text": "🔮 Tier B: Modern (Last Decade) Worth Reading"
-                },
-                {
-                  "level": 3,
-                  "id": "36-the-many-faces-of-consistency",
-                  "text": "36. The Many Faces of Consistency"
-                },
-                {
-                  "level": 3,
-                  "id": "37-highly-available-consistency-replication-and-distributed-transactions-in-cosmos-db",
-                  "text": "37. Highly Available Consistency, Replication and Distributed Transactions in Cosmos DB"
-                },
-                {
-                  "level": 3,
-                  "id": "38-magic-pocket-building-a-multi-exabyte-storage-system-dropbox",
-                  "text": "38. Magic Pocket: Building a Multi-Exabyte Storage System (Dropbox)"
-                },
-                {
-                  "level": 3,
-                  "id": "39-scylladb-papers",
-                  "text": "39. ScyllaDB papers"
-                },
-                {
-                  "level": 3,
-                  "id": "40-discord-how-we-scaled-to-trillions-of-messages",
-                  "text": "40. Discord: How we scaled to trillions of messages"
-                },
-                {
-                  "level": 2,
-                  "id": "suggested-reading-schedule-1-paper-week-for-a-year",
-                  "text": "📅 Suggested Reading Schedule (1 paper / week for a year)"
-                },
-                {
-                  "level": 3,
-                  "id": "months-1-2-foundations",
-                  "text": "Months 1-2: Foundations"
-                },
-                {
-                  "level": 3,
-                  "id": "months-3-4-storage-systems",
-                  "text": "Months 3-4: Storage Systems"
-                },
-                {
-                  "level": 3,
-                  "id": "months-5-6-streaming-operations",
-                  "text": "Months 5-6: Streaming & Operations"
-                },
-                {
-                  "level": 3,
-                  "id": "months-7-8-modern-topics",
-                  "text": "Months 7-8: Modern Topics"
-                },
-                {
-                  "level": 3,
-                  "id": "months-9-10-engineering-blogs-deep-dives",
-                  "text": "Months 9-10: Engineering Blogs Deep Dives"
-                },
-                {
-                  "level": 3,
-                  "id": "months-11-12-pick-your-specialty",
-                  "text": "Months 11-12: Pick Your Specialty"
-                },
-                {
-                  "level": 2,
-                  "id": "tips-for-paper-reading-discipline",
-                  "text": "💡 Tips for Paper-Reading Discipline"
-                },
-                {
-                  "level": 2,
-                  "id": "where-papers-live",
-                  "text": "🌐 Where Papers Live"
-                }
-              ],
-              "summary": "1. First pass (15 min): Abstract → Introduction → Conclusion. What's the problem? What's the contribution? 2. Second pass (1-2 hours): Read figures, key sections. Skip proofs first time. 3. Third pass (multi-day):…",
-              "tag": "reference",
-              "words": 1904,
-              "read_min": 9,
-              "order": 31,
-              "prev": "sd/repos",
               "next": null
             }
           ]
         }
-      ]
+      ],
+      "total_min": 140,
+      "total_items": 38,
+      "difficulty_counts": {
+        "all-levels": 22,
+        "beginner": 1,
+        "intermediate": 1,
+        "advanced": 13,
+        "expert": 1
+      }
     }
   ],
   "flat": [
@@ -4264,6 +4061,7 @@
       ],
       "summary": "You have ~63 KB of DSA curriculum + a system design curriculum + a tradeoffs report, all sitting in a folder. None of that is progress. Progress = problems solved + designs explained out loud.",
       "tag": "plan",
+      "difficulty": "all-levels",
       "words": 989,
       "read_min": 4,
       "order": 0,
@@ -4272,8 +4070,28 @@
     },
     {
       "id": "dsa/full",
-      "title": "Data Structures & Problem Solving — From Beginner to Expert",
+      "title": "DSA Curriculum — Index",
       "src": "content/dsa/full.html",
+      "anchors": [
+        {
+          "level": 2,
+          "id": "sections-in-this-guide",
+          "text": "Sections in this guide"
+        }
+      ],
+      "summary": "1. Data Structures & Problem Solving — From Beginner to Expert 2. TIER 1 — Beginner (foundations you cannot skip) 3. TIER 2 — Intermediate (interview-ready) - TIER 2 — Intermediate (interview-ready) — Part 1: 2.1 Tree…",
+      "tag": "curriculum",
+      "difficulty": "all-levels",
+      "words": 277,
+      "read_min": 1,
+      "order": 1,
+      "prev": "roadmap/main",
+      "next": "dsa/full/data-structures-problem-solving-from-beginner-to-expert"
+    },
+    {
+      "id": "dsa/full/data-structures-problem-solving-from-beginner-to-expert",
+      "title": "Data Structures & Problem Solving — From Beginner to Expert",
+      "src": "content/dsa/full/data-structures-problem-solving-from-beginner-to-expert.html",
       "anchors": [
         {
           "level": 2,
@@ -4289,7 +4107,22 @@
           "level": 2,
           "id": "curriculum-index",
           "text": "Curriculum Index"
-        },
+        }
+      ],
+      "summary": "1. Don't read linearly. Pick the tier matching your current ceiling. If you cannot solve LeetCode Mediums consistently, you belong in Tier 1–2 regardless of years of experience. 2. One read = one topic = one solved…",
+      "tag": "5-min",
+      "difficulty": "all-levels",
+      "words": 583,
+      "read_min": 3,
+      "order": 2,
+      "prev": "dsa/full",
+      "next": "dsa/full/tier-1-beginner-foundations-you-cannot-skip"
+    },
+    {
+      "id": "dsa/full/tier-1-beginner-foundations-you-cannot-skip",
+      "title": "TIER 1 — Beginner (foundations you cannot skip)",
+      "src": "content/dsa/full/tier-1-beginner-foundations-you-cannot-skip.html",
+      "anchors": [
         {
           "level": 2,
           "id": "11-big-o-thinking",
@@ -4344,7 +4177,22 @@
           "level": 2,
           "id": "111-linked-lists",
           "text": "1.11 Linked lists"
-        },
+        }
+      ],
+      "summary": "TIER 1 — Beginner (foundations you cannot skip)",
+      "tag": "5-min",
+      "difficulty": "beginner",
+      "words": 1437,
+      "read_min": 7,
+      "order": 3,
+      "prev": "dsa/full/data-structures-problem-solving-from-beginner-to-expert",
+      "next": "dsa/full/tier-2-intermediate-interview-ready-part-1-21-tree-traversals-29-bit-manipulatio"
+    },
+    {
+      "id": "dsa/full/tier-2-intermediate-interview-ready-part-1-21-tree-traversals-29-bit-manipulatio",
+      "title": "TIER 2 — Intermediate (interview-ready) — Part 1: 2.1 Tree traversals → 2.9 Bit manipulation",
+      "src": "content/dsa/full/tier-2-intermediate-interview-ready-part-1-21-tree-traversals-29-bit-manipulatio.html",
+      "anchors": [
         {
           "level": 2,
           "id": "21-tree-traversals",
@@ -4389,7 +4237,22 @@
           "level": 2,
           "id": "29-bit-manipulation",
           "text": "2.9 Bit manipulation"
-        },
+        }
+      ],
+      "summary": "def levelorder(root): from collections import deque q, out = deque([root]), [] while q: lvl = [] for in range(len(q)): n = q.popleft() if n: lvl.append(n.val); q.append(n.left); q.append(n.right) if lvl:…",
+      "tag": "5-min",
+      "difficulty": "intermediate",
+      "words": 1218,
+      "read_min": 6,
+      "order": 4,
+      "prev": "dsa/full/tier-1-beginner-foundations-you-cannot-skip",
+      "next": "dsa/full/tier-2-intermediate-interview-ready-part-2-210-prefix-sums-difference-arrays-214"
+    },
+    {
+      "id": "dsa/full/tier-2-intermediate-interview-ready-part-2-210-prefix-sums-difference-arrays-214",
+      "title": "TIER 2 — Intermediate (interview-ready) — Part 2: 2.10 Prefix sums & difference arrays → 2.14 Interval problems",
+      "src": "content/dsa/full/tier-2-intermediate-interview-ready-part-2-210-prefix-sums-difference-arrays-214.html",
+      "anchors": [
         {
           "level": 2,
           "id": "210-prefix-sums-difference-arrays",
@@ -4414,7 +4277,22 @@
           "level": 2,
           "id": "214-interval-problems",
           "text": "2.14 Interval problems"
-        },
+        }
+      ],
+      "summary": "TIER 2 — Intermediate (interview-ready) — Part 2: 2.10 Prefix sums & difference arrays → 2.14 Interval problems",
+      "tag": "5-min",
+      "difficulty": "intermediate",
+      "words": 770,
+      "read_min": 4,
+      "order": 5,
+      "prev": "dsa/full/tier-2-intermediate-interview-ready-part-1-21-tree-traversals-29-bit-manipulatio",
+      "next": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-1-31-dp-first-principles-37"
+    },
+    {
+      "id": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-1-31-dp-first-principles-37",
+      "title": "TIER 3 — Advanced (DP, shortest paths, segment trees) — Part 1: 3.1 DP: first principles → 3.7 Bitmask DP",
+      "src": "content/dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-1-31-dp-first-principles-37.html",
+      "anchors": [
         {
           "level": 2,
           "id": "31-dp-first-principles",
@@ -4449,7 +4327,22 @@
           "level": 2,
           "id": "37-bitmask-dp",
           "text": "3.7 Bitmask DP"
-        },
+        }
+      ],
+      "summary": "def fibbot(n): if n < 2: return n a, b = 0, 1 for in range(n - 1): a, b = b, a + b return b Pitfall. Wrong state. Add or remove a dimension deliberately (see M.8). Bridge → 3.2: simplest case is a 1D state.",
+      "tag": "5-min",
+      "difficulty": "advanced",
+      "words": 1126,
+      "read_min": 5,
+      "order": 6,
+      "prev": "dsa/full/tier-2-intermediate-interview-ready-part-2-210-prefix-sums-difference-arrays-214",
+      "next": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-2-38-dijkstra-314-lazy-prop"
+    },
+    {
+      "id": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-2-38-dijkstra-314-lazy-prop",
+      "title": "TIER 3 — Advanced (DP, shortest paths, segment trees) — Part 2: 3.8 Dijkstra → 3.14 Lazy propagation",
+      "src": "content/dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-2-38-dijkstra-314-lazy-prop.html",
+      "anchors": [
         {
           "level": 2,
           "id": "38-dijkstra",
@@ -4484,7 +4377,22 @@
           "level": 2,
           "id": "314-lazy-propagation",
           "text": "3.14 Lazy propagation"
-        },
+        }
+      ],
+      "summary": "TIER 3 — Advanced (DP, shortest paths, segment trees) — Part 2: 3.8 Dijkstra → 3.14 Lazy propagation",
+      "tag": "5-min",
+      "difficulty": "advanced",
+      "words": 1239,
+      "read_min": 6,
+      "order": 7,
+      "prev": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-1-31-dp-first-principles-37",
+      "next": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-3-315-kmp-318-a-search"
+    },
+    {
+      "id": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-3-315-kmp-318-a-search",
+      "title": "TIER 3 — Advanced (DP, shortest paths, segment trees) — Part 3: 3.15 KMP → 3.18 A* search",
+      "src": "content/dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-3-315-kmp-318-a-search.html",
+      "anchors": [
         {
           "level": 2,
           "id": "315-kmp",
@@ -4504,7 +4412,22 @@
           "level": 2,
           "id": "318-a-search",
           "text": "3.18 A* search"
-        },
+        }
+      ],
+      "summary": "TIER 3 — Advanced (DP, shortest paths, segment trees) — Part 3: 3.15 KMP → 3.18 A* search",
+      "tag": "5-min",
+      "difficulty": "advanced",
+      "words": 547,
+      "read_min": 2,
+      "order": 8,
+      "prev": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-2-38-dijkstra-314-lazy-prop",
+      "next": "dsa/full/tier-4-expert-rarely-interviewed-often-contest-decisive"
+    },
+    {
+      "id": "dsa/full/tier-4-expert-rarely-interviewed-often-contest-decisive",
+      "title": "TIER 4 — Expert (rarely interviewed, often contest-decisive)",
+      "src": "content/dsa/full/tier-4-expert-rarely-interviewed-often-contest-decisive.html",
+      "anchors": [
         {
           "level": 2,
           "id": "41-heavylight-decomposition-hld",
@@ -4604,7 +4527,22 @@
           "level": 2,
           "id": "420-randomized-algorithms",
           "text": "4.20 Randomized algorithms"
-        },
+        }
+      ],
+      "summary": "TIER 4 — Expert (rarely interviewed, often contest-decisive)",
+      "tag": "5-min",
+      "difficulty": "expert",
+      "words": 1265,
+      "read_min": 6,
+      "order": 9,
+      "prev": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-3-315-kmp-318-a-search",
+      "next": "dsa/full/meta-cross-cutting-problem-solving-skills"
+    },
+    {
+      "id": "dsa/full/meta-cross-cutting-problem-solving-skills",
+      "title": "META — Cross-Cutting Problem-Solving Skills",
+      "src": "content/dsa/full/meta-cross-cutting-problem-solving-skills.html",
+      "anchors": [
         {
           "level": 2,
           "id": "m1-how-to-read-a-problem",
@@ -4674,7 +4612,22 @@
           "level": 2,
           "id": "m14-reading-editorials",
           "text": "M.14 Reading editorials"
-        },
+        }
+      ],
+      "summary": "1. Two pointers 2. Sliding window 3. Fast & slow pointers 4. Merge intervals 5. In-place reversal 6. Cyclic sort 7. BFS / DFS on tree-graph 8. Topological sort 9. K-way merge 10. Top-k via heap 11. Subsets /…",
+      "tag": "5-min",
+      "difficulty": "all-levels",
+      "words": 966,
+      "read_min": 4,
+      "order": 10,
+      "prev": "dsa/full/tier-4-expert-rarely-interviewed-often-contest-decisive",
+      "next": "dsa/full/practice-plan"
+    },
+    {
+      "id": "dsa/full/practice-plan",
+      "title": "Practice Plan",
+      "src": "content/dsa/full/practice-plan.html",
+      "anchors": [
         {
           "level": 2,
           "id": "4-week-sprint-zero-solid-intermediate",
@@ -4689,19 +4642,49 @@
           "level": 2,
           "id": "6-month-plan-advanced-expert",
           "text": "6+ month plan (advanced → expert)"
-        },
+        }
+      ],
+      "summary": "By end of Week 4 you should pass most LeetCode mediums in 25 minutes.",
+      "tag": "5-min",
+      "difficulty": "all-levels",
+      "words": 165,
+      "read_min": 1,
+      "order": 11,
+      "prev": "dsa/full/meta-cross-cutting-problem-solving-skills",
+      "next": "dsa/full/resources"
+    },
+    {
+      "id": "dsa/full/resources",
+      "title": "Resources",
+      "src": "content/dsa/full/resources.html",
+      "anchors": [],
+      "summary": "Resources",
+      "tag": "5-min",
+      "difficulty": "all-levels",
+      "words": 133,
+      "read_min": 1,
+      "order": 12,
+      "prev": "dsa/full/practice-plan",
+      "next": "dsa/full/footnotes-confidence"
+    },
+    {
+      "id": "dsa/full/footnotes-confidence",
+      "title": "Footnotes & Confidence",
+      "src": "content/dsa/full/footnotes-confidence.html",
+      "anchors": [
         {
           "level": 2,
           "id": "you-dont-have-a-knowledge-problem-you-have-a-follow-through-problem",
           "text": "You don't have a knowledge problem. You have a follow-through problem."
         }
       ],
-      "summary": "1. Don't read linearly. Pick the tier matching your current ceiling. If you cannot solve LeetCode Mediums consistently, you belong in Tier 1–2 regardless of years of experience. 2. One read = one topic = one solved…",
-      "tag": "curriculum",
-      "words": 9657,
-      "read_min": 44,
-      "order": 1,
-      "prev": "roadmap/main",
+      "summary": "You now have 77 topics, examples, problems, and a plan. The bookshelf is full. So was it last time. The question isn't which topic should I study next? — that's a procrastination dressed up as planning.",
+      "tag": "5-min",
+      "difficulty": "all-levels",
+      "words": 280,
+      "read_min": 1,
+      "order": 13,
+      "prev": "dsa/full/resources",
       "next": "sd/overview"
     },
     {
@@ -4782,10 +4765,11 @@
       ],
       "summary": "The 5-minute-reads/ folder contains 20 short, focused primers — each designed to be read in 5 minutes or less while giving you a working understanding of one concept.",
       "tag": "overview",
+      "difficulty": "all-levels",
       "words": 890,
       "read_min": 4,
-      "order": 2,
-      "prev": "dsa/full",
+      "order": 14,
+      "prev": "dsa/full/footnotes-confidence",
       "next": "sd/tier-beginner"
     },
     {
@@ -4936,9 +4920,10 @@
       ],
       "summary": "By the end of Phase 1 you'll be able to: - Explain DNS, HTTP, TCP, UDP, load balancers, and CDN like a pro - Reason about vertical vs horizontal scaling and stateless services - Choose between SQL and NoSQL with sound…",
       "tag": "tier-1",
+      "difficulty": "beginner",
       "words": 1194,
       "read_min": 5,
-      "order": 3,
+      "order": 15,
       "prev": "sd/overview",
       "next": "sd/tier-intermediate"
     },
@@ -5070,9 +5055,10 @@
       ],
       "summary": "By the end of Phase 2 you'll be able to: - Design Twitter, WhatsApp, Uber, and YouTube at a credible level - Choose data models, partitioning strategies, and caching layers deliberately - Reason about trade-offs in…",
       "tag": "tier-2",
+      "difficulty": "intermediate",
       "words": 1399,
       "read_min": 6,
-      "order": 4,
+      "order": 16,
       "prev": "sd/tier-beginner",
       "next": "sd/tier-advanced"
     },
@@ -5349,9 +5335,10 @@
       ],
       "summary": "This is where you stop being someone who uses distributed systems and start being someone who understands them.",
       "tag": "tier-3",
+      "difficulty": "advanced",
       "words": 1754,
       "read_min": 8,
-      "order": 5,
+      "order": 17,
       "prev": "sd/tier-intermediate",
       "next": "sd/tier-expert"
     },
@@ -5478,22 +5465,58 @@
       ],
       "summary": "There's no graduation. Expertise compounds with every system you ship and every post-mortem you read.",
       "tag": "tier-4",
+      "difficulty": "expert",
       "words": 1873,
       "read_min": 9,
-      "order": 6,
+      "order": 18,
       "prev": "sd/tier-advanced",
       "next": "sd/tradeoffs"
     },
     {
       "id": "sd/tradeoffs",
-      "title": "Trade-offs in System Design: A Comprehensive Guide (HLD + LLD in Python & C++)",
+      "title": "Trade-offs Deep Dive — Index",
       "src": "content/sd/tradeoffs.html",
+      "anchors": [
+        {
+          "level": 2,
+          "id": "sections-in-this-guide",
+          "text": "Sections in this guide"
+        }
+      ],
+      "summary": "1. Trade-offs in System Design: A Comprehensive Guide (HLD + LLD in Python & C++) 2. PART 1 — How to Think About Trade-offs 3. PART 2 — HLD Trade-offs - PART 2 — HLD Trade-offs — Part 1: 2A. Foundational Theorems → 2B.…",
+      "tag": "deep-dive",
+      "difficulty": "advanced",
+      "words": 281,
+      "read_min": 1,
+      "order": 19,
+      "prev": "sd/tier-expert",
+      "next": "sd/tradeoffs/trade-offs-in-system-design-a-comprehensive-guide-hld-lld-in-python-c"
+    },
+    {
+      "id": "sd/tradeoffs/trade-offs-in-system-design-a-comprehensive-guide-hld-lld-in-python-c",
+      "title": "Trade-offs in System Design: A Comprehensive Guide (HLD + LLD in Python & C++)",
+      "src": "content/sd/tradeoffs/trade-offs-in-system-design-a-comprehensive-guide-hld-lld-in-python-c.html",
       "anchors": [
         {
           "level": 2,
           "id": "executive-summary",
           "text": "Executive Summary"
-        },
+        }
+      ],
+      "summary": "There is exactly one correct answer to almost every system-design interview question, and it is \"it depends — on what?\" The job of a senior engineer is not to know which technology is \"best.\" It is to identify the two…",
+      "tag": "5-min",
+      "difficulty": "advanced",
+      "words": 379,
+      "read_min": 2,
+      "order": 20,
+      "prev": "sd/tradeoffs",
+      "next": "sd/tradeoffs/part-1-how-to-think-about-trade-offs"
+    },
+    {
+      "id": "sd/tradeoffs/part-1-how-to-think-about-trade-offs",
+      "title": "PART 1 — How to Think About Trade-offs",
+      "src": "content/sd/tradeoffs/part-1-how-to-think-about-trade-offs.html",
+      "anchors": [
         {
           "level": 2,
           "id": "11-the-six-mental-models",
@@ -5533,7 +5556,22 @@
           "level": 2,
           "id": "12-the-three-questions-to-ask-before-any-decision",
           "text": "1.2 The Three Questions to Ask Before Any Decision"
-        },
+        }
+      ],
+      "summary": "When you say \"it depends,\" always answer the follow-up before it's asked. The variables that almost every architecture decision turns on:",
+      "tag": "5-min",
+      "difficulty": "advanced",
+      "words": 857,
+      "read_min": 4,
+      "order": 21,
+      "prev": "sd/tradeoffs/trade-offs-in-system-design-a-comprehensive-guide-hld-lld-in-python-c",
+      "next": "sd/tradeoffs/part-2-hld-trade-offs-part-1-2a-foundational-theorems-2b-data-tier-trade-offs"
+    },
+    {
+      "id": "sd/tradeoffs/part-2-hld-trade-offs-part-1-2a-foundational-theorems-2b-data-tier-trade-offs",
+      "title": "PART 2 — HLD Trade-offs — Part 1: 2A. Foundational Theorems → 2B. Data Tier Trade-offs",
+      "src": "content/sd/tradeoffs/part-2-hld-trade-offs-part-1-2a-foundational-theorems-2b-data-tier-trade-offs.html",
+      "anchors": [
         {
           "level": 2,
           "id": "2a-foundational-theorems",
@@ -5618,7 +5656,22 @@
           "level": 3,
           "id": "consensus-paxos-raft-zab-multi-paxos",
           "text": "Consensus: Paxos / Raft / ZAB / Multi-Paxos"
-        },
+        }
+      ],
+      "summary": "In the presence of a network Partition, you must choose between Consistency (all nodes see the same data) and Availability (every request gets a response).",
+      "tag": "5-min",
+      "difficulty": "advanced",
+      "words": 1616,
+      "read_min": 7,
+      "order": 22,
+      "prev": "sd/tradeoffs/part-1-how-to-think-about-trade-offs",
+      "next": "sd/tradeoffs/part-2-hld-trade-offs-part-2-2c-architecture-pattern-trade-offs-2e-operations-tr"
+    },
+    {
+      "id": "sd/tradeoffs/part-2-hld-trade-offs-part-2-2c-architecture-pattern-trade-offs-2e-operations-tr",
+      "title": "PART 2 — HLD Trade-offs — Part 2: 2C. Architecture Pattern Trade-offs → 2E. Operations Trade-offs",
+      "src": "content/sd/tradeoffs/part-2-hld-trade-offs-part-2-2c-architecture-pattern-trade-offs-2e-operations-tr.html",
+      "anchors": [
         {
           "level": 2,
           "id": "2c-architecture-pattern-trade-offs",
@@ -5703,7 +5756,22 @@
           "level": 3,
           "id": "cardinality-charity-majors-honeycomb",
           "text": "Cardinality (Charity Majors / Honeycomb)"
-        },
+        }
+      ],
+      "summary": "Split write model from read model. Writes go to a normalized OLTP store; reads go to denormalized projections optimized for queries.",
+      "tag": "5-min",
+      "difficulty": "advanced",
+      "words": 1197,
+      "read_min": 5,
+      "order": 23,
+      "prev": "sd/tradeoffs/part-2-hld-trade-offs-part-1-2a-foundational-theorems-2b-data-tier-trade-offs",
+      "next": "sd/tradeoffs/part-3-lld-trade-offs-python"
+    },
+    {
+      "id": "sd/tradeoffs/part-3-lld-trade-offs-python",
+      "title": "PART 3 — LLD Trade-offs (Python)",
+      "src": "content/sd/tradeoffs/part-3-lld-trade-offs-python.html",
+      "anchors": [
         {
           "level": 2,
           "id": "31-solid-in-python-with-abcs",
@@ -5788,7 +5856,22 @@
           "level": 2,
           "id": "314-async-vs-threads-vs-multiprocessing",
           "text": "3.14 Async vs Threads vs Multiprocessing"
-        },
+        }
+      ],
+      "summary": "class UserRepository: # persistence def save(self, user: User): ...",
+      "tag": "5-min",
+      "difficulty": "advanced",
+      "words": 1471,
+      "read_min": 7,
+      "order": 24,
+      "prev": "sd/tradeoffs/part-2-hld-trade-offs-part-2-2c-architecture-pattern-trade-offs-2e-operations-tr",
+      "next": "sd/tradeoffs/part-4-lld-trade-offs-c-part-1-41-parameter-passing-cg-f16-f17-f18-f19-f20-49-in"
+    },
+    {
+      "id": "sd/tradeoffs/part-4-lld-trade-offs-c-part-1-41-parameter-passing-cg-f16-f17-f18-f19-f20-49-in",
+      "title": "PART 4 — LLD Trade-offs (C++) — Part 1: 4.1 Parameter Passing (CG F.16, F.17, F.18, F.19, F.20) → 4.9 Inheritance vs Composition (CG C.120, C.121)",
+      "src": "content/sd/tradeoffs/part-4-lld-trade-offs-c-part-1-41-parameter-passing-cg-f16-f17-f18-f19-f20-49-in.html",
+      "anchors": [
         {
           "level": 2,
           "id": "41-parameter-passing-cg-f16-f17-f18-f19-f20",
@@ -5833,7 +5916,22 @@
           "level": 2,
           "id": "49-inheritance-vs-composition-cg-c120-c121",
           "text": "4.9 Inheritance vs Composition (CG C.120, C.121)"
-        },
+        }
+      ],
+      "summary": "// \"Observer\" — only reads: void log(const std::string& s) { std::cout << s; } // const ref ",
+      "tag": "5-min",
+      "difficulty": "advanced",
+      "words": 1137,
+      "read_min": 5,
+      "order": 25,
+      "prev": "sd/tradeoffs/part-3-lld-trade-offs-python",
+      "next": "sd/tradeoffs/part-4-lld-trade-offs-c-part-2-410-ebo-and-no_unique_address-c20-422-pimpl-idiom"
+    },
+    {
+      "id": "sd/tradeoffs/part-4-lld-trade-offs-c-part-2-410-ebo-and-no_unique_address-c20-422-pimpl-idiom",
+      "title": "PART 4 — LLD Trade-offs (C++) — Part 2: 4.10 EBO and `[[no_unique_address]]` (C++20) → 4.22 PIMPL Idiom",
+      "src": "content/sd/tradeoffs/part-4-lld-trade-offs-c-part-2-410-ebo-and-no_unique_address-c20-422-pimpl-idiom.html",
+      "anchors": [
         {
           "level": 2,
           "id": "410-ebo-and-no_unique_address-c20",
@@ -5898,7 +5996,22 @@
           "level": 2,
           "id": "422-pimpl-idiom",
           "text": "4.22 PIMPL Idiom"
-        },
+        }
+      ],
+      "summary": "// C++20: [[nouniqueaddress]] for members template<class A> struct Container2 { [[nouniqueaddress]] A alloc; // 0 bytes if A is empty int data; }; ",
+      "tag": "5-min",
+      "difficulty": "advanced",
+      "words": 1151,
+      "read_min": 5,
+      "order": 26,
+      "prev": "sd/tradeoffs/part-4-lld-trade-offs-c-part-1-41-parameter-passing-cg-f16-f17-f18-f19-f20-49-in",
+      "next": "sd/tradeoffs/part-5-decision-matrices"
+    },
+    {
+      "id": "sd/tradeoffs/part-5-decision-matrices",
+      "title": "PART 5 — Decision Matrices",
+      "src": "content/sd/tradeoffs/part-5-decision-matrices.html",
+      "anchors": [
         {
           "level": 2,
           "id": "51-datastore-choice",
@@ -5923,7 +6036,22 @@
           "level": 2,
           "id": "55-replication-strategy",
           "text": "5.5 Replication Strategy"
-        },
+        }
+      ],
+      "summary": "PART 5 — Decision Matrices",
+      "tag": "5-min",
+      "difficulty": "advanced",
+      "words": 324,
+      "read_min": 1,
+      "order": 27,
+      "prev": "sd/tradeoffs/part-4-lld-trade-offs-c-part-2-410-ebo-and-no_unique_address-c20-422-pimpl-idiom",
+      "next": "sd/tradeoffs/part-6-real-world-case-studies"
+    },
+    {
+      "id": "sd/tradeoffs/part-6-real-world-case-studies",
+      "title": "PART 6 — Real-World Case Studies",
+      "src": "content/sd/tradeoffs/part-6-real-world-case-studies.html",
+      "anchors": [
         {
           "level": 2,
           "id": "61-discord-mongodb-cassandra-scylladb",
@@ -5935,12 +6063,41 @@
           "text": "6.2 Stripe: Online Migrations as a Repeatable Process"
         }
       ],
-      "summary": "There is exactly one correct answer to almost every system-design interview question, and it is \"it depends — on what?\" The job of a senior engineer is not to know which technology is \"best.\" It is to identify the two…",
-      "tag": "deep-dive",
-      "words": 8898,
-      "read_min": 40,
-      "order": 7,
-      "prev": "sd/tier-expert",
+      "summary": "Stripe's blog (Jacqueline Xu, 2017) on Online Migrations at Scale describes a four-step methodology applied to nearly every schema or store change:",
+      "tag": "5-min",
+      "difficulty": "advanced",
+      "words": 352,
+      "read_min": 2,
+      "order": 28,
+      "prev": "sd/tradeoffs/part-5-decision-matrices",
+      "next": "sd/tradeoffs/confidence-assessment"
+    },
+    {
+      "id": "sd/tradeoffs/confidence-assessment",
+      "title": "Confidence Assessment",
+      "src": "content/sd/tradeoffs/confidence-assessment.html",
+      "anchors": [],
+      "summary": "Confidence Assessment",
+      "tag": "5-min",
+      "difficulty": "advanced",
+      "words": 147,
+      "read_min": 1,
+      "order": 29,
+      "prev": "sd/tradeoffs/part-6-real-world-case-studies",
+      "next": "sd/tradeoffs/citations-references"
+    },
+    {
+      "id": "sd/tradeoffs/citations-references",
+      "title": "Citations & References",
+      "src": "content/sd/tradeoffs/citations-references.html",
+      "anchors": [],
+      "summary": "Citations & References",
+      "tag": "5-min",
+      "difficulty": "advanced",
+      "words": 339,
+      "read_min": 2,
+      "order": 30,
+      "prev": "sd/tradeoffs/confidence-assessment",
       "next": "sd/5min/index"
     },
     {
@@ -6006,10 +6163,11 @@
       ],
       "summary": "Each read includes: - 🎯 TL;DR — the one-line takeaway - 📖 Plain English explanation - 🔑 Key trade-offs - 🏗️ Real-world example - 🚦 When to use / when NOT to use - 🔗 Where to dig deeper",
       "tag": "index",
+      "difficulty": "all-levels",
       "words": 533,
       "read_min": 2,
-      "order": 8,
-      "prev": "sd/tradeoffs",
+      "order": 31,
+      "prev": "sd/tradeoffs/citations-references",
       "next": "sd/5min/what-is-system-design"
     },
     {
@@ -6060,9 +6218,10 @@
       ],
       "summary": "When you write a small program, you're solving a problem. When you do system design, you're solving a problem and answering questions like:",
       "tag": "5-min",
+      "difficulty": "all-levels",
       "words": 563,
       "read_min": 3,
-      "order": 9,
+      "order": 32,
       "prev": "sd/5min/index",
       "next": "sd/5min/scalability-basics"
     },
@@ -6129,9 +6288,10 @@
       ],
       "summary": "Your app is becoming popular. Two roads to handle the traffic:",
       "tag": "5-min",
+      "difficulty": "all-levels",
       "words": 601,
       "read_min": 3,
-      "order": 10,
+      "order": 33,
       "prev": "sd/5min/what-is-system-design",
       "next": "sd/5min/latency-vs-throughput"
     },
@@ -6188,9 +6348,10 @@
       ],
       "summary": "Imagine a coffee shop:",
       "tag": "5-min",
+      "difficulty": "all-levels",
       "words": 620,
       "read_min": 3,
-      "order": 11,
+      "order": 34,
       "prev": "sd/5min/scalability-basics",
       "next": "sd/5min/api-styles"
     },
@@ -6267,9 +6428,10 @@
       ],
       "summary": "When two computers talk to each other over the network, they need a protocol. Three popular choices for application APIs:",
       "tag": "5-min",
+      "difficulty": "all-levels",
       "words": 538,
       "read_min": 2,
-      "order": 12,
+      "order": 35,
       "prev": "sd/5min/latency-vs-throughput",
       "next": "sd/5min/sql-vs-nosql"
     },
@@ -6341,9 +6503,10 @@
       ],
       "summary": "These have almost nothing in common with each other except \"not SQL.\"",
       "tag": "5-min",
+      "difficulty": "all-levels",
       "words": 696,
       "read_min": 3,
-      "order": 13,
+      "order": 36,
       "prev": "sd/5min/api-styles",
       "next": "sd/5min/load-balancing"
     },
@@ -6410,9 +6573,10 @@
       ],
       "summary": "You have 10 backend servers. A user sends a request. Where does it go?",
       "tag": "5-min",
+      "difficulty": "all-levels",
       "words": 658,
       "read_min": 3,
-      "order": 14,
+      "order": 37,
       "prev": "sd/5min/sql-vs-nosql",
       "next": "sd/5min/caching"
     },
@@ -6499,9 +6663,10 @@
       ],
       "summary": "Your database query takes 50ms. Same query 1 million times = a slow service.",
       "tag": "5-min",
+      "difficulty": "all-levels",
       "words": 735,
       "read_min": 3,
-      "order": 15,
+      "order": 38,
       "prev": "sd/5min/load-balancing",
       "next": "sd/5min/cdn"
     },
@@ -6588,9 +6753,10 @@
       ],
       "summary": "Your web server is in Virginia. A user in Tokyo loads your site. The packets must cross the Pacific (≈150ms each way). Multiply by 50 assets (CSS, JS, images) and the page is slow.",
       "tag": "5-min",
+      "difficulty": "all-levels",
       "words": 660,
       "read_min": 3,
-      "order": 16,
+      "order": 39,
       "prev": "sd/5min/caching",
       "next": "sd/5min/database-replication"
     },
@@ -6682,9 +6848,10 @@
       ],
       "summary": "You have one database. Two problems:",
       "tag": "5-min",
+      "difficulty": "all-levels",
       "words": 656,
       "read_min": 3,
-      "order": 17,
+      "order": 40,
       "prev": "sd/5min/cdn",
       "next": "sd/5min/database-sharding"
     },
@@ -6791,9 +6958,10 @@
       ],
       "summary": "Replication gave us many copies of the same data — great for reads, useless for writes. All writes still go to one primary.",
       "tag": "5-min",
+      "difficulty": "all-levels",
       "words": 744,
       "read_min": 3,
-      "order": 18,
+      "order": 41,
       "prev": "sd/5min/database-replication",
       "next": "sd/5min/consistent-hashing"
     },
@@ -6875,9 +7043,10 @@
       ],
       "summary": "You have 4 cache servers. You assign keys: server = hash(key) % 4.",
       "tag": "5-min",
+      "difficulty": "all-levels",
       "words": 729,
       "read_min": 3,
-      "order": 19,
+      "order": 42,
       "prev": "sd/5min/database-sharding",
       "next": "sd/5min/microservices"
     },
@@ -6954,9 +7123,10 @@
       ],
       "summary": "A monolith has nasty in-codebase complexity: tangled modules, shared dependencies, slow build times, fear of changing anything.",
       "tag": "5-min",
+      "difficulty": "all-levels",
       "words": 720,
       "read_min": 3,
-      "order": 20,
+      "order": 43,
       "prev": "sd/5min/consistent-hashing",
       "next": "sd/5min/message-queues"
     },
@@ -7058,9 +7228,10 @@
       ],
       "summary": "A user uploads a video on YouTube. What happens?",
       "tag": "5-min",
+      "difficulty": "all-levels",
       "words": 740,
       "read_min": 3,
-      "order": 21,
+      "order": 44,
       "prev": "sd/5min/microservices",
       "next": "sd/5min/rate-limiting"
     },
@@ -7172,9 +7343,10 @@
       ],
       "summary": "Without rate limiting: - A buggy client retries forever in a tight loop → DDoS yourself - A malicious bot scrapes your API → cost explosion - One customer accidentally floods → harms all other customers",
       "tag": "5-min",
+      "difficulty": "all-levels",
       "words": 808,
       "read_min": 4,
-      "order": 22,
+      "order": 45,
       "prev": "sd/5min/message-queues",
       "next": "sd/5min/cap-theorem"
     },
@@ -7266,9 +7438,10 @@
       ],
       "summary": "CAP says: a distributed system can guarantee at most two of:",
       "tag": "5-min",
+      "difficulty": "all-levels",
       "words": 755,
       "read_min": 3,
-      "order": 23,
+      "order": 46,
       "prev": "sd/5min/rate-limiting",
       "next": "sd/5min/consistency-models"
     },
@@ -7355,9 +7528,10 @@
       ],
       "summary": "When two people read the same data on different servers, what should they see?",
       "tag": "5-min",
+      "difficulty": "all-levels",
       "words": 756,
       "read_min": 3,
-      "order": 24,
+      "order": 47,
       "prev": "sd/5min/cap-theorem",
       "next": "sd/5min/consensus-raft-paxos"
     },
@@ -7444,9 +7618,10 @@
       ],
       "summary": "You have 5 servers. They need to agree: \"what's the next entry in our log?\"",
       "tag": "5-min",
+      "difficulty": "all-levels",
       "words": 923,
       "read_min": 4,
-      "order": 25,
+      "order": 48,
       "prev": "sd/5min/consistency-models",
       "next": "sd/5min/event-driven-and-saga"
     },
@@ -7548,9 +7723,10 @@
       ],
       "summary": "If any service is slow or down, the whole chain fails.",
       "tag": "5-min",
+      "difficulty": "all-levels",
       "words": 774,
       "read_min": 4,
-      "order": 26,
+      "order": 49,
       "prev": "sd/5min/consensus-raft-paxos",
       "next": "sd/5min/resilience-patterns"
     },
@@ -7667,9 +7843,10 @@
       ],
       "summary": "You have 10 microservices. Service B starts responding slowly. Service A calls B, A's threads pile up waiting. Service C calls A, C's threads pile up waiting. The whole system grinds to a halt.",
       "tag": "5-min",
+      "difficulty": "all-levels",
       "words": 884,
       "read_min": 4,
-      "order": 27,
+      "order": 50,
       "prev": "sd/5min/event-driven-and-saga",
       "next": "sd/5min/observability"
     },
@@ -7746,622 +7923,11 @@
       ],
       "summary": "A user reports: \"The site is slow.\" You have 100 microservices. Where's the problem?",
       "tag": "5-min",
+      "difficulty": "all-levels",
       "words": 943,
       "read_min": 4,
-      "order": 28,
+      "order": 51,
       "prev": "sd/5min/resilience-patterns",
-      "next": "sd/books"
-    },
-    {
-      "id": "sd/books",
-      "title": "📚 Books, Courses & YouTube Channels",
-      "src": "content/sd/books.html",
-      "anchors": [
-        {
-          "level": 2,
-          "id": "books-the-essential-reading-list",
-          "text": "📖 Books — The Essential Reading List"
-        },
-        {
-          "level": 3,
-          "id": "phase-1-beginner-books",
-          "text": "📘 Phase 1: Beginner Books"
-        },
-        {
-          "level": 3,
-          "id": "phase-2-intermediate-books",
-          "text": "📗 Phase 2: Intermediate Books"
-        },
-        {
-          "level": 3,
-          "id": "phase-3-advanced-books",
-          "text": "📕 Phase 3: Advanced Books"
-        },
-        {
-          "level": 3,
-          "id": "phase-4-expert-books",
-          "text": "📙 Phase 4: Expert Books"
-        },
-        {
-          "level": 2,
-          "id": "online-courses",
-          "text": "🎓 Online Courses"
-        },
-        {
-          "level": 3,
-          "id": "mit-6824-distributed-systems-free",
-          "text": "MIT 6.824 — Distributed Systems ★★★★★ (FREE)"
-        },
-        {
-          "level": 3,
-          "id": "cmu-15-445-15-721-database-systems-free",
-          "text": "CMU 15-445 / 15-721 — Database Systems ★★★★★ (FREE)"
-        },
-        {
-          "level": 3,
-          "id": "martin-kleppmanns-distributed-systems-course-cambridge-free",
-          "text": "Martin Kleppmann's Distributed Systems Course (Cambridge) ★★★★★ (FREE)"
-        },
-        {
-          "level": 3,
-          "id": "grokking-the-system-design-interview-educativeio-paid",
-          "text": "Grokking the System Design Interview (educative.io) — PAID"
-        },
-        {
-          "level": 3,
-          "id": "grokking-the-advanced-system-design-interview-educativeio-paid",
-          "text": "Grokking the Advanced System Design Interview (educative.io) — PAID"
-        },
-        {
-          "level": 3,
-          "id": "algomasterio-free-paid",
-          "text": "AlgoMaster.io — Free + Paid"
-        },
-        {
-          "level": 3,
-          "id": "bytebytego-paid-newsletter-course",
-          "text": "ByteByteGo (paid newsletter / course)"
-        },
-        {
-          "level": 3,
-          "id": "coursera-cloud-computing-specialization-uiuc",
-          "text": "Coursera — Cloud Computing Specialization (UIUC)"
-        },
-        {
-          "level": 3,
-          "id": "educative-distributed-systems-for-practitioners",
-          "text": "Educative — Distributed Systems for Practitioners"
-        },
-        {
-          "level": 2,
-          "id": "youtube-channels",
-          "text": "📺 YouTube Channels"
-        },
-        {
-          "level": 3,
-          "id": "top-tier-watch-regularly",
-          "text": "🌟 Top Tier (Watch Regularly)"
-        },
-        {
-          "level": 3,
-          "id": "specialized",
-          "text": "🎯 Specialized"
-        },
-        {
-          "level": 3,
-          "id": "academic-research",
-          "text": "🎓 Academic / Research"
-        },
-        {
-          "level": 2,
-          "id": "blogs-newsletters",
-          "text": "📰 Blogs & Newsletters"
-        },
-        {
-          "level": 3,
-          "id": "engineering-blogs-read-weekly",
-          "text": "Engineering Blogs (Read Weekly)"
-        },
-        {
-          "level": 3,
-          "id": "newsletters",
-          "text": "Newsletters"
-        },
-        {
-          "level": 3,
-          "id": "aggregators",
-          "text": "Aggregators"
-        },
-        {
-          "level": 2,
-          "id": "recommended-reading-order",
-          "text": "🎯 Recommended Reading Order"
-        },
-        {
-          "level": 3,
-          "id": "if-you-have-3-months",
-          "text": "If you have 3 months:"
-        },
-        {
-          "level": 3,
-          "id": "if-you-have-6-12-months",
-          "text": "If you have 6-12 months:"
-        },
-        {
-          "level": 3,
-          "id": "if-you-have-1-2-years-serious-commitment",
-          "text": "If you have 1-2 years (serious commitment):"
-        }
-      ],
-      "summary": "← Back to System Design home",
-      "tag": "reference",
-      "words": 1435,
-      "read_min": 7,
-      "order": 29,
-      "prev": "sd/5min/observability",
-      "next": "sd/repos"
-    },
-    {
-      "id": "sd/repos",
-      "title": "🌟 Top 20 GitHub System Design Repositories",
-      "src": "content/sd/repos.html",
-      "anchors": [
-        {
-          "level": 2,
-          "id": "the-tier-1-essentials-start-here",
-          "text": "🏆 The Tier-1 Essentials (Start Here)"
-        },
-        {
-          "level": 3,
-          "id": "1-donnemartinsystem-design-primer-346k",
-          "text": "1. donnemartin/system-design-primer ⭐ 346K"
-        },
-        {
-          "level": 3,
-          "id": "2-bytebytegohqsystem-design-101-82k",
-          "text": "2. ByteByteGoHq/system-design-101 ⭐ 82K"
-        },
-        {
-          "level": 3,
-          "id": "3-binhnguyennusawesome-scalability-70k",
-          "text": "3. binhnguyennus/awesome-scalability ⭐ 70K"
-        },
-        {
-          "level": 3,
-          "id": "4-karanpratapsinghsystem-design-43k",
-          "text": "4. karanpratapsingh/system-design ⭐ 43K"
-        },
-        {
-          "level": 3,
-          "id": "5-ashishps1awesome-system-design-resources-37k",
-          "text": "5. ashishps1/awesome-system-design-resources ⭐ 37K"
-        },
-        {
-          "level": 2,
-          "id": "the-specialty-deep-dive-repos",
-          "text": "🎓 The Specialty / Deep-Dive Repos"
-        },
-        {
-          "level": 3,
-          "id": "6-papers-we-lovepapers-we-love-92k",
-          "text": "6. papers-we-love/papers-we-love ⭐ 92K"
-        },
-        {
-          "level": 3,
-          "id": "7-checkcheckzzsystem-design-interview-23k",
-          "text": "7. checkcheckzz/system-design-interview ⭐ 23K"
-        },
-        {
-          "level": 3,
-          "id": "8-shashank88system_design-9k",
-          "text": "8. shashank88/system_design ⭐ 9K"
-        },
-        {
-          "level": 3,
-          "id": "9-kilimchoiengineering-blogs-35k",
-          "text": "9. kilimchoi/engineering-blogs ⭐ 35K"
-        },
-        {
-          "level": 3,
-          "id": "10-systemdesign42system-design-24k",
-          "text": "10. systemdesign42/system-design ⭐ 24K"
-        },
-        {
-          "level": 2,
-          "id": "hands-on-implementation-focused",
-          "text": "🏗️ Hands-On / Implementation Focused"
-        },
-        {
-          "level": 3,
-          "id": "11-ashishps1awesome-low-level-design-23k",
-          "text": "11. ashishps1/awesome-low-level-design ⭐ 23K"
-        },
-        {
-          "level": 3,
-          "id": "12-madd86awesome-system-design-9k",
-          "text": "12. madd86/awesome-system-design ⭐ 9K"
-        },
-        {
-          "level": 3,
-          "id": "13-simpleitanalysisdistributed-systems-6k",
-          "text": "13. SimpleITAnalysis/Distributed-Systems ⭐ 6K"
-        },
-        {
-          "level": 2,
-          "id": "interview-specific",
-          "text": "🎯 Interview-Specific"
-        },
-        {
-          "level": 3,
-          "id": "14-yangshuntech-interview-handbook-124k",
-          "text": "14. yangshun/tech-interview-handbook ⭐ 124K"
-        },
-        {
-          "level": 3,
-          "id": "15-olshanskinterview-6k",
-          "text": "15. Olshansk/interview ⭐ 6K"
-        },
-        {
-          "level": 3,
-          "id": "16-interviewingios-resources",
-          "text": "16. interviewing.io's resources"
-        },
-        {
-          "level": 2,
-          "id": "by-language-specialized",
-          "text": "🌎 By Language / Specialized"
-        },
-        {
-          "level": 3,
-          "id": "17-donnemartinsystem-design-primer-cn-translations-etc",
-          "text": "17. donnemartin/system-design-primer (CN translations etc.)"
-        },
-        {
-          "level": 3,
-          "id": "18-jordan-cutlerpath-to-senior-engineer-handbook-22k",
-          "text": "18. jordan-cutler/path-to-senior-engineer-handbook ⭐ 22K"
-        },
-        {
-          "level": 3,
-          "id": "19-vincent-liangsystemdesign-4k",
-          "text": "19. Vincent-Liang/SystemDesign ⭐ 4K"
-        },
-        {
-          "level": 3,
-          "id": "20-mhxionawesome-distributed-systems-9k",
-          "text": "20. mhxion/awesome-distributed-systems ⭐ 9K"
-        },
-        {
-          "level": 2,
-          "id": "quick-pick-recommendations-by-goal",
-          "text": "📊 Quick-Pick Recommendations by Goal"
-        },
-        {
-          "level": 2,
-          "id": "how-to-use-these-repos-effectively",
-          "text": "🛠️ How to Use These Repos Effectively"
-        },
-        {
-          "level": 3,
-          "id": "dont",
-          "text": "❌ Don't:"
-        },
-        {
-          "level": 3,
-          "id": "do",
-          "text": "✅ Do:"
-        },
-        {
-          "level": 2,
-          "id": "beyond-github",
-          "text": "🔗 Beyond GitHub"
-        }
-      ],
-      "summary": "GitHub is just one channel. Don't forget: - YouTube: ByteByteGo, Gaurav Sen, Hussein Nasser, codeKarle, Tech Dummies - Books: DDIA (Kleppmann), System Design Interview (Xu), Database Internals (Petrov), Building…",
-      "tag": "reference",
-      "words": 1098,
-      "read_min": 5,
-      "order": 30,
-      "prev": "sd/books",
-      "next": "sd/papers"
-    },
-    {
-      "id": "sd/papers",
-      "title": "📄 Seminal Papers in Distributed Systems",
-      "src": "content/sd/papers.html",
-      "anchors": [
-        {
-          "level": 2,
-          "id": "how-to-read-a-distributed-systems-paper",
-          "text": "⭐ How to Read a Distributed Systems Paper"
-        },
-        {
-          "level": 2,
-          "id": "tier-s-the-foundational-papers-read-these",
-          "text": "🏛️ Tier S: The Foundational Papers (READ THESE)"
-        },
-        {
-          "level": 3,
-          "id": "1-time-clocks-and-the-ordering-of-events-in-a-distributed-system",
-          "text": "1. Time, Clocks, and the Ordering of Events in a Distributed System"
-        },
-        {
-          "level": 3,
-          "id": "2-impossibility-of-distributed-consensus-with-one-faulty-process-flp",
-          "text": "2. Impossibility of Distributed Consensus with One Faulty Process (FLP)"
-        },
-        {
-          "level": 3,
-          "id": "3-end-to-end-arguments-in-system-design",
-          "text": "3. End-to-End Arguments in System Design"
-        },
-        {
-          "level": 3,
-          "id": "4-cap-theorem-brewer-2000-keynote-gilbert-lynch-2002-proof",
-          "text": "4. CAP Theorem (Brewer 2000 keynote → Gilbert & Lynch 2002 proof)"
-        },
-        {
-          "level": 2,
-          "id": "tier-s-consensus",
-          "text": "🤝 Tier S: Consensus"
-        },
-        {
-          "level": 3,
-          "id": "5-paxos-made-simple",
-          "text": "5. Paxos Made Simple"
-        },
-        {
-          "level": 3,
-          "id": "6-in-search-of-an-understandable-consensus-algorithm-raft",
-          "text": "6. In Search of an Understandable Consensus Algorithm (Raft)"
-        },
-        {
-          "level": 3,
-          "id": "7-zookeeper-wait-free-coordination-for-internet-scale-systems",
-          "text": "7. ZooKeeper: Wait-free Coordination for Internet-scale Systems"
-        },
-        {
-          "level": 3,
-          "id": "8-the-chubby-lock-service-for-loosely-coupled-distributed-systems",
-          "text": "8. The Chubby Lock Service for Loosely-Coupled Distributed Systems"
-        },
-        {
-          "level": 3,
-          "id": "9-practical-byzantine-fault-tolerance-pbft",
-          "text": "9. Practical Byzantine Fault Tolerance (PBFT)"
-        },
-        {
-          "level": 2,
-          "id": "tier-a-storage-systems",
-          "text": "💾 Tier A: Storage Systems"
-        },
-        {
-          "level": 3,
-          "id": "10-the-google-file-system-gfs",
-          "text": "10. The Google File System (GFS)"
-        },
-        {
-          "level": 3,
-          "id": "11-mapreduce-simplified-data-processing-on-large-clusters",
-          "text": "11. MapReduce: Simplified Data Processing on Large Clusters"
-        },
-        {
-          "level": 3,
-          "id": "12-bigtable-a-distributed-storage-system-for-structured-data",
-          "text": "12. Bigtable: A Distributed Storage System for Structured Data"
-        },
-        {
-          "level": 3,
-          "id": "13-dynamo-amazons-highly-available-key-value-store",
-          "text": "13. Dynamo: Amazon's Highly Available Key-value Store"
-        },
-        {
-          "level": 3,
-          "id": "14-spanner-googles-globally-distributed-database",
-          "text": "14. Spanner: Google's Globally Distributed Database"
-        },
-        {
-          "level": 3,
-          "id": "15-f1-a-distributed-sql-database-that-scales",
-          "text": "15. F1: A Distributed SQL Database That Scales"
-        },
-        {
-          "level": 3,
-          "id": "16-the-log-structured-merge-tree-lsm-tree",
-          "text": "16. The Log-Structured Merge-Tree (LSM-Tree)"
-        },
-        {
-          "level": 3,
-          "id": "17-the-dataflow-model",
-          "text": "17. The Dataflow Model"
-        },
-        {
-          "level": 2,
-          "id": "tier-a-streaming-logs",
-          "text": "📡 Tier A: Streaming & Logs"
-        },
-        {
-          "level": 3,
-          "id": "18-kafka-a-distributed-messaging-system-for-log-processing",
-          "text": "18. Kafka: a Distributed Messaging System for Log Processing"
-        },
-        {
-          "level": 3,
-          "id": "19-the-log-what-every-software-engineer-should-know-about-real-time-datas-unifying-abstraction",
-          "text": "19. The Log: What every software engineer should know about real-time data's unifying abstraction"
-        },
-        {
-          "level": 3,
-          "id": "20-millwheel-fault-tolerant-stream-processing-at-internet-scale",
-          "text": "20. Millwheel: Fault-Tolerant Stream Processing at Internet Scale"
-        },
-        {
-          "level": 2,
-          "id": "tier-a-observability-operations",
-          "text": "🔍 Tier A: Observability & Operations"
-        },
-        {
-          "level": 3,
-          "id": "21-dapper-a-large-scale-distributed-systems-tracing-infrastructure",
-          "text": "21. Dapper: A Large-Scale Distributed Systems Tracing Infrastructure"
-        },
-        {
-          "level": 3,
-          "id": "22-borg-large-scale-cluster-management-at-google",
-          "text": "22. Borg: Large-scale cluster management at Google"
-        },
-        {
-          "level": 3,
-          "id": "23-omega-flexible-scalable-schedulers-for-large-compute-clusters",
-          "text": "23. Omega: flexible, scalable schedulers for large compute clusters"
-        },
-        {
-          "level": 2,
-          "id": "tier-b-specialized-but-influential",
-          "text": "🧮 Tier B: Specialized but Influential"
-        },
-        {
-          "level": 3,
-          "id": "24-lamport-the-part-time-parliament-paxos",
-          "text": "24. Lamport — The Part-Time Parliament (Paxos)"
-        },
-        {
-          "level": 3,
-          "id": "25-raft-refloated-do-we-have-consensus",
-          "text": "25. Raft Refloated: Do We Have Consensus?"
-        },
-        {
-          "level": 3,
-          "id": "26-crdts-conflict-free-replicated-data-types",
-          "text": "26. CRDTs: Conflict-Free Replicated Data Types"
-        },
-        {
-          "level": 3,
-          "id": "27-calvin-fast-distributed-transactions-for-partitioned-database-systems",
-          "text": "27. Calvin: Fast Distributed Transactions for Partitioned Database Systems"
-        },
-        {
-          "level": 3,
-          "id": "28-naiad-a-timely-dataflow-system",
-          "text": "28. Naiad: A Timely Dataflow System"
-        },
-        {
-          "level": 3,
-          "id": "29-highly-available-transactions-virtues-and-limitations",
-          "text": "29. Highly Available Transactions: Virtues and Limitations"
-        },
-        {
-          "level": 3,
-          "id": "30-coordination-avoidance-in-database-systems",
-          "text": "30. Coordination Avoidance in Database Systems"
-        },
-        {
-          "level": 3,
-          "id": "31-spark-cluster-computing-with-working-sets",
-          "text": "31. Spark: Cluster Computing with Working Sets"
-        },
-        {
-          "level": 3,
-          "id": "32-cassandra-a-decentralized-structured-storage-system",
-          "text": "32. Cassandra — A Decentralized Structured Storage System"
-        },
-        {
-          "level": 3,
-          "id": "33-the-tao-paper-facebooks-distributed-data-store-for-the-social-graph",
-          "text": "33. The TAO Paper — Facebook's Distributed Data Store for the Social Graph"
-        },
-        {
-          "level": 3,
-          "id": "34-scaling-memcache-at-facebook",
-          "text": "34. Scaling Memcache at Facebook"
-        },
-        {
-          "level": 3,
-          "id": "35-photon-fault-tolerant-and-scalable-joining-of-continuous-data-streams",
-          "text": "35. Photon: Fault-tolerant and Scalable Joining of Continuous Data Streams"
-        },
-        {
-          "level": 2,
-          "id": "tier-b-modern-last-decade-worth-reading",
-          "text": "🔮 Tier B: Modern (Last Decade) Worth Reading"
-        },
-        {
-          "level": 3,
-          "id": "36-the-many-faces-of-consistency",
-          "text": "36. The Many Faces of Consistency"
-        },
-        {
-          "level": 3,
-          "id": "37-highly-available-consistency-replication-and-distributed-transactions-in-cosmos-db",
-          "text": "37. Highly Available Consistency, Replication and Distributed Transactions in Cosmos DB"
-        },
-        {
-          "level": 3,
-          "id": "38-magic-pocket-building-a-multi-exabyte-storage-system-dropbox",
-          "text": "38. Magic Pocket: Building a Multi-Exabyte Storage System (Dropbox)"
-        },
-        {
-          "level": 3,
-          "id": "39-scylladb-papers",
-          "text": "39. ScyllaDB papers"
-        },
-        {
-          "level": 3,
-          "id": "40-discord-how-we-scaled-to-trillions-of-messages",
-          "text": "40. Discord: How we scaled to trillions of messages"
-        },
-        {
-          "level": 2,
-          "id": "suggested-reading-schedule-1-paper-week-for-a-year",
-          "text": "📅 Suggested Reading Schedule (1 paper / week for a year)"
-        },
-        {
-          "level": 3,
-          "id": "months-1-2-foundations",
-          "text": "Months 1-2: Foundations"
-        },
-        {
-          "level": 3,
-          "id": "months-3-4-storage-systems",
-          "text": "Months 3-4: Storage Systems"
-        },
-        {
-          "level": 3,
-          "id": "months-5-6-streaming-operations",
-          "text": "Months 5-6: Streaming & Operations"
-        },
-        {
-          "level": 3,
-          "id": "months-7-8-modern-topics",
-          "text": "Months 7-8: Modern Topics"
-        },
-        {
-          "level": 3,
-          "id": "months-9-10-engineering-blogs-deep-dives",
-          "text": "Months 9-10: Engineering Blogs Deep Dives"
-        },
-        {
-          "level": 3,
-          "id": "months-11-12-pick-your-specialty",
-          "text": "Months 11-12: Pick Your Specialty"
-        },
-        {
-          "level": 2,
-          "id": "tips-for-paper-reading-discipline",
-          "text": "💡 Tips for Paper-Reading Discipline"
-        },
-        {
-          "level": 2,
-          "id": "where-papers-live",
-          "text": "🌐 Where Papers Live"
-        }
-      ],
-      "summary": "1. First pass (15 min): Abstract → Introduction → Conclusion. What's the problem? What's the contribution? 2. Second pass (1-2 hours): Read figures, key sections. Skip proofs first time. 3. Third pass (multi-day):…",
-      "tag": "reference",
-      "words": 1904,
-      "read_min": 9,
-      "order": 31,
-      "prev": "sd/repos",
       "next": null
     }
   ]

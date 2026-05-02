@@ -1,0 +1,30 @@
+<h1 id="part-6-real-world-case-studies">PART 6 — Real-World Case Studies</h1>
+<h2 id="61-discord-mongodb-cassandra-scylladb">6.1 Discord: MongoDB → Cassandra → ScyllaDB</h2>
+<p><strong>Timeline (per Discord engineering blog):</strong></p>
+<ul>
+<li><strong>Pre-2016:</strong> Single Mongo replica set holding messages.</li>
+<li><strong>2015 outage:</strong> Working set exceeded RAM; queries that scanned non-RAM data became unpredictably slow. The "tipping point" trade-off: Mongo's lack of explicit per-query memory budget meant a single bad query could degrade the cluster.</li>
+<li><strong>2016: Migrated to Cassandra</strong> (177-node cluster). Trade-offs:</li>
+<li><strong>Pro:</strong> Horizontal scale; tunable consistency; predictable.</li>
+<li><strong>Con:</strong> GC pauses (JVM); maintenance overhead; tombstones from deletes blew up read latency.</li>
+<li>p99 latency: 40-125 ms. Trillions of messages.</li>
+<li><strong>2022: Migrated to ScyllaDB</strong> (Cassandra-compatible C++ rewrite, no GC). Result:</li>
+<li><strong>177 → 72 nodes</strong> (~60% reduction).</li>
+<li><strong>p99: 40-125 ms → ~15 ms</strong> (~7× improvement).</li>
+<li>Eliminated GC-induced tail latency.</li>
+</ul>
+<p><strong>Trade-off lesson:</strong> <em>The right datastore today may be the wrong datastore in 5 years.</em> Discord's 2016 choice was correct for 2016. Their 2022 move was correct for 2022. The cost of staying on Cassandra (operational tax + p99) eventually exceeded the cost of migrating.</p>
+<p><strong>The migration itself</strong> used a dual-write pattern: write to both Cassandra and Scylla; read from one; reconcile diffs; cut over.</p>
+<h2 id="62-stripe-online-migrations-as-a-repeatable-process">6.2 Stripe: Online Migrations as a Repeatable Process</h2>
+<p>Stripe's blog (Jacqueline Xu, 2017) on <em>Online Migrations at Scale</em> describes a four-step methodology applied to nearly every schema or store change:</p>
+<ol>
+<li><strong>Dual-write to old + new stores.</strong> Both serve writes; only old serves reads.</li>
+<li><strong>Backfill</strong> old data into new. Run in parallel with dual-write.</li>
+<li><strong>Read from new store</strong> (still dual-writing). Compare results to old store via the <strong>Scientist library</strong> (open-sourced by GitHub) — calls both stores, returns old result, <em>logs</em> discrepancies. Find bugs without breaking prod.</li>
+<li><strong>Stop writing to old store; remove code.</strong></li>
+</ol>
+<p><strong>Trade-offs of this pattern:</strong>
+- <strong>Cost:</strong> 2× write load during migration; lots of monitoring code.
+- <strong>Benefit:</strong> Zero-downtime migrations. Reversible at any step (two-way door).</p>
+<p><strong>Trade-off lesson:</strong> Migration <em>as a process</em>, not a <em>project</em>, lets the team make many one-way doors look like two-way doors. Stripe runs dozens of migrations like this concurrently.</p>
+<hr>
