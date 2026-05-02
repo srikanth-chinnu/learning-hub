@@ -15,6 +15,7 @@ Usage:
 """
 import json
 import re
+import hashlib
 from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import unquote
@@ -3061,7 +3062,14 @@ def main():
         json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8"
     )
 
-    (HUB / "index.html").write_text(SHELL_HTML, encoding="utf-8")
+    css_hash = hashlib.md5(CSS.encode("utf-8")).hexdigest()[:10]
+    js_hash  = hashlib.md5(APP_JS.encode("utf-8")).hexdigest()[:10]
+    shell = SHELL_HTML.replace(
+        'href="assets/style.css"', f'href="assets/style.css?v={css_hash}"'
+    ).replace(
+        'src="assets/app.js"', f'src="assets/app.js?v={js_hash}"'
+    )
+    (HUB / "index.html").write_text(shell, encoding="utf-8")
 
     rewrites = rewrite_links()
 
