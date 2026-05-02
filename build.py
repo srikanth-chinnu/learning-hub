@@ -121,6 +121,10 @@ def render_source(src: Path, item_id: str, default_title: str, tag: str = ""):
     title = title_from_md(text, default_title)
     summary = first_paragraph(text)
 
+    # Reading time estimate (technical prose ≈ 220 wpm).
+    word_count = len(re.findall(r"\b\w+\b", text))
+    read_min = max(1, round(word_count / 220))
+
     rel_out = Path("content") / (item_id + ".html")
     out = HUB / rel_out
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -140,6 +144,8 @@ def render_source(src: Path, item_id: str, default_title: str, tag: str = ""):
         "anchors": headings,
         "summary": summary,
         "tag": tag,
+        "words": word_count,
+        "read_min": read_min,
     }
 
 
@@ -837,6 +843,382 @@ body {
   from { opacity: 0; transform: translateY(4px); }
   to   { opacity: 1; transform: none; }
 }
+
+/* ------- v2 user-friendliness additions ------- */
+
+/* skip link (accessibility) */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 8px;
+  background: var(--link);
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 6px;
+  z-index: 200;
+  text-decoration: none;
+  font-weight: 600;
+}
+.skip-link:focus { left: 16px; }
+
+/* reading progress bar */
+.reading-progress {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: transparent;
+  z-index: 60;
+  pointer-events: none;
+}
+.reading-progress > span {
+  display: block;
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--good), var(--link));
+  transition: width .15s linear;
+}
+
+/* meta line under page title */
+.page-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 12.5px;
+  color: var(--text-dim);
+  margin: -6px 0 14px;
+}
+.page-meta .dot { opacity: .4; }
+.page-meta .read-time::before { content: "🕐 "; }
+.page-meta .word-count::before { content: "📝 "; }
+
+/* tag color variants by tier / kind */
+.tag.tier-1 { background: rgba(63,185,80,.12);  color: var(--good); border-color: rgba(63,185,80,.35); }
+.tag.tier-2 { background: rgba(88,166,255,.12); color: var(--link); border-color: rgba(88,166,255,.35); }
+.tag.tier-3 { background: rgba(210,153,34,.15); color: var(--warn); border-color: rgba(210,153,34,.35); }
+.tag.tier-4 { background: rgba(248,81,73,.12);  color: var(--bad);  border-color: rgba(248,81,73,.35); }
+.tag.deep-dive  { background: rgba(247,129,102,.12); color: var(--accent); border-color: rgba(247,129,102,.35); }
+.tag.curriculum { background: rgba(88,166,255,.12); color: var(--link);   border-color: rgba(88,166,255,.35); }
+.tag.plan       { background: rgba(63,185,80,.12);  color: var(--good);   border-color: rgba(63,185,80,.35); }
+.tag.reference  { background: rgba(139,148,158,.15); color: var(--text-dim); }
+.tag.\35 -min   { background: rgba(247,129,102,.10); color: var(--accent); border-color: rgba(247,129,102,.30); }
+.tag.overview, .tag.index { background: rgba(139,148,158,.18); color: var(--text); }
+
+/* sidebar item meta (small text under title) */
+.sidebar a.item .item-meta {
+  font-size: 10.5px;
+  color: var(--text-dim);
+  margin-left: 22px;
+  display: block;
+  margin-top: 1px;
+}
+.sidebar a.item.active .item-meta { color: var(--link); opacity: .9; }
+.sidebar a.item .title-line {
+  display: block;
+  white-space: normal;
+}
+
+/* group progress bar */
+.sidebar .group-bar {
+  height: 2px;
+  background: var(--bg-elev-2);
+  border-radius: 2px;
+  margin: 0 12px 6px;
+  overflow: hidden;
+}
+.sidebar .group-bar > span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--good), var(--link));
+  transition: width .3s;
+}
+
+/* loading spinner overlay */
+.loading {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: var(--text-dim);
+  font-size: 14px;
+  gap: 12px;
+}
+.loading.active { display: flex; }
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--bg-elev-2);
+  border-top-color: var(--link);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* back-to-top floating button */
+.back-to-top {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--bg-elev);
+  color: var(--text);
+  border: 1px solid var(--border);
+  font-size: 20px;
+  cursor: pointer;
+  z-index: 45;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+  transition: opacity .2s, transform .2s, background .15s;
+  box-shadow: var(--shadow);
+}
+.back-to-top.visible {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+.back-to-top:hover { background: var(--bg-elev-2); }
+
+/* modal */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal.open { display: flex; }
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.55);
+  backdrop-filter: blur(2px);
+  cursor: pointer;
+}
+.modal-card {
+  position: relative;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 0 22px 22px;
+  max-width: 520px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow);
+  animation: modalIn .18s ease-out;
+}
+@keyframes modalIn {
+  from { transform: translateY(8px) scale(.97); opacity: 0; }
+  to   { transform: none; opacity: 1; }
+}
+.modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  background: var(--bg-elev);
+  padding: 16px 0 12px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.modal-head h2 { margin: 0; font-size: 18px; }
+.modal-foot {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin: 14px 0 0;
+}
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+.setting-row:last-child { border-bottom: 0; }
+.setting-row strong { font-size: 14px; }
+.setting-help { margin: 2px 0 0; font-size: 12px; color: var(--text-dim); }
+.btn.danger {
+  background: transparent;
+  border-color: rgba(248,81,73,.4);
+  color: var(--bad);
+}
+.btn.danger:hover { background: rgba(248,81,73,.10); }
+
+/* toggle switch */
+.switch { position: relative; display: inline-block; width: 38px; height: 22px; flex-shrink: 0; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.switch span {
+  position: absolute; cursor: pointer; inset: 0;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  transition: background .15s;
+}
+.switch span::before {
+  content: "";
+  position: absolute;
+  height: 16px; width: 16px;
+  left: 2px; top: 2px;
+  background: var(--text-dim);
+  border-radius: 50%;
+  transition: transform .15s, background .15s;
+}
+.switch input:checked + span { background: var(--link); border-color: var(--link); }
+.switch input:checked + span::before { transform: translateX(16px); background: #fff; }
+
+/* toast notifications */
+.toast-stack {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 110;
+  pointer-events: none;
+}
+.toast {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--good);
+  color: var(--text);
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  box-shadow: var(--shadow);
+  pointer-events: auto;
+  animation: toastIn .2s ease-out, toastOut .2s ease-in 2.6s forwards;
+  min-width: 200px;
+}
+.toast.error { border-left-color: var(--bad); }
+.toast.info  { border-left-color: var(--link); }
+@keyframes toastIn {
+  from { transform: translateX(20px); opacity: 0; }
+  to   { transform: none; opacity: 1; }
+}
+@keyframes toastOut {
+  to { transform: translateX(20px); opacity: 0; }
+}
+
+/* sidebar mobile backdrop */
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.4);
+  z-index: 39;
+  display: none;
+}
+body[data-sidebar="open"] .sidebar-backdrop { display: block; }
+
+/* improved focus styles for keyboard nav */
+:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+.btn:focus-visible, .icon-btn:focus-visible {
+  outline-offset: 1px;
+}
+
+/* hero CTA refinement (first-time user) */
+.hero.welcome {
+  background: linear-gradient(135deg, rgba(88,166,255,.18), rgba(63,185,80,.12));
+  border-color: rgba(88,166,255,.4);
+}
+.hero .cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  background: var(--link);
+  color: #0d1117;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 14px;
+}
+.hero .cta:hover { background: var(--link-hover); }
+.hero .lede {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+/* continue-learning card pinned at top of home */
+.continue-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 22px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--link);
+  border-radius: 12px;
+  margin-bottom: 22px;
+}
+.continue-card .ico { font-size: 28px; flex-shrink: 0; }
+.continue-card .body { flex: 1; }
+.continue-card .label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  color: var(--text-dim);
+}
+.continue-card h3 { margin: 2px 0; font-size: 16px; }
+.continue-card .desc { font-size: 13px; color: var(--text-dim); margin: 0; }
+.continue-card .btn { flex-shrink: 0; }
+
+/* completion celebration */
+.complete-banner {
+  background: linear-gradient(135deg, rgba(63,185,80,.18), rgba(88,166,255,.10));
+  border: 1px solid rgba(63,185,80,.4);
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin: 18px 0;
+  font-size: 14px;
+  color: var(--good);
+}
+
+/* responsive tweaks */
+@media (max-width: 760px) {
+  .sidebar-toggle { display: inline-flex !important; }
+  .topbar .progress-pill { display: none; }
+  #help-btn, #settings-btn { display: none; }
+  .content { padding: 18px 14px 60px; }
+  .modal-card { max-width: 100%; }
+  .back-to-top { right: 14px; bottom: 14px; }
+  .continue-card { flex-direction: column; align-items: flex-start; }
+}
+
+/* print-friendly */
+@media print {
+  .topbar, .sidebar, .toc-rail, .back-to-top, .reading-progress,
+  .modal, .toast-stack, .page-actions, .prevnext, .sidebar-backdrop { display: none !important; }
+  .layout { grid-template-columns: 1fr !important; }
+  .content { max-width: 100%; padding: 0; }
+  body { background: #fff; color: #000; }
+  .md a { color: #000; text-decoration: underline; }
+  .md pre, .md code { background: #f4f4f4 !important; color: #000 !important; }
+}
+
+/* reduce-motion respect */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    transition-duration: .001ms !important;
+  }
+}
 """
 
 APP_JS = r"""
@@ -845,12 +1227,14 @@ APP_JS = r"""
   const LS_THEME = "lh:theme";
   const LS_RECENT = "lh:recent";
   const LS_OPEN = "lh:open";
+  const LS_AUTO_MARK = "lh:auto-mark";
 
   let manifest = null;
   let byId = new Map();   // id -> item
   let order = [];         // ordered ids
   let currentId = null;
   let scrollSpyObserver = null;
+  let autoMarkTimer = null;
 
   // --- localStorage helpers --- //
   const lsGet = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } };
@@ -874,6 +1258,42 @@ APP_JS = r"""
 
   function getOpenTracks() { return new Set(lsGet(LS_OPEN, ["roadmap", "dsa", "sd"])); }
   function setOpenTracks(s) { lsSet(LS_OPEN, [...s]); }
+
+  function getAutoMark() { return !!lsGet(LS_AUTO_MARK, false); }
+  function setAutoMark(v) { lsSet(LS_AUTO_MARK, !!v); }
+
+  // --- toast notifications --- //
+  function showToast(msg, kind) {
+    const stack = document.getElementById("toasts");
+    if (!stack) return;
+    const el = document.createElement("div");
+    el.className = "toast" + (kind ? " " + kind : "");
+    el.textContent = msg;
+    stack.appendChild(el);
+    setTimeout(() => el.remove(), 3000);
+  }
+
+  // --- modals --- //
+  function showModal(id) {
+    const m = document.getElementById(id);
+    if (!m) return;
+    m.classList.add("open");
+    m.setAttribute("aria-hidden", "false");
+    const focusable = m.querySelector("button, input, [tabindex]");
+    if (focusable) focusable.focus();
+  }
+  function closeModal(id) {
+    const m = document.getElementById(id);
+    if (!m) return;
+    m.classList.remove("open");
+    m.setAttribute("aria-hidden", "true");
+  }
+  function closeAllModals() {
+    document.querySelectorAll(".modal.open").forEach(m => closeModal(m.id));
+  }
+  function isAnyModalOpen() {
+    return document.querySelector(".modal.open") !== null;
+  }
 
   // --- theme --- //
   function applyTheme(t) {
@@ -954,6 +1374,16 @@ APP_JS = r"""
           gt.className = "group-title";
           gt.textContent = group.title;
           body.appendChild(gt);
+
+          // group progress bar
+          const gDone = group.items.filter(it => done.has(it.id)).length;
+          const gTotal = group.items.length;
+          const gPct = gTotal ? Math.round((gDone / gTotal) * 100) : 0;
+          const gBar = document.createElement("div");
+          gBar.className = "group-bar";
+          gBar.dataset.group = `${track.id}::${group.title}`;
+          gBar.innerHTML = `<span style="width:${gPct}%"></span>`;
+          body.appendChild(gBar);
         }
         for (const it of group.items) {
           const a = document.createElement("a");
@@ -962,7 +1392,8 @@ APP_JS = r"""
           a.dataset.itemId = it.id;
           if (done.has(it.id)) a.classList.add("done");
           if (currentId === it.id) a.classList.add("active");
-          a.innerHTML = `<span class="check"></span><span>${escape(it.title)}</span>`;
+          const meta = it.read_min ? `<span class="item-meta">${it.read_min} min read</span>` : "";
+          a.innerHTML = `<span class="check"></span><span class="title-line">${escape(it.title)}</span>${meta}`;
           body.appendChild(a);
         }
       }
@@ -991,6 +1422,17 @@ APP_JS = r"""
       const dn = trackItems.filter(it => done.has(it.id)).length;
       const prog = tr.querySelector(".track-progress");
       if (prog) prog.textContent = `${dn}/${trackItems.length}`;
+
+      // group bars
+      for (const g of track.groups) {
+        const sel = `[data-group="${id}::${g.title.replace(/"/g, '\\"')}"]`;
+        const bar = tr.querySelector(sel + " > span");
+        if (bar) {
+          const gd = g.items.filter(it => done.has(it.id)).length;
+          const gPct = g.items.length ? Math.round((gd / g.items.length) * 100) : 0;
+          bar.style.width = gPct + "%";
+        }
+      }
     });
     refreshTopbarProgress();
   }
@@ -1102,16 +1544,21 @@ APP_JS = r"""
     const item = byId.get(id);
     const main = document.getElementById("content");
     if (!item) {
+      document.title = "Not found · Learning Hub";
       main.innerHTML = `<h1>Not found</h1><p>The page <code>${escape(id)}</code> doesn't exist. <a href="#/">Go home</a>.</p>`;
       currentId = null;
       buildTOC([]);
+      updateBackToTop();
       return;
     }
 
     currentId = id;
+    document.title = item.title + " · Learning Hub";
     main.classList.remove("fade-in");
     void main.offsetWidth;
     main.classList.add("fade-in");
+
+    main.innerHTML = `<div class="loading active"><div class="spinner"></div><span>Loading ${escape(item.title)}…</span></div>`;
 
     try {
       const html = await fetchFragment(item.src);
@@ -1121,6 +1568,7 @@ APP_JS = r"""
       bc.id = "breadcrumb";
 
       const actions = makeActions(item);
+      const meta = makePageMeta(item);
 
       const article = document.createElement("article");
       article.className = "md";
@@ -1131,6 +1579,7 @@ APP_JS = r"""
       main.innerHTML = "";
       main.appendChild(bc);
       main.appendChild(actions);
+      if (meta) main.appendChild(meta);
       main.appendChild(article);
       main.appendChild(prevnext);
 
@@ -1139,6 +1588,7 @@ APP_JS = r"""
       setupScrollSpy(item.anchors);
       highlightSidebar();
       pushRecent(id);
+      armAutoMark(item);
 
       if (anchor) {
         const el = document.getElementById(anchor);
@@ -1150,9 +1600,23 @@ APP_JS = r"""
       } else {
         window.scrollTo({ top: 0 });
       }
+      updateReadingProgress();
+      updateBackToTop();
     } catch (e) {
-      main.innerHTML = `<h1>Error</h1><p>${escape(e.message)}</p>`;
+      main.innerHTML = `<h1>Error loading content</h1><p>${escape(e.message)}</p><p><a href="#/">Go home</a></p>`;
+      showToast("Failed to load: " + e.message, "error");
     }
+  }
+
+  function makePageMeta(item) {
+    const parts = [];
+    if (item.read_min) parts.push(`<span class="read-time">${item.read_min} min read</span>`);
+    if (item.words)    parts.push(`<span class="word-count">${item.words.toLocaleString()} words</span>`);
+    if (parts.length === 0) return null;
+    const m = document.createElement("div");
+    m.className = "page-meta";
+    m.innerHTML = parts.join('<span class="dot">·</span>');
+    return m;
   }
 
   function makeActions(item) {
@@ -1169,12 +1633,13 @@ APP_JS = r"""
       btn.className = "btn " + (now ? "done" : "primary");
       btn.innerHTML = now ? "✓ Completed" : "Mark as complete";
       refreshSidebarProgress();
+      showToast(now ? `Marked complete: ${item.title}` : `Unmarked: ${item.title}`, now ? null : "info");
     });
     wrap.appendChild(btn);
 
     if (item.tag) {
       const tag = document.createElement("span");
-      tag.className = "tag";
+      tag.className = "tag " + escapeClass(item.tag);
       tag.textContent = item.tag;
       wrap.appendChild(tag);
     }
@@ -1212,6 +1677,7 @@ APP_JS = r"""
   function renderHome() {
     const main = document.getElementById("content");
     currentId = null;
+    document.title = "Learning Hub — DSA & System Design";
     main.classList.remove("fade-in");
     void main.offsetWidth;
     main.classList.add("fade-in");
@@ -1221,6 +1687,7 @@ APP_JS = r"""
 
     const done = getDone();
     const recent = getRecent().map(id => byId.get(id)).filter(Boolean);
+    const isFirstTime = done.size === 0 && recent.length === 0;
 
     const trackCards = manifest.tracks.map(t => {
       const items = t.groups.flatMap(g => g.items);
@@ -1239,36 +1706,61 @@ APP_JS = r"""
         </div>`;
     }).join("");
 
-    const recentHTML = recent.length === 0 ? "" : `
-      <h2>Pick up where you left off</h2>
+    const continueCard = recent.length === 0 ? "" : `
+      <div class="continue-card">
+        <div class="ico">📖</div>
+        <div class="body">
+          <div class="label">Continue where you left off</div>
+          <h3>${escape(recent[0].title)}</h3>
+          <p class="desc">${escape(recent[0].summary || "")}</p>
+        </div>
+        <a class="btn primary" href="#/${recent[0].id}">Resume →</a>
+      </div>
+    `;
+
+    const moreRecentHTML = recent.length <= 1 ? "" : `
+      <h2>Recently viewed</h2>
       <div class="cards">
-        ${recent.map(it => `
+        ${recent.slice(1).map(it => `
           <div class="card recent">
             <h3>${escape(it.title)}</h3>
             <p>${escape(it.summary || "")}</p>
-            <a class="go" href="#/${it.id}">Resume →</a>
+            <a class="go" href="#/${it.id}">Open →</a>
           </div>`).join("")}
       </div>
     `;
 
-    main.innerHTML = `
+    const roadmap = manifest.tracks.find(t => t.id === "roadmap");
+    const startId = roadmap ? roadmap.groups[0].items[0].id : (manifest.tracks[0].groups[0].items[0].id);
+
+    const heroHTML = isFirstTime ? `
+      <div class="hero welcome">
+        <h1>👋 Welcome to your Learning Hub</h1>
+        <p>Two tracks. One discipline. From beginner to expert in <strong>data structures &amp; problem solving</strong> and <strong>system design</strong>.</p>
+        <div class="lede">
+          <span>📚 ${order.length} topics</span>
+          <span>⏱ 5-minute reads + deep dives</span>
+          <span>⌨️ Keyboard-first</span>
+          <span>📊 Progress saved locally</span>
+        </div>
+        <a class="cta" href="#/${startId}">Start with the Roadmap →</a>
+      </div>
+    ` : `
       <div class="hero">
         <h1>📚 Learning Hub</h1>
-        <p>Two tracks. One discipline. From beginner to expert in <strong>data structures &amp; problem solving</strong> and <strong>system design</strong>.</p>
+        <p>Pick a track. Mark topics complete as you go. Press <span class="kbd">?</span> for keyboard shortcuts.</p>
       </div>
+    `;
+
+    main.innerHTML = `
+      ${heroHTML}
+      ${continueCard}
       <h2>Tracks</h2>
       <div class="cards">${trackCards}</div>
-      ${recentHTML}
-      <h2>Keyboard shortcuts</h2>
-      <table class="shortcut-table">
-        <tr><td><span class="kbd">/</span></td><td>focus search</td></tr>
-        <tr><td><span class="kbd">j</span> / <span class="kbd">k</span></td><td>next / previous topic</td></tr>
-        <tr><td><span class="kbd">m</span></td><td>mark current as complete</td></tr>
-        <tr><td><span class="kbd">t</span></td><td>toggle theme</td></tr>
-        <tr><td><span class="kbd">g</span> <span class="kbd">h</span></td><td>go home</td></tr>
-        <tr><td><span class="kbd">Esc</span></td><td>blur search</td></tr>
-      </table>
+      ${moreRecentHTML}
     `;
+    updateReadingProgress();
+    updateBackToTop();
   }
 
   // --- main route --- //
@@ -1286,13 +1778,23 @@ APP_JS = r"""
     let gHeld = false;
     let gTimer = null;
     document.addEventListener("keydown", e => {
+      // close modals on Esc regardless of focus target
+      if (e.key === "Escape" && isAnyModalOpen()) {
+        e.preventDefault();
+        closeAllModals();
+        return;
+      }
       if (e.target.matches("input, textarea")) {
         if (e.key === "Escape") e.target.blur();
         return;
       }
+      if (isAnyModalOpen()) return;
       if (e.key === "/") {
         e.preventDefault();
         document.getElementById("search-input").focus();
+      } else if (e.key === "?") {
+        e.preventDefault();
+        showModal("help-modal");
       } else if (e.key === "j") {
         if (!currentId) return;
         const it = byId.get(currentId);
@@ -1324,6 +1826,124 @@ APP_JS = r"""
     return String(s ?? "").replace(/[&<>"']/g, c => ({
       "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
     }[c]));
+  }
+  function escapeClass(s) {
+    // produce a CSS-class-safe token from a tag value
+    return String(s ?? "").toLowerCase().replace(/[^a-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "");
+  }
+
+  // --- reading progress bar --- //
+  function updateReadingProgress() {
+    const bar = document.querySelector(".reading-progress > span");
+    if (!bar) return;
+    const h = document.documentElement;
+    const max = (h.scrollHeight - h.clientHeight) || 1;
+    const pct = Math.min(100, Math.max(0, (h.scrollTop / max) * 100));
+    bar.style.width = pct + "%";
+  }
+
+  // --- back to top button --- //
+  function updateBackToTop() {
+    const btn = document.getElementById("back-to-top");
+    if (!btn) return;
+    btn.classList.toggle("visible", window.scrollY > 400);
+  }
+
+  // --- auto-mark on scroll --- //
+  function armAutoMark(item) {
+    if (autoMarkTimer) {
+      clearTimeout(autoMarkTimer);
+      autoMarkTimer = null;
+    }
+    if (!getAutoMark() || !item || isDone(item.id)) return;
+    // checked from main scroll listener instead of separate observer
+    armAutoMark.itemId = item.id;
+  }
+  function checkAutoMark() {
+    if (!getAutoMark()) return;
+    const id = armAutoMark.itemId;
+    if (!id || id !== currentId || isDone(id)) return;
+    const h = document.documentElement;
+    const max = (h.scrollHeight - h.clientHeight) || 1;
+    const pct = (h.scrollTop / max) * 100;
+    if (pct >= 90) {
+      toggleDone(id);
+      const btn = document.getElementById("mark-done-btn");
+      if (btn) {
+        btn.className = "btn done";
+        btn.innerHTML = "✓ Completed";
+      }
+      refreshSidebarProgress();
+      showToast(`Auto-marked: ${byId.get(id).title}`, "info");
+      armAutoMark.itemId = null;
+    }
+  }
+
+  // --- modal & button wiring --- //
+  function wireModals() {
+    document.querySelectorAll("[data-modal-close]").forEach(el => {
+      el.addEventListener("click", () => {
+        const m = el.closest(".modal");
+        if (m) closeModal(m.id);
+      });
+    });
+    const helpBtn = document.getElementById("help-btn");
+    if (helpBtn) helpBtn.addEventListener("click", () => showModal("help-modal"));
+    const settingsBtn = document.getElementById("settings-btn");
+    if (settingsBtn) settingsBtn.addEventListener("click", openSettings);
+  }
+  function openSettings() {
+    const cb = document.getElementById("setting-auto-mark");
+    if (cb) cb.checked = getAutoMark();
+    showModal("settings-modal");
+  }
+  function wireSettings() {
+    const cb = document.getElementById("setting-auto-mark");
+    if (cb) {
+      cb.addEventListener("change", () => {
+        setAutoMark(cb.checked);
+        showToast(cb.checked ? "Auto-mark enabled" : "Auto-mark disabled", "info");
+      });
+    }
+    const reset = document.getElementById("reset-progress-btn");
+    if (reset) {
+      reset.addEventListener("click", () => {
+        if (!confirm("Reset all progress? This will clear completed topics, recents, and open tracks. Cannot be undone.")) return;
+        try { localStorage.removeItem(LS_DONE); } catch {}
+        try { localStorage.removeItem(LS_RECENT); } catch {}
+        try { localStorage.removeItem(LS_OPEN); } catch {}
+        try { localStorage.removeItem(LS_AUTO_MARK); } catch {}
+        const cb2 = document.getElementById("setting-auto-mark");
+        if (cb2) cb2.checked = false;
+        buildSidebar();
+        refreshSidebarProgress();
+        route();
+        closeModal("settings-modal");
+        showToast("Progress reset", "info");
+      });
+    }
+    const exp = document.getElementById("export-progress-btn");
+    if (exp) {
+      exp.addEventListener("click", () => {
+        const data = {
+          exportedAt: new Date().toISOString(),
+          done: [...getDone()],
+          recent: getRecent(),
+          openTracks: [...getOpenTracks()],
+          autoMark: getAutoMark()
+        };
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `learning-hub-progress-${new Date().toISOString().slice(0,10)}.json`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        showToast("Progress exported", "info");
+      });
+    }
   }
 
   // --- bootstrap --- //
@@ -1362,6 +1982,34 @@ APP_JS = r"""
       }
     });
 
+    // sidebar backdrop click closes mobile sidebar
+    const backdrop = document.getElementById("sidebar-backdrop");
+    if (backdrop) backdrop.addEventListener("click", () => {
+      document.body.dataset.sidebar = "";
+    });
+
+    // reading progress + back-to-top + auto-mark on scroll
+    let ticking = false;
+    window.addEventListener("scroll", () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        updateReadingProgress();
+        updateBackToTop();
+        checkAutoMark();
+        ticking = false;
+      });
+    }, { passive: true });
+
+    // back-to-top button
+    const btt = document.getElementById("back-to-top");
+    if (btt) btt.addEventListener("click", () => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+
+    wireModals();
+    wireSettings();
+
     setupKeys();
     route();
   }
@@ -1380,27 +2028,93 @@ SHELL_HTML = """<!DOCTYPE html>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Learning Hub</title>
+  <meta name="description" content="DSA and System Design — a beginner-to-expert learning hub with progress tracking, search, and keyboard shortcuts.">
+  <meta name="theme-color" content="#0d1117">
+  <meta property="og:title" content="Learning Hub — DSA & System Design">
+  <meta property="og:description" content="Beginner-to-expert curriculum with interactive navigation, progress tracking, and keyboard shortcuts.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://srikanth-chinnu.github.io/learning-hub/">
   <link rel="stylesheet" href="assets/style.css">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%9A%3C/text%3E%3C/svg%3E">
 </head>
 <body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div class="reading-progress" aria-hidden="true"><span></span></div>
   <header class="topbar">
-    <a href="#/" class="brand">📚 Learning Hub</a>
-    <button class="icon-btn sidebar-toggle" id="sidebar-toggle" title="Toggle sidebar">☰</button>
+    <a href="#/" class="brand" title="Home">📚 Learning Hub</a>
+    <button class="icon-btn sidebar-toggle" id="sidebar-toggle" title="Toggle sidebar" aria-label="Toggle sidebar">☰</button>
     <div class="search">
-      <input id="search-input" type="text" placeholder="Search topics  (press /)" autocomplete="off">
+      <input id="search-input" type="text" placeholder="Search topics  (press /)" autocomplete="off" aria-label="Search topics">
     </div>
-    <div class="progress-pill" id="global-progress" title="Total progress">
+    <div class="progress-pill" id="global-progress" title="Overall progress">
       <span class="pct">0/0 · 0%</span>
       <div class="bar"><span style="width:0%"></span></div>
     </div>
-    <button class="icon-btn" id="theme-toggle" title="Toggle theme (t)">☀️</button>
+    <button class="icon-btn" id="help-btn" title="Keyboard shortcuts (press ?)" aria-label="Keyboard shortcuts">?</button>
+    <button class="icon-btn" id="settings-btn" title="Settings" aria-label="Settings">⚙</button>
+    <button class="icon-btn" id="theme-toggle" title="Toggle theme (t)" aria-label="Toggle theme">☀️</button>
   </header>
+  <div class="sidebar-backdrop" id="sidebar-backdrop" aria-hidden="true"></div>
   <div class="layout">
-    <aside class="sidebar" id="sidebar"></aside>
-    <main class="content" id="content"></main>
-    <aside class="toc-rail" id="toc-rail"></aside>
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+    <main class="content" id="content" tabindex="-1"></main>
+    <aside class="toc-rail" id="toc-rail" aria-label="On this page"></aside>
   </div>
+  <button class="back-to-top" id="back-to-top" title="Back to top" aria-label="Back to top">↑</button>
+
+  <div class="modal" id="help-modal" role="dialog" aria-modal="true" aria-labelledby="help-modal-title" aria-hidden="true">
+    <div class="modal-backdrop" data-modal-close></div>
+    <div class="modal-card" role="document">
+      <header class="modal-head">
+        <h2 id="help-modal-title">Keyboard shortcuts</h2>
+        <button class="icon-btn" data-modal-close aria-label="Close">✕</button>
+      </header>
+      <table class="shortcut-table">
+        <tr><td><span class="kbd">/</span></td><td>focus search</td></tr>
+        <tr><td><span class="kbd">j</span> / <span class="kbd">k</span></td><td>next / previous topic</td></tr>
+        <tr><td><span class="kbd">m</span></td><td>mark current topic complete</td></tr>
+        <tr><td><span class="kbd">t</span></td><td>toggle dark / light theme</td></tr>
+        <tr><td><span class="kbd">g</span> <span class="kbd">h</span></td><td>go home</td></tr>
+        <tr><td><span class="kbd">?</span></td><td>show this help</td></tr>
+        <tr><td><span class="kbd">Esc</span></td><td>close dialog / blur search</td></tr>
+      </table>
+      <p class="modal-foot">Tip: hold <span class="kbd">g</span> then press <span class="kbd">h</span> within 0.8s.</p>
+    </div>
+  </div>
+
+  <div class="modal" id="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settings-modal-title" aria-hidden="true">
+    <div class="modal-backdrop" data-modal-close></div>
+    <div class="modal-card" role="document">
+      <header class="modal-head">
+        <h2 id="settings-modal-title">Settings</h2>
+        <button class="icon-btn" data-modal-close aria-label="Close">✕</button>
+      </header>
+      <div class="setting-row">
+        <div>
+          <strong>Auto-mark complete on scroll</strong>
+          <p class="setting-help">Mark topics complete after you scroll through 90%.</p>
+        </div>
+        <label class="switch"><input type="checkbox" id="setting-auto-mark"><span></span></label>
+      </div>
+      <div class="setting-row">
+        <div>
+          <strong>Reset all progress</strong>
+          <p class="setting-help">Clears completed topics, recents, and open tracks. Cannot be undone.</p>
+        </div>
+        <button class="btn danger" id="reset-progress-btn">Reset</button>
+      </div>
+      <div class="setting-row">
+        <div>
+          <strong>Export progress</strong>
+          <p class="setting-help">Download your progress as a JSON file.</p>
+        </div>
+        <button class="btn" id="export-progress-btn">Download</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-stack" id="toasts" aria-live="polite" aria-atomic="false"></div>
+
   <script src="assets/app.js"></script>
 </body>
 </html>

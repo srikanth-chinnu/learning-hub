@@ -4,12 +4,14 @@
   const LS_THEME = "lh:theme";
   const LS_RECENT = "lh:recent";
   const LS_OPEN = "lh:open";
+  const LS_AUTO_MARK = "lh:auto-mark";
 
   let manifest = null;
   let byId = new Map();   // id -> item
   let order = [];         // ordered ids
   let currentId = null;
   let scrollSpyObserver = null;
+  let autoMarkTimer = null;
 
   // --- localStorage helpers --- //
   const lsGet = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } };
@@ -33,6 +35,42 @@
 
   function getOpenTracks() { return new Set(lsGet(LS_OPEN, ["roadmap", "dsa", "sd"])); }
   function setOpenTracks(s) { lsSet(LS_OPEN, [...s]); }
+
+  function getAutoMark() { return !!lsGet(LS_AUTO_MARK, false); }
+  function setAutoMark(v) { lsSet(LS_AUTO_MARK, !!v); }
+
+  // --- toast notifications --- //
+  function showToast(msg, kind) {
+    const stack = document.getElementById("toasts");
+    if (!stack) return;
+    const el = document.createElement("div");
+    el.className = "toast" + (kind ? " " + kind : "");
+    el.textContent = msg;
+    stack.appendChild(el);
+    setTimeout(() => el.remove(), 3000);
+  }
+
+  // --- modals --- //
+  function showModal(id) {
+    const m = document.getElementById(id);
+    if (!m) return;
+    m.classList.add("open");
+    m.setAttribute("aria-hidden", "false");
+    const focusable = m.querySelector("button, input, [tabindex]");
+    if (focusable) focusable.focus();
+  }
+  function closeModal(id) {
+    const m = document.getElementById(id);
+    if (!m) return;
+    m.classList.remove("open");
+    m.setAttribute("aria-hidden", "true");
+  }
+  function closeAllModals() {
+    document.querySelectorAll(".modal.open").forEach(m => closeModal(m.id));
+  }
+  function isAnyModalOpen() {
+    return document.querySelector(".modal.open") !== null;
+  }
 
   // --- theme --- //
   function applyTheme(t) {
@@ -113,6 +151,16 @@
           gt.className = "group-title";
           gt.textContent = group.title;
           body.appendChild(gt);
+
+          // group progress bar
+          const gDone = group.items.filter(it => done.has(it.id)).length;
+          const gTotal = group.items.length;
+          const gPct = gTotal ? Math.round((gDone / gTotal) * 100) : 0;
+          const gBar = document.createElement("div");
+          gBar.className = "group-bar";
+          gBar.dataset.group = `${track.id}::${group.title}`;
+          gBar.innerHTML = `<span style="width:${gPct}%"></span>`;
+          body.appendChild(gBar);
         }
         for (const it of group.items) {
           const a = document.createElement("a");
@@ -121,7 +169,8 @@
           a.dataset.itemId = it.id;
           if (done.has(it.id)) a.classList.add("done");
           if (currentId === it.id) a.classList.add("active");
-          a.innerHTML = `<span class="check"></span><span>${escape(it.title)}</span>`;
+          const meta = it.read_min ? `<span class="item-meta">${it.read_min} min read</span>` : "";
+          a.innerHTML = `<span class="check"></span><span class="title-line">${escape(it.title)}</span>${meta}`;
           body.appendChild(a);
         }
       }
@@ -150,6 +199,17 @@
       const dn = trackItems.filter(it => done.has(it.id)).length;
       const prog = tr.querySelector(".track-progress");
       if (prog) prog.textContent = `${dn}/${trackItems.length}`;
+
+      // group bars
+      for (const g of track.groups) {
+        const sel = `[data-group="${id}::${g.title.replace(/"/g, '\\"')}"]`;
+        const bar = tr.querySelector(sel + " > span");
+        if (bar) {
+          const gd = g.items.filter(it => done.has(it.id)).length;
+          const gPct = g.items.length ? Math.round((gd / g.items.length) * 100) : 0;
+          bar.style.width = gPct + "%";
+        }
+      }
     });
     refreshTopbarProgress();
   }
@@ -261,16 +321,21 @@
     const item = byId.get(id);
     const main = document.getElementById("content");
     if (!item) {
+      document.title = "Not found · Learning Hub";
       main.innerHTML = `<h1>Not found</h1><p>The page <code>${escape(id)}</code> doesn't exist. <a href="#/">Go home</a>.</p>`;
       currentId = null;
       buildTOC([]);
+      updateBackToTop();
       return;
     }
 
     currentId = id;
+    document.title = item.title + " · Learning Hub";
     main.classList.remove("fade-in");
     void main.offsetWidth;
     main.classList.add("fade-in");
+
+    main.innerHTML = `<div class="loading active"><div class="spinner"></div><span>Loading ${escape(item.title)}…</span></div>`;
 
     try {
       const html = await fetchFragment(item.src);
@@ -280,6 +345,7 @@
       bc.id = "breadcrumb";
 
       const actions = makeActions(item);
+      const meta = makePageMeta(item);
 
       const article = document.createElement("article");
       article.className = "md";
@@ -290,6 +356,7 @@
       main.innerHTML = "";
       main.appendChild(bc);
       main.appendChild(actions);
+      if (meta) main.appendChild(meta);
       main.appendChild(article);
       main.appendChild(prevnext);
 
@@ -298,6 +365,7 @@
       setupScrollSpy(item.anchors);
       highlightSidebar();
       pushRecent(id);
+      armAutoMark(item);
 
       if (anchor) {
         const el = document.getElementById(anchor);
@@ -309,9 +377,23 @@
       } else {
         window.scrollTo({ top: 0 });
       }
+      updateReadingProgress();
+      updateBackToTop();
     } catch (e) {
-      main.innerHTML = `<h1>Error</h1><p>${escape(e.message)}</p>`;
+      main.innerHTML = `<h1>Error loading content</h1><p>${escape(e.message)}</p><p><a href="#/">Go home</a></p>`;
+      showToast("Failed to load: " + e.message, "error");
     }
+  }
+
+  function makePageMeta(item) {
+    const parts = [];
+    if (item.read_min) parts.push(`<span class="read-time">${item.read_min} min read</span>`);
+    if (item.words)    parts.push(`<span class="word-count">${item.words.toLocaleString()} words</span>`);
+    if (parts.length === 0) return null;
+    const m = document.createElement("div");
+    m.className = "page-meta";
+    m.innerHTML = parts.join('<span class="dot">·</span>');
+    return m;
   }
 
   function makeActions(item) {
@@ -328,12 +410,13 @@
       btn.className = "btn " + (now ? "done" : "primary");
       btn.innerHTML = now ? "✓ Completed" : "Mark as complete";
       refreshSidebarProgress();
+      showToast(now ? `Marked complete: ${item.title}` : `Unmarked: ${item.title}`, now ? null : "info");
     });
     wrap.appendChild(btn);
 
     if (item.tag) {
       const tag = document.createElement("span");
-      tag.className = "tag";
+      tag.className = "tag " + escapeClass(item.tag);
       tag.textContent = item.tag;
       wrap.appendChild(tag);
     }
@@ -371,6 +454,7 @@
   function renderHome() {
     const main = document.getElementById("content");
     currentId = null;
+    document.title = "Learning Hub — DSA & System Design";
     main.classList.remove("fade-in");
     void main.offsetWidth;
     main.classList.add("fade-in");
@@ -380,6 +464,7 @@
 
     const done = getDone();
     const recent = getRecent().map(id => byId.get(id)).filter(Boolean);
+    const isFirstTime = done.size === 0 && recent.length === 0;
 
     const trackCards = manifest.tracks.map(t => {
       const items = t.groups.flatMap(g => g.items);
@@ -398,36 +483,61 @@
         </div>`;
     }).join("");
 
-    const recentHTML = recent.length === 0 ? "" : `
-      <h2>Pick up where you left off</h2>
+    const continueCard = recent.length === 0 ? "" : `
+      <div class="continue-card">
+        <div class="ico">📖</div>
+        <div class="body">
+          <div class="label">Continue where you left off</div>
+          <h3>${escape(recent[0].title)}</h3>
+          <p class="desc">${escape(recent[0].summary || "")}</p>
+        </div>
+        <a class="btn primary" href="#/${recent[0].id}">Resume →</a>
+      </div>
+    `;
+
+    const moreRecentHTML = recent.length <= 1 ? "" : `
+      <h2>Recently viewed</h2>
       <div class="cards">
-        ${recent.map(it => `
+        ${recent.slice(1).map(it => `
           <div class="card recent">
             <h3>${escape(it.title)}</h3>
             <p>${escape(it.summary || "")}</p>
-            <a class="go" href="#/${it.id}">Resume →</a>
+            <a class="go" href="#/${it.id}">Open →</a>
           </div>`).join("")}
       </div>
     `;
 
-    main.innerHTML = `
+    const roadmap = manifest.tracks.find(t => t.id === "roadmap");
+    const startId = roadmap ? roadmap.groups[0].items[0].id : (manifest.tracks[0].groups[0].items[0].id);
+
+    const heroHTML = isFirstTime ? `
+      <div class="hero welcome">
+        <h1>👋 Welcome to your Learning Hub</h1>
+        <p>Two tracks. One discipline. From beginner to expert in <strong>data structures &amp; problem solving</strong> and <strong>system design</strong>.</p>
+        <div class="lede">
+          <span>📚 ${order.length} topics</span>
+          <span>⏱ 5-minute reads + deep dives</span>
+          <span>⌨️ Keyboard-first</span>
+          <span>📊 Progress saved locally</span>
+        </div>
+        <a class="cta" href="#/${startId}">Start with the Roadmap →</a>
+      </div>
+    ` : `
       <div class="hero">
         <h1>📚 Learning Hub</h1>
-        <p>Two tracks. One discipline. From beginner to expert in <strong>data structures &amp; problem solving</strong> and <strong>system design</strong>.</p>
+        <p>Pick a track. Mark topics complete as you go. Press <span class="kbd">?</span> for keyboard shortcuts.</p>
       </div>
+    `;
+
+    main.innerHTML = `
+      ${heroHTML}
+      ${continueCard}
       <h2>Tracks</h2>
       <div class="cards">${trackCards}</div>
-      ${recentHTML}
-      <h2>Keyboard shortcuts</h2>
-      <table class="shortcut-table">
-        <tr><td><span class="kbd">/</span></td><td>focus search</td></tr>
-        <tr><td><span class="kbd">j</span> / <span class="kbd">k</span></td><td>next / previous topic</td></tr>
-        <tr><td><span class="kbd">m</span></td><td>mark current as complete</td></tr>
-        <tr><td><span class="kbd">t</span></td><td>toggle theme</td></tr>
-        <tr><td><span class="kbd">g</span> <span class="kbd">h</span></td><td>go home</td></tr>
-        <tr><td><span class="kbd">Esc</span></td><td>blur search</td></tr>
-      </table>
+      ${moreRecentHTML}
     `;
+    updateReadingProgress();
+    updateBackToTop();
   }
 
   // --- main route --- //
@@ -445,13 +555,23 @@
     let gHeld = false;
     let gTimer = null;
     document.addEventListener("keydown", e => {
+      // close modals on Esc regardless of focus target
+      if (e.key === "Escape" && isAnyModalOpen()) {
+        e.preventDefault();
+        closeAllModals();
+        return;
+      }
       if (e.target.matches("input, textarea")) {
         if (e.key === "Escape") e.target.blur();
         return;
       }
+      if (isAnyModalOpen()) return;
       if (e.key === "/") {
         e.preventDefault();
         document.getElementById("search-input").focus();
+      } else if (e.key === "?") {
+        e.preventDefault();
+        showModal("help-modal");
       } else if (e.key === "j") {
         if (!currentId) return;
         const it = byId.get(currentId);
@@ -483,6 +603,124 @@
     return String(s ?? "").replace(/[&<>"']/g, c => ({
       "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
     }[c]));
+  }
+  function escapeClass(s) {
+    // produce a CSS-class-safe token from a tag value
+    return String(s ?? "").toLowerCase().replace(/[^a-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "");
+  }
+
+  // --- reading progress bar --- //
+  function updateReadingProgress() {
+    const bar = document.querySelector(".reading-progress > span");
+    if (!bar) return;
+    const h = document.documentElement;
+    const max = (h.scrollHeight - h.clientHeight) || 1;
+    const pct = Math.min(100, Math.max(0, (h.scrollTop / max) * 100));
+    bar.style.width = pct + "%";
+  }
+
+  // --- back to top button --- //
+  function updateBackToTop() {
+    const btn = document.getElementById("back-to-top");
+    if (!btn) return;
+    btn.classList.toggle("visible", window.scrollY > 400);
+  }
+
+  // --- auto-mark on scroll --- //
+  function armAutoMark(item) {
+    if (autoMarkTimer) {
+      clearTimeout(autoMarkTimer);
+      autoMarkTimer = null;
+    }
+    if (!getAutoMark() || !item || isDone(item.id)) return;
+    // checked from main scroll listener instead of separate observer
+    armAutoMark.itemId = item.id;
+  }
+  function checkAutoMark() {
+    if (!getAutoMark()) return;
+    const id = armAutoMark.itemId;
+    if (!id || id !== currentId || isDone(id)) return;
+    const h = document.documentElement;
+    const max = (h.scrollHeight - h.clientHeight) || 1;
+    const pct = (h.scrollTop / max) * 100;
+    if (pct >= 90) {
+      toggleDone(id);
+      const btn = document.getElementById("mark-done-btn");
+      if (btn) {
+        btn.className = "btn done";
+        btn.innerHTML = "✓ Completed";
+      }
+      refreshSidebarProgress();
+      showToast(`Auto-marked: ${byId.get(id).title}`, "info");
+      armAutoMark.itemId = null;
+    }
+  }
+
+  // --- modal & button wiring --- //
+  function wireModals() {
+    document.querySelectorAll("[data-modal-close]").forEach(el => {
+      el.addEventListener("click", () => {
+        const m = el.closest(".modal");
+        if (m) closeModal(m.id);
+      });
+    });
+    const helpBtn = document.getElementById("help-btn");
+    if (helpBtn) helpBtn.addEventListener("click", () => showModal("help-modal"));
+    const settingsBtn = document.getElementById("settings-btn");
+    if (settingsBtn) settingsBtn.addEventListener("click", openSettings);
+  }
+  function openSettings() {
+    const cb = document.getElementById("setting-auto-mark");
+    if (cb) cb.checked = getAutoMark();
+    showModal("settings-modal");
+  }
+  function wireSettings() {
+    const cb = document.getElementById("setting-auto-mark");
+    if (cb) {
+      cb.addEventListener("change", () => {
+        setAutoMark(cb.checked);
+        showToast(cb.checked ? "Auto-mark enabled" : "Auto-mark disabled", "info");
+      });
+    }
+    const reset = document.getElementById("reset-progress-btn");
+    if (reset) {
+      reset.addEventListener("click", () => {
+        if (!confirm("Reset all progress? This will clear completed topics, recents, and open tracks. Cannot be undone.")) return;
+        try { localStorage.removeItem(LS_DONE); } catch {}
+        try { localStorage.removeItem(LS_RECENT); } catch {}
+        try { localStorage.removeItem(LS_OPEN); } catch {}
+        try { localStorage.removeItem(LS_AUTO_MARK); } catch {}
+        const cb2 = document.getElementById("setting-auto-mark");
+        if (cb2) cb2.checked = false;
+        buildSidebar();
+        refreshSidebarProgress();
+        route();
+        closeModal("settings-modal");
+        showToast("Progress reset", "info");
+      });
+    }
+    const exp = document.getElementById("export-progress-btn");
+    if (exp) {
+      exp.addEventListener("click", () => {
+        const data = {
+          exportedAt: new Date().toISOString(),
+          done: [...getDone()],
+          recent: getRecent(),
+          openTracks: [...getOpenTracks()],
+          autoMark: getAutoMark()
+        };
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `learning-hub-progress-${new Date().toISOString().slice(0,10)}.json`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        showToast("Progress exported", "info");
+      });
+    }
   }
 
   // --- bootstrap --- //
@@ -520,6 +758,34 @@
         document.body.dataset.sidebar = "";
       }
     });
+
+    // sidebar backdrop click closes mobile sidebar
+    const backdrop = document.getElementById("sidebar-backdrop");
+    if (backdrop) backdrop.addEventListener("click", () => {
+      document.body.dataset.sidebar = "";
+    });
+
+    // reading progress + back-to-top + auto-mark on scroll
+    let ticking = false;
+    window.addEventListener("scroll", () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        updateReadingProgress();
+        updateBackToTop();
+        checkAutoMark();
+        ticking = false;
+      });
+    }, { passive: true });
+
+    // back-to-top button
+    const btt = document.getElementById("back-to-top");
+    if (btt) btt.addEventListener("click", () => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+
+    wireModals();
+    wireSettings();
 
     setupKeys();
     route();

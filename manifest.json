@@ -61,6 +61,8 @@
               ],
               "summary": "You have ~63 KB of DSA curriculum + a system design curriculum + a tradeoffs report, all sitting in a folder. None of that is progress. Progress = problems solved + designs explained out loud.",
               "tag": "plan",
+              "words": 989,
+              "read_min": 4,
               "order": 0,
               "prev": null,
               "next": "dsa/full"
@@ -505,6 +507,8 @@
               ],
               "summary": "1. Don't read linearly. Pick the tier matching your current ceiling. If you cannot solve LeetCode Mediums consistently, you belong in Tier 1–2 regardless of years of experience. 2. One read = one topic = one solved…",
               "tag": "curriculum",
+              "words": 9657,
+              "read_min": 44,
               "order": 1,
               "prev": "roadmap/main",
               "next": "sd/overview"
@@ -599,6 +603,8 @@
               ],
               "summary": "The 5-minute-reads/ folder contains 20 short, focused primers — each designed to be read in 5 minutes or less while giving you a working understanding of one concept.",
               "tag": "overview",
+              "words": 890,
+              "read_min": 4,
               "order": 2,
               "prev": "dsa/full",
               "next": "sd/tier-beginner"
@@ -756,6 +762,8 @@
               ],
               "summary": "By the end of Phase 1 you'll be able to: - Explain DNS, HTTP, TCP, UDP, load balancers, and CDN like a pro - Reason about vertical vs horizontal scaling and stateless services - Choose between SQL and NoSQL with sound…",
               "tag": "tier-1",
+              "words": 1194,
+              "read_min": 5,
               "order": 3,
               "prev": "sd/overview",
               "next": "sd/tier-intermediate"
@@ -888,6 +896,8 @@
               ],
               "summary": "By the end of Phase 2 you'll be able to: - Design Twitter, WhatsApp, Uber, and YouTube at a credible level - Choose data models, partitioning strategies, and caching layers deliberately - Reason about trade-offs in…",
               "tag": "tier-2",
+              "words": 1399,
+              "read_min": 6,
               "order": 4,
               "prev": "sd/tier-beginner",
               "next": "sd/tier-advanced"
@@ -1165,6 +1175,8 @@
               ],
               "summary": "This is where you stop being someone who uses distributed systems and start being someone who understands them.",
               "tag": "tier-3",
+              "words": 1754,
+              "read_min": 8,
               "order": 5,
               "prev": "sd/tier-intermediate",
               "next": "sd/tier-expert"
@@ -1292,6 +1304,8 @@
               ],
               "summary": "There's no graduation. Expertise compounds with every system you ship and every post-mortem you read.",
               "tag": "tier-4",
+              "words": 1873,
+              "read_min": 9,
               "order": 6,
               "prev": "sd/tier-advanced",
               "next": "sd/tradeoffs"
@@ -1754,6 +1768,8 @@
               ],
               "summary": "There is exactly one correct answer to almost every system-design interview question, and it is \"it depends — on what?\" The job of a senior engineer is not to know which technology is \"best.\" It is to identify the two…",
               "tag": "deep-dive",
+              "words": 8898,
+              "read_min": 40,
               "order": 7,
               "prev": "sd/tier-expert",
               "next": "sd/5min/index"
@@ -1826,6 +1842,8 @@
               ],
               "summary": "Each read includes: - 🎯 TL;DR — the one-line takeaway - 📖 Plain English explanation - 🔑 Key trade-offs - 🏗️ Real-world example - 🚦 When to use / when NOT to use - 🔗 Where to dig deeper",
               "tag": "index",
+              "words": 533,
+              "read_min": 2,
               "order": 8,
               "prev": "sd/tradeoffs",
               "next": "sd/5min/what-is-system-design"
@@ -1878,6 +1896,8 @@
               ],
               "summary": "When you write a small program, you're solving a problem. When you do system design, you're solving a problem and answering questions like:",
               "tag": "5-min",
+              "words": 563,
+              "read_min": 3,
               "order": 9,
               "prev": "sd/5min/index",
               "next": "sd/5min/scalability-basics"
@@ -1945,6 +1965,8 @@
               ],
               "summary": "Your app is becoming popular. Two roads to handle the traffic:",
               "tag": "5-min",
+              "words": 601,
+              "read_min": 3,
               "order": 10,
               "prev": "sd/5min/what-is-system-design",
               "next": "sd/5min/latency-vs-throughput"
@@ -2002,6 +2024,8 @@
               ],
               "summary": "Imagine a coffee shop:",
               "tag": "5-min",
+              "words": 620,
+              "read_min": 3,
               "order": 11,
               "prev": "sd/5min/scalability-basics",
               "next": "sd/5min/api-styles"
@@ -2079,6 +2103,8 @@
               ],
               "summary": "When two computers talk to each other over the network, they need a protocol. Three popular choices for application APIs:",
               "tag": "5-min",
+              "words": 538,
+              "read_min": 2,
               "order": 12,
               "prev": "sd/5min/latency-vs-throughput",
               "next": "sd/5min/sql-vs-nosql"
@@ -2151,6 +2177,8 @@
               ],
               "summary": "These have almost nothing in common with each other except \"not SQL.\"",
               "tag": "5-min",
+              "words": 696,
+              "read_min": 3,
               "order": 13,
               "prev": "sd/5min/api-styles",
               "next": "sd/5min/load-balancing"
@@ -2218,6 +2246,8 @@
               ],
               "summary": "You have 10 backend servers. A user sends a request. Where does it go?",
               "tag": "5-min",
+              "words": 658,
+              "read_min": 3,
               "order": 14,
               "prev": "sd/5min/sql-vs-nosql",
               "next": "sd/5min/caching"
@@ -2305,6 +2335,8 @@
               ],
               "summary": "Your database query takes 50ms. Same query 1 million times = a slow service.",
               "tag": "5-min",
+              "words": 735,
+              "read_min": 3,
               "order": 15,
               "prev": "sd/5min/load-balancing",
               "next": "sd/5min/cdn"
@@ -2392,6 +2424,8 @@
               ],
               "summary": "Your web server is in Virginia. A user in Tokyo loads your site. The packets must cross the Pacific (≈150ms each way). Multiply by 50 assets (CSS, JS, images) and the page is slow.",
               "tag": "5-min",
+              "words": 660,
+              "read_min": 3,
               "order": 16,
               "prev": "sd/5min/caching",
               "next": "sd/5min/database-replication"
@@ -2484,6 +2518,8 @@
               ],
               "summary": "You have one database. Two problems:",
               "tag": "5-min",
+              "words": 656,
+              "read_min": 3,
               "order": 17,
               "prev": "sd/5min/cdn",
               "next": "sd/5min/database-sharding"
@@ -2591,6 +2627,8 @@
               ],
               "summary": "Replication gave us many copies of the same data — great for reads, useless for writes. All writes still go to one primary.",
               "tag": "5-min",
+              "words": 744,
+              "read_min": 3,
               "order": 18,
               "prev": "sd/5min/database-replication",
               "next": "sd/5min/consistent-hashing"
@@ -2673,6 +2711,8 @@
               ],
               "summary": "You have 4 cache servers. You assign keys: server = hash(key) % 4.",
               "tag": "5-min",
+              "words": 729,
+              "read_min": 3,
               "order": 19,
               "prev": "sd/5min/database-sharding",
               "next": "sd/5min/microservices"
@@ -2750,6 +2790,8 @@
               ],
               "summary": "A monolith has nasty in-codebase complexity: tangled modules, shared dependencies, slow build times, fear of changing anything.",
               "tag": "5-min",
+              "words": 720,
+              "read_min": 3,
               "order": 20,
               "prev": "sd/5min/consistent-hashing",
               "next": "sd/5min/message-queues"
@@ -2852,6 +2894,8 @@
               ],
               "summary": "A user uploads a video on YouTube. What happens?",
               "tag": "5-min",
+              "words": 740,
+              "read_min": 3,
               "order": 21,
               "prev": "sd/5min/microservices",
               "next": "sd/5min/rate-limiting"
@@ -2964,6 +3008,8 @@
               ],
               "summary": "Without rate limiting: - A buggy client retries forever in a tight loop → DDoS yourself - A malicious bot scrapes your API → cost explosion - One customer accidentally floods → harms all other customers",
               "tag": "5-min",
+              "words": 808,
+              "read_min": 4,
               "order": 22,
               "prev": "sd/5min/message-queues",
               "next": "sd/5min/cap-theorem"
@@ -3056,6 +3102,8 @@
               ],
               "summary": "CAP says: a distributed system can guarantee at most two of:",
               "tag": "5-min",
+              "words": 755,
+              "read_min": 3,
               "order": 23,
               "prev": "sd/5min/rate-limiting",
               "next": "sd/5min/consistency-models"
@@ -3143,6 +3191,8 @@
               ],
               "summary": "When two people read the same data on different servers, what should they see?",
               "tag": "5-min",
+              "words": 756,
+              "read_min": 3,
               "order": 24,
               "prev": "sd/5min/cap-theorem",
               "next": "sd/5min/consensus-raft-paxos"
@@ -3230,6 +3280,8 @@
               ],
               "summary": "You have 5 servers. They need to agree: \"what's the next entry in our log?\"",
               "tag": "5-min",
+              "words": 923,
+              "read_min": 4,
               "order": 25,
               "prev": "sd/5min/consistency-models",
               "next": "sd/5min/event-driven-and-saga"
@@ -3332,6 +3384,8 @@
               ],
               "summary": "If any service is slow or down, the whole chain fails.",
               "tag": "5-min",
+              "words": 774,
+              "read_min": 4,
               "order": 26,
               "prev": "sd/5min/consensus-raft-paxos",
               "next": "sd/5min/resilience-patterns"
@@ -3449,6 +3503,8 @@
               ],
               "summary": "You have 10 microservices. Service B starts responding slowly. Service A calls B, A's threads pile up waiting. Service C calls A, C's threads pile up waiting. The whole system grinds to a halt.",
               "tag": "5-min",
+              "words": 884,
+              "read_min": 4,
               "order": 27,
               "prev": "sd/5min/event-driven-and-saga",
               "next": "sd/5min/observability"
@@ -3526,6 +3582,8 @@
               ],
               "summary": "A user reports: \"The site is slow.\" You have 100 microservices. Where's the problem?",
               "tag": "5-min",
+              "words": 943,
+              "read_min": 4,
               "order": 28,
               "prev": "sd/5min/resilience-patterns",
               "next": "sd/books"
@@ -3678,6 +3736,8 @@
               ],
               "summary": "← Back to System Design home",
               "tag": "reference",
+              "words": 1435,
+              "read_min": 7,
               "order": 29,
               "prev": "sd/5min/observability",
               "next": "sd/repos"
@@ -3840,6 +3900,8 @@
               ],
               "summary": "GitHub is just one channel. Don't forget: - YouTube: ByteByteGo, Gaurav Sen, Hussein Nasser, codeKarle, Tech Dummies - Books: DDIA (Kleppmann), System Design Interview (Xu), Database Internals (Petrov), Building…",
               "tag": "reference",
+              "words": 1098,
+              "read_min": 5,
               "order": 30,
               "prev": "sd/books",
               "next": "sd/papers"
@@ -4137,6 +4199,8 @@
               ],
               "summary": "1. First pass (15 min): Abstract → Introduction → Conclusion. What's the problem? What's the contribution? 2. Second pass (1-2 hours): Read figures, key sections. Skip proofs first time. 3. Third pass (multi-day):…",
               "tag": "reference",
+              "words": 1904,
+              "read_min": 9,
               "order": 31,
               "prev": "sd/repos",
               "next": null
@@ -4200,6 +4264,8 @@
       ],
       "summary": "You have ~63 KB of DSA curriculum + a system design curriculum + a tradeoffs report, all sitting in a folder. None of that is progress. Progress = problems solved + designs explained out loud.",
       "tag": "plan",
+      "words": 989,
+      "read_min": 4,
       "order": 0,
       "prev": null,
       "next": "dsa/full"
@@ -4632,6 +4698,8 @@
       ],
       "summary": "1. Don't read linearly. Pick the tier matching your current ceiling. If you cannot solve LeetCode Mediums consistently, you belong in Tier 1–2 regardless of years of experience. 2. One read = one topic = one solved…",
       "tag": "curriculum",
+      "words": 9657,
+      "read_min": 44,
       "order": 1,
       "prev": "roadmap/main",
       "next": "sd/overview"
@@ -4714,6 +4782,8 @@
       ],
       "summary": "The 5-minute-reads/ folder contains 20 short, focused primers — each designed to be read in 5 minutes or less while giving you a working understanding of one concept.",
       "tag": "overview",
+      "words": 890,
+      "read_min": 4,
       "order": 2,
       "prev": "dsa/full",
       "next": "sd/tier-beginner"
@@ -4866,6 +4936,8 @@
       ],
       "summary": "By the end of Phase 1 you'll be able to: - Explain DNS, HTTP, TCP, UDP, load balancers, and CDN like a pro - Reason about vertical vs horizontal scaling and stateless services - Choose between SQL and NoSQL with sound…",
       "tag": "tier-1",
+      "words": 1194,
+      "read_min": 5,
       "order": 3,
       "prev": "sd/overview",
       "next": "sd/tier-intermediate"
@@ -4998,6 +5070,8 @@
       ],
       "summary": "By the end of Phase 2 you'll be able to: - Design Twitter, WhatsApp, Uber, and YouTube at a credible level - Choose data models, partitioning strategies, and caching layers deliberately - Reason about trade-offs in…",
       "tag": "tier-2",
+      "words": 1399,
+      "read_min": 6,
       "order": 4,
       "prev": "sd/tier-beginner",
       "next": "sd/tier-advanced"
@@ -5275,6 +5349,8 @@
       ],
       "summary": "This is where you stop being someone who uses distributed systems and start being someone who understands them.",
       "tag": "tier-3",
+      "words": 1754,
+      "read_min": 8,
       "order": 5,
       "prev": "sd/tier-intermediate",
       "next": "sd/tier-expert"
@@ -5402,6 +5478,8 @@
       ],
       "summary": "There's no graduation. Expertise compounds with every system you ship and every post-mortem you read.",
       "tag": "tier-4",
+      "words": 1873,
+      "read_min": 9,
       "order": 6,
       "prev": "sd/tier-advanced",
       "next": "sd/tradeoffs"
@@ -5859,6 +5937,8 @@
       ],
       "summary": "There is exactly one correct answer to almost every system-design interview question, and it is \"it depends — on what?\" The job of a senior engineer is not to know which technology is \"best.\" It is to identify the two…",
       "tag": "deep-dive",
+      "words": 8898,
+      "read_min": 40,
       "order": 7,
       "prev": "sd/tier-expert",
       "next": "sd/5min/index"
@@ -5926,6 +6006,8 @@
       ],
       "summary": "Each read includes: - 🎯 TL;DR — the one-line takeaway - 📖 Plain English explanation - 🔑 Key trade-offs - 🏗️ Real-world example - 🚦 When to use / when NOT to use - 🔗 Where to dig deeper",
       "tag": "index",
+      "words": 533,
+      "read_min": 2,
       "order": 8,
       "prev": "sd/tradeoffs",
       "next": "sd/5min/what-is-system-design"
@@ -5978,6 +6060,8 @@
       ],
       "summary": "When you write a small program, you're solving a problem. When you do system design, you're solving a problem and answering questions like:",
       "tag": "5-min",
+      "words": 563,
+      "read_min": 3,
       "order": 9,
       "prev": "sd/5min/index",
       "next": "sd/5min/scalability-basics"
@@ -6045,6 +6129,8 @@
       ],
       "summary": "Your app is becoming popular. Two roads to handle the traffic:",
       "tag": "5-min",
+      "words": 601,
+      "read_min": 3,
       "order": 10,
       "prev": "sd/5min/what-is-system-design",
       "next": "sd/5min/latency-vs-throughput"
@@ -6102,6 +6188,8 @@
       ],
       "summary": "Imagine a coffee shop:",
       "tag": "5-min",
+      "words": 620,
+      "read_min": 3,
       "order": 11,
       "prev": "sd/5min/scalability-basics",
       "next": "sd/5min/api-styles"
@@ -6179,6 +6267,8 @@
       ],
       "summary": "When two computers talk to each other over the network, they need a protocol. Three popular choices for application APIs:",
       "tag": "5-min",
+      "words": 538,
+      "read_min": 2,
       "order": 12,
       "prev": "sd/5min/latency-vs-throughput",
       "next": "sd/5min/sql-vs-nosql"
@@ -6251,6 +6341,8 @@
       ],
       "summary": "These have almost nothing in common with each other except \"not SQL.\"",
       "tag": "5-min",
+      "words": 696,
+      "read_min": 3,
       "order": 13,
       "prev": "sd/5min/api-styles",
       "next": "sd/5min/load-balancing"
@@ -6318,6 +6410,8 @@
       ],
       "summary": "You have 10 backend servers. A user sends a request. Where does it go?",
       "tag": "5-min",
+      "words": 658,
+      "read_min": 3,
       "order": 14,
       "prev": "sd/5min/sql-vs-nosql",
       "next": "sd/5min/caching"
@@ -6405,6 +6499,8 @@
       ],
       "summary": "Your database query takes 50ms. Same query 1 million times = a slow service.",
       "tag": "5-min",
+      "words": 735,
+      "read_min": 3,
       "order": 15,
       "prev": "sd/5min/load-balancing",
       "next": "sd/5min/cdn"
@@ -6492,6 +6588,8 @@
       ],
       "summary": "Your web server is in Virginia. A user in Tokyo loads your site. The packets must cross the Pacific (≈150ms each way). Multiply by 50 assets (CSS, JS, images) and the page is slow.",
       "tag": "5-min",
+      "words": 660,
+      "read_min": 3,
       "order": 16,
       "prev": "sd/5min/caching",
       "next": "sd/5min/database-replication"
@@ -6584,6 +6682,8 @@
       ],
       "summary": "You have one database. Two problems:",
       "tag": "5-min",
+      "words": 656,
+      "read_min": 3,
       "order": 17,
       "prev": "sd/5min/cdn",
       "next": "sd/5min/database-sharding"
@@ -6691,6 +6791,8 @@
       ],
       "summary": "Replication gave us many copies of the same data — great for reads, useless for writes. All writes still go to one primary.",
       "tag": "5-min",
+      "words": 744,
+      "read_min": 3,
       "order": 18,
       "prev": "sd/5min/database-replication",
       "next": "sd/5min/consistent-hashing"
@@ -6773,6 +6875,8 @@
       ],
       "summary": "You have 4 cache servers. You assign keys: server = hash(key) % 4.",
       "tag": "5-min",
+      "words": 729,
+      "read_min": 3,
       "order": 19,
       "prev": "sd/5min/database-sharding",
       "next": "sd/5min/microservices"
@@ -6850,6 +6954,8 @@
       ],
       "summary": "A monolith has nasty in-codebase complexity: tangled modules, shared dependencies, slow build times, fear of changing anything.",
       "tag": "5-min",
+      "words": 720,
+      "read_min": 3,
       "order": 20,
       "prev": "sd/5min/consistent-hashing",
       "next": "sd/5min/message-queues"
@@ -6952,6 +7058,8 @@
       ],
       "summary": "A user uploads a video on YouTube. What happens?",
       "tag": "5-min",
+      "words": 740,
+      "read_min": 3,
       "order": 21,
       "prev": "sd/5min/microservices",
       "next": "sd/5min/rate-limiting"
@@ -7064,6 +7172,8 @@
       ],
       "summary": "Without rate limiting: - A buggy client retries forever in a tight loop → DDoS yourself - A malicious bot scrapes your API → cost explosion - One customer accidentally floods → harms all other customers",
       "tag": "5-min",
+      "words": 808,
+      "read_min": 4,
       "order": 22,
       "prev": "sd/5min/message-queues",
       "next": "sd/5min/cap-theorem"
@@ -7156,6 +7266,8 @@
       ],
       "summary": "CAP says: a distributed system can guarantee at most two of:",
       "tag": "5-min",
+      "words": 755,
+      "read_min": 3,
       "order": 23,
       "prev": "sd/5min/rate-limiting",
       "next": "sd/5min/consistency-models"
@@ -7243,6 +7355,8 @@
       ],
       "summary": "When two people read the same data on different servers, what should they see?",
       "tag": "5-min",
+      "words": 756,
+      "read_min": 3,
       "order": 24,
       "prev": "sd/5min/cap-theorem",
       "next": "sd/5min/consensus-raft-paxos"
@@ -7330,6 +7444,8 @@
       ],
       "summary": "You have 5 servers. They need to agree: \"what's the next entry in our log?\"",
       "tag": "5-min",
+      "words": 923,
+      "read_min": 4,
       "order": 25,
       "prev": "sd/5min/consistency-models",
       "next": "sd/5min/event-driven-and-saga"
@@ -7432,6 +7548,8 @@
       ],
       "summary": "If any service is slow or down, the whole chain fails.",
       "tag": "5-min",
+      "words": 774,
+      "read_min": 4,
       "order": 26,
       "prev": "sd/5min/consensus-raft-paxos",
       "next": "sd/5min/resilience-patterns"
@@ -7549,6 +7667,8 @@
       ],
       "summary": "You have 10 microservices. Service B starts responding slowly. Service A calls B, A's threads pile up waiting. Service C calls A, C's threads pile up waiting. The whole system grinds to a halt.",
       "tag": "5-min",
+      "words": 884,
+      "read_min": 4,
       "order": 27,
       "prev": "sd/5min/event-driven-and-saga",
       "next": "sd/5min/observability"
@@ -7626,6 +7746,8 @@
       ],
       "summary": "A user reports: \"The site is slow.\" You have 100 microservices. Where's the problem?",
       "tag": "5-min",
+      "words": 943,
+      "read_min": 4,
       "order": 28,
       "prev": "sd/5min/resilience-patterns",
       "next": "sd/books"
@@ -7773,6 +7895,8 @@
       ],
       "summary": "← Back to System Design home",
       "tag": "reference",
+      "words": 1435,
+      "read_min": 7,
       "order": 29,
       "prev": "sd/5min/observability",
       "next": "sd/repos"
@@ -7935,6 +8059,8 @@
       ],
       "summary": "GitHub is just one channel. Don't forget: - YouTube: ByteByteGo, Gaurav Sen, Hussein Nasser, codeKarle, Tech Dummies - Books: DDIA (Kleppmann), System Design Interview (Xu), Database Internals (Petrov), Building…",
       "tag": "reference",
+      "words": 1098,
+      "read_min": 5,
       "order": 30,
       "prev": "sd/books",
       "next": "sd/papers"
@@ -8232,6 +8358,8 @@
       ],
       "summary": "1. First pass (15 min): Abstract → Introduction → Conclusion. What's the problem? What's the contribution? 2. Second pass (1-2 hours): Read figures, key sections. Skip proofs first time. 3. Third pass (multi-day):…",
       "tag": "reference",
+      "words": 1904,
+      "read_min": 9,
       "order": 31,
       "prev": "sd/repos",
       "next": null

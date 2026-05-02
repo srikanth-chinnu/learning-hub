@@ -4,27 +4,93 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Learning Hub</title>
+  <meta name="description" content="DSA and System Design — a beginner-to-expert learning hub with progress tracking, search, and keyboard shortcuts.">
+  <meta name="theme-color" content="#0d1117">
+  <meta property="og:title" content="Learning Hub — DSA & System Design">
+  <meta property="og:description" content="Beginner-to-expert curriculum with interactive navigation, progress tracking, and keyboard shortcuts.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://srikanth-chinnu.github.io/learning-hub/">
   <link rel="stylesheet" href="assets/style.css">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%9A%3C/text%3E%3C/svg%3E">
 </head>
 <body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div class="reading-progress" aria-hidden="true"><span></span></div>
   <header class="topbar">
-    <a href="#/" class="brand">📚 Learning Hub</a>
-    <button class="icon-btn sidebar-toggle" id="sidebar-toggle" title="Toggle sidebar">☰</button>
+    <a href="#/" class="brand" title="Home">📚 Learning Hub</a>
+    <button class="icon-btn sidebar-toggle" id="sidebar-toggle" title="Toggle sidebar" aria-label="Toggle sidebar">☰</button>
     <div class="search">
-      <input id="search-input" type="text" placeholder="Search topics  (press /)" autocomplete="off">
+      <input id="search-input" type="text" placeholder="Search topics  (press /)" autocomplete="off" aria-label="Search topics">
     </div>
-    <div class="progress-pill" id="global-progress" title="Total progress">
+    <div class="progress-pill" id="global-progress" title="Overall progress">
       <span class="pct">0/0 · 0%</span>
       <div class="bar"><span style="width:0%"></span></div>
     </div>
-    <button class="icon-btn" id="theme-toggle" title="Toggle theme (t)">☀️</button>
+    <button class="icon-btn" id="help-btn" title="Keyboard shortcuts (press ?)" aria-label="Keyboard shortcuts">?</button>
+    <button class="icon-btn" id="settings-btn" title="Settings" aria-label="Settings">⚙</button>
+    <button class="icon-btn" id="theme-toggle" title="Toggle theme (t)" aria-label="Toggle theme">☀️</button>
   </header>
+  <div class="sidebar-backdrop" id="sidebar-backdrop" aria-hidden="true"></div>
   <div class="layout">
-    <aside class="sidebar" id="sidebar"></aside>
-    <main class="content" id="content"></main>
-    <aside class="toc-rail" id="toc-rail"></aside>
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+    <main class="content" id="content" tabindex="-1"></main>
+    <aside class="toc-rail" id="toc-rail" aria-label="On this page"></aside>
   </div>
+  <button class="back-to-top" id="back-to-top" title="Back to top" aria-label="Back to top">↑</button>
+
+  <div class="modal" id="help-modal" role="dialog" aria-modal="true" aria-labelledby="help-modal-title" aria-hidden="true">
+    <div class="modal-backdrop" data-modal-close></div>
+    <div class="modal-card" role="document">
+      <header class="modal-head">
+        <h2 id="help-modal-title">Keyboard shortcuts</h2>
+        <button class="icon-btn" data-modal-close aria-label="Close">✕</button>
+      </header>
+      <table class="shortcut-table">
+        <tr><td><span class="kbd">/</span></td><td>focus search</td></tr>
+        <tr><td><span class="kbd">j</span> / <span class="kbd">k</span></td><td>next / previous topic</td></tr>
+        <tr><td><span class="kbd">m</span></td><td>mark current topic complete</td></tr>
+        <tr><td><span class="kbd">t</span></td><td>toggle dark / light theme</td></tr>
+        <tr><td><span class="kbd">g</span> <span class="kbd">h</span></td><td>go home</td></tr>
+        <tr><td><span class="kbd">?</span></td><td>show this help</td></tr>
+        <tr><td><span class="kbd">Esc</span></td><td>close dialog / blur search</td></tr>
+      </table>
+      <p class="modal-foot">Tip: hold <span class="kbd">g</span> then press <span class="kbd">h</span> within 0.8s.</p>
+    </div>
+  </div>
+
+  <div class="modal" id="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settings-modal-title" aria-hidden="true">
+    <div class="modal-backdrop" data-modal-close></div>
+    <div class="modal-card" role="document">
+      <header class="modal-head">
+        <h2 id="settings-modal-title">Settings</h2>
+        <button class="icon-btn" data-modal-close aria-label="Close">✕</button>
+      </header>
+      <div class="setting-row">
+        <div>
+          <strong>Auto-mark complete on scroll</strong>
+          <p class="setting-help">Mark topics complete after you scroll through 90%.</p>
+        </div>
+        <label class="switch"><input type="checkbox" id="setting-auto-mark"><span></span></label>
+      </div>
+      <div class="setting-row">
+        <div>
+          <strong>Reset all progress</strong>
+          <p class="setting-help">Clears completed topics, recents, and open tracks. Cannot be undone.</p>
+        </div>
+        <button class="btn danger" id="reset-progress-btn">Reset</button>
+      </div>
+      <div class="setting-row">
+        <div>
+          <strong>Export progress</strong>
+          <p class="setting-help">Download your progress as a JSON file.</p>
+        </div>
+        <button class="btn" id="export-progress-btn">Download</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-stack" id="toasts" aria-live="polite" aria-atomic="false"></div>
+
   <script src="assets/app.js"></script>
 </body>
 </html>
