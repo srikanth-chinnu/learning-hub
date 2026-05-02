@@ -2752,8 +2752,10 @@ APP_JS = r"""
     const panel = document.getElementById("ap-panel");
     const input = document.getElementById("ap-input");
     if (!scrim || !panel || !input) return;
-    scrim.hidden = false;
-    panel.hidden = false;
+    scrim.style.display = "block";
+    panel.style.display = "flex";
+    scrim.removeAttribute("hidden");
+    panel.removeAttribute("hidden");
     document.body.classList.add("ap-open");
     input.value = "";
     renderSearchResults("");
@@ -2764,8 +2766,10 @@ APP_JS = r"""
     const scrim = document.getElementById("ap-scrim");
     const panel = document.getElementById("ap-panel");
     if (!scrim || !panel) return;
-    scrim.hidden = true;
-    panel.hidden = true;
+    scrim.style.display = "none";
+    panel.style.display = "none";
+    scrim.setAttribute("hidden", "");
+    panel.setAttribute("hidden", "");
     document.body.classList.remove("ap-open");
     searchHover = -1;
     searchResultsCache = [];
@@ -2773,7 +2777,8 @@ APP_JS = r"""
 
   function isSearchPanelOpen() {
     const panel = document.getElementById("ap-panel");
-    return panel && !panel.hidden;
+    if (!panel) return false;
+    return panel.style.display === "flex" || (!panel.hasAttribute("hidden") && panel.style.display !== "none");
   }
 
   function moveSearchHover(delta) {
@@ -2959,8 +2964,8 @@ SHELL_HTML = """<!DOCTYPE html>
   <button class="ap-fab" id="ap-fab" title="Search articles (Cmd/Ctrl+K)" aria-label="Open search">
     <span class="ap-fab-icon">🔎</span><span class="ap-fab-text">Search</span>
   </button>
-  <div class="ap-scrim" id="ap-scrim" hidden></div>
-  <div class="ap-panel" id="ap-panel" role="dialog" aria-modal="true" aria-label="Search articles" hidden>
+  <div class="ap-scrim" id="ap-scrim" hidden style="display:none"></div>
+  <div class="ap-panel" id="ap-panel" role="dialog" aria-modal="true" aria-label="Search articles" hidden style="display:none">
     <header class="ap-head">
       <span class="ap-head-icon">🔎</span>
       <input id="ap-input" type="text" placeholder="Search 52 articles — try caching, dijkstra, cap theorem…" autocomplete="off" spellcheck="false" aria-label="Search query">

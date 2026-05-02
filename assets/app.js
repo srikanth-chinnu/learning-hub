@@ -856,8 +856,10 @@
     const panel = document.getElementById("ap-panel");
     const input = document.getElementById("ap-input");
     if (!scrim || !panel || !input) return;
-    scrim.hidden = false;
-    panel.hidden = false;
+    scrim.style.display = "block";
+    panel.style.display = "flex";
+    scrim.removeAttribute("hidden");
+    panel.removeAttribute("hidden");
     document.body.classList.add("ap-open");
     input.value = "";
     renderSearchResults("");
@@ -868,8 +870,10 @@
     const scrim = document.getElementById("ap-scrim");
     const panel = document.getElementById("ap-panel");
     if (!scrim || !panel) return;
-    scrim.hidden = true;
-    panel.hidden = true;
+    scrim.style.display = "none";
+    panel.style.display = "none";
+    scrim.setAttribute("hidden", "");
+    panel.setAttribute("hidden", "");
     document.body.classList.remove("ap-open");
     searchHover = -1;
     searchResultsCache = [];
@@ -877,7 +881,8 @@
 
   function isSearchPanelOpen() {
     const panel = document.getElementById("ap-panel");
-    return panel && !panel.hidden;
+    if (!panel) return false;
+    return panel.style.display === "flex" || (!panel.hasAttribute("hidden") && panel.style.display !== "none");
   }
 
   function moveSearchHover(delta) {
