@@ -38,6 +38,25 @@
   </div>
   <button class="back-to-top" id="back-to-top" title="Back to top" aria-label="Back to top">↑</button>
 
+  <button class="ap-fab" id="ap-fab" title="Search articles (Cmd/Ctrl+K)" aria-label="Open search">
+    <span class="ap-fab-icon">🔎</span><span class="ap-fab-text">Search</span>
+  </button>
+  <div class="ap-scrim" id="ap-scrim" hidden></div>
+  <div class="ap-panel" id="ap-panel" role="dialog" aria-modal="true" aria-label="Search articles" hidden>
+    <header class="ap-head">
+      <span class="ap-head-icon">🔎</span>
+      <input id="ap-input" type="text" placeholder="Search 52 articles — try caching, dijkstra, cap theorem…" autocomplete="off" spellcheck="false" aria-label="Search query">
+      <button class="ap-close" id="ap-close" aria-label="Close">✕</button>
+    </header>
+    <div class="ap-results" id="ap-results"></div>
+    <footer class="ap-foot">
+      <span><span class="kbd">↑</span><span class="kbd">↓</span> navigate</span>
+      <span><span class="kbd">Enter</span> open</span>
+      <span><span class="kbd">Esc</span> close</span>
+      <span class="ap-foot-right">Local search · no AI · no tracking</span>
+    </footer>
+  </div>
+
   <div class="modal" id="help-modal" role="dialog" aria-modal="true" aria-labelledby="help-modal-title" aria-hidden="true">
     <div class="modal-backdrop" data-modal-close></div>
     <div class="modal-card" role="document">
@@ -46,7 +65,8 @@
         <button class="icon-btn" data-modal-close aria-label="Close">✕</button>
       </header>
       <table class="shortcut-table">
-        <tr><td><span class="kbd">/</span></td><td>focus search</td></tr>
+        <tr><td><span class="kbd">Cmd</span>/<span class="kbd">Ctrl</span>+<span class="kbd">K</span></td><td>open search</td></tr>
+        <tr><td><span class="kbd">/</span></td><td>focus sidebar filter</td></tr>
         <tr><td><span class="kbd">j</span> / <span class="kbd">k</span></td><td>next / previous topic</td></tr>
         <tr><td><span class="kbd">m</span></td><td>mark current topic complete</td></tr>
         <tr><td><span class="kbd">t</span></td><td>toggle dark / light theme</td></tr>

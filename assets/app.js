@@ -564,7 +564,19 @@
     let gHeld = false;
     let gTimer = null;
     document.addEventListener("keydown", e => {
-      // close modals on Esc regardless of focus target
+      // Cmd/Ctrl+K opens the search panel (works even when typing in inputs)
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        if (isSearchPanelOpen()) closeSearchPanel();
+        else openSearchPanel();
+        return;
+      }
+      // close modals/search on Esc regardless of focus target
+      if (e.key === "Escape" && isSearchPanelOpen()) {
+        e.preventDefault();
+        closeSearchPanel();
+        return;
+      }
       if (e.key === "Escape" && isAnyModalOpen()) {
         e.preventDefault();
         closeAllModals();
@@ -574,7 +586,7 @@
         if (e.key === "Escape") e.target.blur();
         return;
       }
-      if (isAnyModalOpen()) return;
+      if (isAnyModalOpen() || isSearchPanelOpen()) return;
       if (e.key === "/") {
         e.preventDefault();
         document.getElementById("search-input").focus();
@@ -733,6 +745,205 @@
   }
 
   // --- bootstrap --- //
+  // --- search panel (floating "Ask" widget) --- //
+  let searchIndex = null;
+  let searchHover = -1;
+  let searchResultsCache = [];
+
+  function buildSearchIndex() {
+    if (searchIndex) return searchIndex;
+    searchIndex = manifest.flat.map(it => ({
+      item: it,
+      titleLow: (it.title || "").toLowerCase(),
+      sumLow: (it.summary || "").toLowerCase(),
+      idLow: (it.id || "").toLowerCase(),
+      tagLow: (it.tag || "").toLowerCase(),
+      anchors: (it.anchors || []).map(a => ({
+        id: a.id || "",
+        text: a.text || "",
+        textLow: (a.text || "").toLowerCase(),
+        level: a.level || 2
+      }))
+    }));
+    return searchIndex;
+  }
+
+  function searchQuery(q) {
+    const idx = buildSearchIndex();
+    const trimmed = q.trim().toLowerCase();
+    if (!trimmed) return [];
+    const terms = trimmed.split(/\s+/).filter(Boolean);
+    const results = [];
+    for (const e of idx) {
+      let score = 0;
+      let bestAnchor = null;
+      let bestAnchorScore = 0;
+      for (const t of terms) {
+        if (e.titleLow.includes(t)) score += 6;
+        if (e.titleLow.startsWith(t)) score += 3;
+        if (e.sumLow.includes(t)) score += 2;
+        if (e.idLow.includes(t)) score += 1;
+        if (e.tagLow.includes(t)) score += 1;
+        for (const a of e.anchors) {
+          if (a.textLow.includes(t)) {
+            score += 3;
+            const aScore = a.textLow.startsWith(t) ? 2 : 1;
+            if (aScore > bestAnchorScore) {
+              bestAnchorScore = aScore;
+              bestAnchor = a;
+            }
+          }
+        }
+      }
+      if (score > 0) {
+        results.push({ item: e.item, score, anchor: bestAnchor });
+      }
+    }
+    results.sort((a, b) => b.score - a.score || a.item.title.localeCompare(b.item.title));
+    return results.slice(0, 12);
+  }
+
+  function trackOf(itemId) {
+    return manifest.tracks.find(t => t.groups.some(g => g.items.some(i => i.id === itemId)));
+  }
+
+  function renderSearchResults(query) {
+    const list = document.getElementById("ap-results");
+    const results = searchQuery(query);
+    searchResultsCache = results;
+    searchHover = results.length ? 0 : -1;
+
+    if (!query.trim()) {
+      list.innerHTML = `
+        <div class="ap-empty">
+          <div class="ap-empty-title">Search across ${manifest.flat.length} articles</div>
+          <div class="ap-empty-help">Try: <button class="ap-chip" data-q="caching">caching</button>
+            <button class="ap-chip" data-q="cap theorem">cap theorem</button>
+            <button class="ap-chip" data-q="dijkstra">dijkstra</button>
+            <button class="ap-chip" data-q="two pointers">two pointers</button>
+            <button class="ap-chip" data-q="rate limiting">rate limiting</button>
+            <button class="ap-chip" data-q="dp">dp</button>
+          </div>
+        </div>`;
+      return;
+    }
+    if (!results.length) {
+      list.innerHTML = `<div class="ap-empty"><div class="ap-empty-title">No matches for "${escape(query)}"</div>
+        <div class="ap-empty-help">Try a shorter or different keyword.</div></div>`;
+      return;
+    }
+    const done = getDone();
+    list.innerHTML = results.map((r, i) => {
+      const it = r.item;
+      const tr = trackOf(it.id);
+      const trackLabel = tr ? `${tr.icon} ${escape(tr.title)}` : "";
+      const diff = it.difficulty ? `<span class="diff-dot diff-${it.difficulty}"></span><span class="ap-diff-name">${it.difficulty.replace('-', ' ')}</span>` : "";
+      const time = it.read_min ? `<span class="ap-min">⏱ ${it.read_min} min</span>` : "";
+      const doneMark = done.has(it.id) ? `<span class="ap-done" title="Completed">✓</span>` : "";
+      const anchor = r.anchor ? `<div class="ap-anchor">↳ jumps to <strong>${escape(r.anchor.text)}</strong></div>` : "";
+      const summary = it.summary ? `<div class="ap-summary">${escape(it.summary)}</div>` : "";
+      const href = r.anchor ? `#/${it.id}#${r.anchor.id}` : `#/${it.id}`;
+      return `<a class="ap-result${i === searchHover ? ' ap-hover' : ''}" data-i="${i}" href="${href}">
+        <div class="ap-row1"><span class="ap-title">${escape(it.title)}</span>${doneMark}</div>
+        <div class="ap-row2"><span class="ap-track">${trackLabel}</span>${diff}${time}</div>
+        ${anchor}${summary}
+      </a>`;
+    }).join("");
+  }
+
+  function openSearchPanel() {
+    const scrim = document.getElementById("ap-scrim");
+    const panel = document.getElementById("ap-panel");
+    const input = document.getElementById("ap-input");
+    if (!scrim || !panel || !input) return;
+    scrim.hidden = false;
+    panel.hidden = false;
+    document.body.classList.add("ap-open");
+    input.value = "";
+    renderSearchResults("");
+    setTimeout(() => input.focus(), 10);
+  }
+
+  function closeSearchPanel() {
+    const scrim = document.getElementById("ap-scrim");
+    const panel = document.getElementById("ap-panel");
+    if (!scrim || !panel) return;
+    scrim.hidden = true;
+    panel.hidden = true;
+    document.body.classList.remove("ap-open");
+    searchHover = -1;
+    searchResultsCache = [];
+  }
+
+  function isSearchPanelOpen() {
+    const panel = document.getElementById("ap-panel");
+    return panel && !panel.hidden;
+  }
+
+  function moveSearchHover(delta) {
+    if (!searchResultsCache.length) return;
+    searchHover = (searchHover + delta + searchResultsCache.length) % searchResultsCache.length;
+    document.querySelectorAll("#ap-results .ap-result").forEach((el, i) => {
+      el.classList.toggle("ap-hover", i === searchHover);
+      if (i === searchHover) el.scrollIntoView({ block: "nearest" });
+    });
+  }
+
+  function activateHoveredResult() {
+    if (searchHover < 0 || searchHover >= searchResultsCache.length) return;
+    const r = searchResultsCache[searchHover];
+    const href = r.anchor ? `#/${r.item.id}#${r.anchor.id}` : `#/${r.item.id}`;
+    location.hash = href;
+    closeSearchPanel();
+  }
+
+  function wireSearchPanel() {
+    const fab = document.getElementById("ap-fab");
+    const scrim = document.getElementById("ap-scrim");
+    const input = document.getElementById("ap-input");
+    const list = document.getElementById("ap-results");
+    const closeBtn = document.getElementById("ap-close");
+    if (!fab || !scrim || !input || !list) return;
+
+    fab.addEventListener("click", openSearchPanel);
+    scrim.addEventListener("click", closeSearchPanel);
+    if (closeBtn) closeBtn.addEventListener("click", closeSearchPanel);
+
+    input.addEventListener("input", e => renderSearchResults(e.target.value));
+    input.addEventListener("keydown", e => {
+      if (e.key === "ArrowDown") { e.preventDefault(); moveSearchHover(+1); }
+      else if (e.key === "ArrowUp") { e.preventDefault(); moveSearchHover(-1); }
+      else if (e.key === "Enter")   { e.preventDefault(); activateHoveredResult(); }
+      else if (e.key === "Escape")  { e.preventDefault(); closeSearchPanel(); }
+    });
+
+    list.addEventListener("mousemove", e => {
+      const r = e.target.closest(".ap-result");
+      if (!r) return;
+      const i = parseInt(r.dataset.i, 10);
+      if (i !== searchHover) {
+        searchHover = i;
+        document.querySelectorAll("#ap-results .ap-result").forEach((el, j) => {
+          el.classList.toggle("ap-hover", j === searchHover);
+        });
+      }
+    });
+    list.addEventListener("click", e => {
+      const chip = e.target.closest(".ap-chip");
+      if (chip) {
+        e.preventDefault();
+        input.value = chip.dataset.q;
+        renderSearchResults(input.value);
+        input.focus();
+        return;
+      }
+      const r = e.target.closest(".ap-result");
+      if (r) {
+        setTimeout(closeSearchPanel, 0);
+      }
+    });
+  }
+
   async function init() {
     applyTheme(lsGet(LS_THEME, "dark"));
     document.getElementById("theme-toggle").addEventListener("click", toggleTheme);
@@ -795,6 +1006,7 @@
 
     wireModals();
     wireSettings();
+    wireSearchPanel();
 
     setupKeys();
     route();

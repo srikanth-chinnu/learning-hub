@@ -1756,6 +1756,141 @@ body[data-sidebar="open"] .sidebar-backdrop { display: block; }
 .welcome-prompt h3 { margin: 0 0 2px; font-size: 15px; }
 .welcome-prompt p { margin: 0; font-size: 13px; color: var(--text-dim); }
 .welcome-prompt .actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+/* ---- Search panel (floating Ask widget) ---- */
+.ap-fab {
+  position: fixed; right: 24px; bottom: 24px; z-index: 80;
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 18px; border-radius: 999px; border: 0;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff; font-weight: 600; font-size: 14px; cursor: pointer;
+  box-shadow: 0 10px 28px rgba(99,102,241,.35), 0 4px 10px rgba(0,0,0,.2);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.ap-fab:hover { transform: translateY(-2px); box-shadow: 0 14px 36px rgba(99,102,241,.5), 0 4px 10px rgba(0,0,0,.25); }
+.ap-fab:active { transform: translateY(0); }
+.ap-fab-icon { font-size: 18px; }
+.ap-fab-text { letter-spacing: 0.2px; }
+body.ap-open .ap-fab { display: none; }
+@media (max-width: 720px) {
+  .ap-fab { right: 16px; bottom: 16px; padding: 12px 14px; }
+  .ap-fab-text { display: none; }
+}
+
+.ap-scrim {
+  position: fixed; inset: 0; z-index: 95;
+  background: rgba(8, 10, 18, 0.55);
+  backdrop-filter: blur(2px);
+  animation: ap-fade .15s ease;
+}
+@keyframes ap-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ap-pop { from { opacity: 0; transform: translate(-50%, -45%) scale(.96); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+
+.ap-panel {
+  position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  z-index: 100;
+  width: min(720px, calc(100vw - 32px));
+  max-height: min(640px, calc(100vh - 64px));
+  background: var(--bg-elev); color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 30px 80px rgba(0,0,0,.45), 0 8px 20px rgba(0,0,0,.3);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  animation: ap-pop .18s ease;
+}
+.ap-head {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-elev);
+}
+.ap-head-icon { font-size: 18px; opacity: .7; }
+#ap-input {
+  flex: 1; min-width: 0;
+  padding: 8px 4px; border: 0; outline: 0; background: transparent;
+  color: var(--text); font-size: 16px;
+}
+#ap-input::placeholder { color: var(--text-dim); }
+.ap-close {
+  border: 0; background: transparent; color: var(--text-dim);
+  width: 32px; height: 32px; border-radius: 8px;
+  cursor: pointer; font-size: 16px;
+}
+.ap-close:hover { background: var(--bg-elev-2); color: var(--text); }
+
+.ap-results {
+  flex: 1; overflow-y: auto;
+  padding: 8px;
+}
+.ap-result {
+  display: block; text-decoration: none; color: inherit;
+  padding: 12px 14px; margin-bottom: 4px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  transition: background .12s ease, border-color .12s ease;
+}
+.ap-result.ap-hover, .ap-result:hover {
+  background: var(--bg-elev-2);
+  border-color: var(--border);
+}
+.ap-row1 { display: flex; align-items: center; gap: 8px; }
+.ap-title { font-weight: 600; font-size: 15px; color: var(--text); }
+.ap-done { color: #10b981; font-weight: 700; font-size: 13px; }
+.ap-row2 {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  margin-top: 4px; font-size: 12px; color: var(--text-dim);
+}
+.ap-track { font-weight: 500; }
+.ap-diff-name { text-transform: capitalize; }
+.ap-min { font-variant-numeric: tabular-nums; }
+.ap-anchor {
+  margin-top: 6px; font-size: 13px;
+  color: var(--accent);
+}
+.ap-anchor strong { color: var(--accent); }
+.ap-summary {
+  margin-top: 6px; font-size: 13px; line-height: 1.5;
+  color: var(--text-dim);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.ap-empty {
+  padding: 28px 18px; text-align: center; color: var(--text-dim);
+}
+.ap-empty-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 12px; }
+.ap-empty-help { font-size: 13px; line-height: 2.2; }
+.ap-chip {
+  display: inline-block; margin: 2px 4px;
+  padding: 4px 10px;
+  border-radius: 999px; border: 1px solid var(--border);
+  background: var(--bg-elev-2); color: var(--text);
+  font-size: 12px; cursor: pointer;
+}
+.ap-chip:hover { border-color: var(--accent); color: var(--accent); }
+
+.ap-foot {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--border);
+  font-size: 11px; color: var(--text-dim);
+  background: var(--bg-elev);
+}
+.ap-foot .kbd {
+  font-size: 10px; padding: 1px 6px;
+}
+.ap-foot-right { margin-left: auto; opacity: .8; }
+@media (max-width: 540px) {
+  .ap-panel { width: calc(100vw - 16px); max-height: calc(100vh - 32px); }
+  .ap-foot { flex-wrap: wrap; gap: 8px; }
+  .ap-foot-right { margin-left: 0; width: 100%; text-align: right; }
+}
+
+/* hide ap-fab in print mode */
+@media print {
+  .ap-fab, .ap-scrim, .ap-panel { display: none !important; }
+}
 """
 
 APP_JS = r"""
@@ -2324,7 +2459,19 @@ APP_JS = r"""
     let gHeld = false;
     let gTimer = null;
     document.addEventListener("keydown", e => {
-      // close modals on Esc regardless of focus target
+      // Cmd/Ctrl+K opens the search panel (works even when typing in inputs)
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        if (isSearchPanelOpen()) closeSearchPanel();
+        else openSearchPanel();
+        return;
+      }
+      // close modals/search on Esc regardless of focus target
+      if (e.key === "Escape" && isSearchPanelOpen()) {
+        e.preventDefault();
+        closeSearchPanel();
+        return;
+      }
       if (e.key === "Escape" && isAnyModalOpen()) {
         e.preventDefault();
         closeAllModals();
@@ -2334,7 +2481,7 @@ APP_JS = r"""
         if (e.key === "Escape") e.target.blur();
         return;
       }
-      if (isAnyModalOpen()) return;
+      if (isAnyModalOpen() || isSearchPanelOpen()) return;
       if (e.key === "/") {
         e.preventDefault();
         document.getElementById("search-input").focus();
@@ -2493,6 +2640,205 @@ APP_JS = r"""
   }
 
   // --- bootstrap --- //
+  // --- search panel (floating "Ask" widget) --- //
+  let searchIndex = null;
+  let searchHover = -1;
+  let searchResultsCache = [];
+
+  function buildSearchIndex() {
+    if (searchIndex) return searchIndex;
+    searchIndex = manifest.flat.map(it => ({
+      item: it,
+      titleLow: (it.title || "").toLowerCase(),
+      sumLow: (it.summary || "").toLowerCase(),
+      idLow: (it.id || "").toLowerCase(),
+      tagLow: (it.tag || "").toLowerCase(),
+      anchors: (it.anchors || []).map(a => ({
+        id: a.id || "",
+        text: a.text || "",
+        textLow: (a.text || "").toLowerCase(),
+        level: a.level || 2
+      }))
+    }));
+    return searchIndex;
+  }
+
+  function searchQuery(q) {
+    const idx = buildSearchIndex();
+    const trimmed = q.trim().toLowerCase();
+    if (!trimmed) return [];
+    const terms = trimmed.split(/\s+/).filter(Boolean);
+    const results = [];
+    for (const e of idx) {
+      let score = 0;
+      let bestAnchor = null;
+      let bestAnchorScore = 0;
+      for (const t of terms) {
+        if (e.titleLow.includes(t)) score += 6;
+        if (e.titleLow.startsWith(t)) score += 3;
+        if (e.sumLow.includes(t)) score += 2;
+        if (e.idLow.includes(t)) score += 1;
+        if (e.tagLow.includes(t)) score += 1;
+        for (const a of e.anchors) {
+          if (a.textLow.includes(t)) {
+            score += 3;
+            const aScore = a.textLow.startsWith(t) ? 2 : 1;
+            if (aScore > bestAnchorScore) {
+              bestAnchorScore = aScore;
+              bestAnchor = a;
+            }
+          }
+        }
+      }
+      if (score > 0) {
+        results.push({ item: e.item, score, anchor: bestAnchor });
+      }
+    }
+    results.sort((a, b) => b.score - a.score || a.item.title.localeCompare(b.item.title));
+    return results.slice(0, 12);
+  }
+
+  function trackOf(itemId) {
+    return manifest.tracks.find(t => t.groups.some(g => g.items.some(i => i.id === itemId)));
+  }
+
+  function renderSearchResults(query) {
+    const list = document.getElementById("ap-results");
+    const results = searchQuery(query);
+    searchResultsCache = results;
+    searchHover = results.length ? 0 : -1;
+
+    if (!query.trim()) {
+      list.innerHTML = `
+        <div class="ap-empty">
+          <div class="ap-empty-title">Search across ${manifest.flat.length} articles</div>
+          <div class="ap-empty-help">Try: <button class="ap-chip" data-q="caching">caching</button>
+            <button class="ap-chip" data-q="cap theorem">cap theorem</button>
+            <button class="ap-chip" data-q="dijkstra">dijkstra</button>
+            <button class="ap-chip" data-q="two pointers">two pointers</button>
+            <button class="ap-chip" data-q="rate limiting">rate limiting</button>
+            <button class="ap-chip" data-q="dp">dp</button>
+          </div>
+        </div>`;
+      return;
+    }
+    if (!results.length) {
+      list.innerHTML = `<div class="ap-empty"><div class="ap-empty-title">No matches for "${escape(query)}"</div>
+        <div class="ap-empty-help">Try a shorter or different keyword.</div></div>`;
+      return;
+    }
+    const done = getDone();
+    list.innerHTML = results.map((r, i) => {
+      const it = r.item;
+      const tr = trackOf(it.id);
+      const trackLabel = tr ? `${tr.icon} ${escape(tr.title)}` : "";
+      const diff = it.difficulty ? `<span class="diff-dot diff-${it.difficulty}"></span><span class="ap-diff-name">${it.difficulty.replace('-', ' ')}</span>` : "";
+      const time = it.read_min ? `<span class="ap-min">⏱ ${it.read_min} min</span>` : "";
+      const doneMark = done.has(it.id) ? `<span class="ap-done" title="Completed">✓</span>` : "";
+      const anchor = r.anchor ? `<div class="ap-anchor">↳ jumps to <strong>${escape(r.anchor.text)}</strong></div>` : "";
+      const summary = it.summary ? `<div class="ap-summary">${escape(it.summary)}</div>` : "";
+      const href = r.anchor ? `#/${it.id}#${r.anchor.id}` : `#/${it.id}`;
+      return `<a class="ap-result${i === searchHover ? ' ap-hover' : ''}" data-i="${i}" href="${href}">
+        <div class="ap-row1"><span class="ap-title">${escape(it.title)}</span>${doneMark}</div>
+        <div class="ap-row2"><span class="ap-track">${trackLabel}</span>${diff}${time}</div>
+        ${anchor}${summary}
+      </a>`;
+    }).join("");
+  }
+
+  function openSearchPanel() {
+    const scrim = document.getElementById("ap-scrim");
+    const panel = document.getElementById("ap-panel");
+    const input = document.getElementById("ap-input");
+    if (!scrim || !panel || !input) return;
+    scrim.hidden = false;
+    panel.hidden = false;
+    document.body.classList.add("ap-open");
+    input.value = "";
+    renderSearchResults("");
+    setTimeout(() => input.focus(), 10);
+  }
+
+  function closeSearchPanel() {
+    const scrim = document.getElementById("ap-scrim");
+    const panel = document.getElementById("ap-panel");
+    if (!scrim || !panel) return;
+    scrim.hidden = true;
+    panel.hidden = true;
+    document.body.classList.remove("ap-open");
+    searchHover = -1;
+    searchResultsCache = [];
+  }
+
+  function isSearchPanelOpen() {
+    const panel = document.getElementById("ap-panel");
+    return panel && !panel.hidden;
+  }
+
+  function moveSearchHover(delta) {
+    if (!searchResultsCache.length) return;
+    searchHover = (searchHover + delta + searchResultsCache.length) % searchResultsCache.length;
+    document.querySelectorAll("#ap-results .ap-result").forEach((el, i) => {
+      el.classList.toggle("ap-hover", i === searchHover);
+      if (i === searchHover) el.scrollIntoView({ block: "nearest" });
+    });
+  }
+
+  function activateHoveredResult() {
+    if (searchHover < 0 || searchHover >= searchResultsCache.length) return;
+    const r = searchResultsCache[searchHover];
+    const href = r.anchor ? `#/${r.item.id}#${r.anchor.id}` : `#/${r.item.id}`;
+    location.hash = href;
+    closeSearchPanel();
+  }
+
+  function wireSearchPanel() {
+    const fab = document.getElementById("ap-fab");
+    const scrim = document.getElementById("ap-scrim");
+    const input = document.getElementById("ap-input");
+    const list = document.getElementById("ap-results");
+    const closeBtn = document.getElementById("ap-close");
+    if (!fab || !scrim || !input || !list) return;
+
+    fab.addEventListener("click", openSearchPanel);
+    scrim.addEventListener("click", closeSearchPanel);
+    if (closeBtn) closeBtn.addEventListener("click", closeSearchPanel);
+
+    input.addEventListener("input", e => renderSearchResults(e.target.value));
+    input.addEventListener("keydown", e => {
+      if (e.key === "ArrowDown") { e.preventDefault(); moveSearchHover(+1); }
+      else if (e.key === "ArrowUp") { e.preventDefault(); moveSearchHover(-1); }
+      else if (e.key === "Enter")   { e.preventDefault(); activateHoveredResult(); }
+      else if (e.key === "Escape")  { e.preventDefault(); closeSearchPanel(); }
+    });
+
+    list.addEventListener("mousemove", e => {
+      const r = e.target.closest(".ap-result");
+      if (!r) return;
+      const i = parseInt(r.dataset.i, 10);
+      if (i !== searchHover) {
+        searchHover = i;
+        document.querySelectorAll("#ap-results .ap-result").forEach((el, j) => {
+          el.classList.toggle("ap-hover", j === searchHover);
+        });
+      }
+    });
+    list.addEventListener("click", e => {
+      const chip = e.target.closest(".ap-chip");
+      if (chip) {
+        e.preventDefault();
+        input.value = chip.dataset.q;
+        renderSearchResults(input.value);
+        input.focus();
+        return;
+      }
+      const r = e.target.closest(".ap-result");
+      if (r) {
+        setTimeout(closeSearchPanel, 0);
+      }
+    });
+  }
+
   async function init() {
     applyTheme(lsGet(LS_THEME, "dark"));
     document.getElementById("theme-toggle").addEventListener("click", toggleTheme);
@@ -2555,6 +2901,7 @@ APP_JS = r"""
 
     wireModals();
     wireSettings();
+    wireSearchPanel();
 
     setupKeys();
     route();
@@ -2608,6 +2955,25 @@ SHELL_HTML = """<!DOCTYPE html>
   </div>
   <button class="back-to-top" id="back-to-top" title="Back to top" aria-label="Back to top">↑</button>
 
+  <button class="ap-fab" id="ap-fab" title="Search articles (Cmd/Ctrl+K)" aria-label="Open search">
+    <span class="ap-fab-icon">🔎</span><span class="ap-fab-text">Search</span>
+  </button>
+  <div class="ap-scrim" id="ap-scrim" hidden></div>
+  <div class="ap-panel" id="ap-panel" role="dialog" aria-modal="true" aria-label="Search articles" hidden>
+    <header class="ap-head">
+      <span class="ap-head-icon">🔎</span>
+      <input id="ap-input" type="text" placeholder="Search 52 articles — try caching, dijkstra, cap theorem…" autocomplete="off" spellcheck="false" aria-label="Search query">
+      <button class="ap-close" id="ap-close" aria-label="Close">✕</button>
+    </header>
+    <div class="ap-results" id="ap-results"></div>
+    <footer class="ap-foot">
+      <span><span class="kbd">↑</span><span class="kbd">↓</span> navigate</span>
+      <span><span class="kbd">Enter</span> open</span>
+      <span><span class="kbd">Esc</span> close</span>
+      <span class="ap-foot-right">Local search · no AI · no tracking</span>
+    </footer>
+  </div>
+
   <div class="modal" id="help-modal" role="dialog" aria-modal="true" aria-labelledby="help-modal-title" aria-hidden="true">
     <div class="modal-backdrop" data-modal-close></div>
     <div class="modal-card" role="document">
@@ -2616,7 +2982,8 @@ SHELL_HTML = """<!DOCTYPE html>
         <button class="icon-btn" data-modal-close aria-label="Close">✕</button>
       </header>
       <table class="shortcut-table">
-        <tr><td><span class="kbd">/</span></td><td>focus search</td></tr>
+        <tr><td><span class="kbd">Cmd</span>/<span class="kbd">Ctrl</span>+<span class="kbd">K</span></td><td>open search</td></tr>
+        <tr><td><span class="kbd">/</span></td><td>focus sidebar filter</td></tr>
         <tr><td><span class="kbd">j</span> / <span class="kbd">k</span></td><td>next / previous topic</td></tr>
         <tr><td><span class="kbd">m</span></td><td>mark current topic complete</td></tr>
         <tr><td><span class="kbd">t</span></td><td>toggle dark / light theme</td></tr>
