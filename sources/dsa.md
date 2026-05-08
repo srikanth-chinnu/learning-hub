@@ -150,6 +150,28 @@ function hasDuplicate(a) {
   return false;
 }
 ```
+
+```java
+// O(n) — single pass
+boolean hasDuplicate(int[] a) {
+    Set<Integer> seen = new HashSet<>();
+    for (int x : a) {
+        if (!seen.add(x)) return true;
+    }
+    return false;
+}
+```
+
+```cpp
+// O(n) — single pass
+bool hasDuplicate(const vector<int>& a) {
+    unordered_set<int> seen;
+    for (int x : a) {
+        if (!seen.insert(x).second) return true;
+    }
+    return false;
+}
+```
 :::
 **Classic problems.** Two Sum, Contains Duplicate, Maximum Subarray.
 **Pitfall.** Hidden costs: `s in list` is `O(n)`, `s in set` is `O(1)`. String concatenation in a loop is `O(n²)`.
@@ -174,6 +196,20 @@ const a = [3, 1, 4, 1, 5]; // dynamic array
 a.push(9);                  // O(1) amortized
 a.pop();                    // O(1)
 a.unshift(7);               // O(n) — avoid
+```
+
+```java
+List<Integer> a = new ArrayList<>(List.of(3, 1, 4, 1, 5));
+a.add(9);              // O(1) amortized
+a.remove(a.size() - 1); // O(1)
+a.add(0, 7);           // O(n) — avoid
+```
+
+```cpp
+vector<int> a = {3, 1, 4, 1, 5};
+a.push_back(9);            // O(1) amortized
+a.pop_back();              // O(1)
+a.insert(a.begin(), 7);    // O(n) — avoid
 ```
 :::
 **Classic problems.** Move Zeros, Remove Duplicates from Sorted Array, Best Time to Buy/Sell Stock.
@@ -203,6 +239,30 @@ function twoSum(a, t) {
     if (seen.has(t - a[i])) return [seen.get(t - a[i]), i];
     seen.set(a[i], i);
   }
+}
+```
+
+```java
+int[] twoSum(int[] a, int t) {
+    Map<Integer, Integer> seen = new HashMap<>();
+    for (int i = 0; i < a.length; i++) {
+        Integer j = seen.get(t - a[i]);
+        if (j != null) return new int[]{j, i};
+        seen.put(a[i], i);
+    }
+    return new int[0];
+}
+```
+
+```cpp
+vector<int> twoSum(const vector<int>& a, int t) {
+    unordered_map<int, int> seen;
+    for (int i = 0; i < (int)a.size(); i++) {
+        auto it = seen.find(t - a[i]);
+        if (it != seen.end()) return {it->second, i};
+        seen[a[i]] = i;
+    }
+    return {};
 }
 ```
 :::
@@ -236,6 +296,32 @@ function twoSumSorted(a, t) {
     if (s < t) i++;
     else       j--;
   }
+}
+```
+
+```java
+int[] twoSumSorted(int[] a, int t) {
+    int i = 0, j = a.length - 1;
+    while (i < j) {
+        int s = a[i] + a[j];
+        if (s == t) return new int[]{i, j};
+        if (s < t) i++;
+        else       j--;
+    }
+    return new int[0];
+}
+```
+
+```cpp
+vector<int> twoSumSorted(const vector<int>& a, int t) {
+    int i = 0, j = (int)a.size() - 1;
+    while (i < j) {
+        int s = a[i] + a[j];
+        if (s == t) return {i, j};
+        if (s < t) i++;
+        else       j--;
+    }
+    return {};
 }
 ```
 :::
@@ -274,6 +360,36 @@ function longestUnique(s) {
   return best;
 }
 ```
+
+```java
+int longestUnique(String s) {
+    Map<Character, Integer> last = new HashMap<>();
+    int L = 0, best = 0;
+    for (int R = 0; R < s.length(); R++) {
+        char c = s.charAt(R);
+        Integer prev = last.get(c);
+        if (prev != null && prev >= L) L = prev + 1;
+        last.put(c, R);
+        best = Math.max(best, R - L + 1);
+    }
+    return best;
+}
+```
+
+```cpp
+int longestUnique(const string& s) {
+    unordered_map<char, int> last;
+    int L = 0, best = 0;
+    for (int R = 0; R < (int)s.size(); R++) {
+        char c = s[R];
+        auto it = last.find(c);
+        if (it != last.end() && it->second >= L) L = it->second + 1;
+        last[c] = R;
+        best = max(best, R - L + 1);
+    }
+    return best;
+}
+```
 :::
 **Classic problems.** Longest Substring Without Repeats, Min Window Substring, Subarrays with Sum K (positives), Permutation in String.
 **Pitfall.** Negative numbers / non-monotone constraints break the technique → see prefix sums (2.10).
@@ -305,6 +421,31 @@ function validParens(s) {
     else if (!st.length || st.pop() !== pair[c]) return false;
   }
   return st.length === 0;
+}
+```
+
+```java
+boolean validParens(String s) {
+    Map<Character, Character> pair = Map.of(')', '(', ']', '[', '}', '{');
+    Deque<Character> st = new ArrayDeque<>();
+    for (char c : s.toCharArray()) {
+        if (c == '(' || c == '[' || c == '{') st.push(c);
+        else if (st.isEmpty() || st.pop() != pair.get(c)) return false;
+    }
+    return st.isEmpty();
+}
+```
+
+```cpp
+bool validParens(const string& s) {
+    unordered_map<char, char> pair = {{')', '('}, {']', '['}, {'}', '{'}};
+    stack<char> st;
+    for (char c : s) {
+        if (c == '(' || c == '[' || c == '{') st.push(c);
+        else if (st.empty() || st.top() != pair[c]) return false;
+        else st.pop();
+    }
+    return st.empty();
 }
 ```
 :::
@@ -355,6 +496,53 @@ function bfsGrid(g, sr, sc) {
   }
 }
 ```
+
+```java
+void bfsGrid(char[][] g, int sr, int sc) {
+    int R = g.length, C = g[0].length;
+    boolean[][] seen = new boolean[R][C];
+    Deque<int[]> q = new ArrayDeque<>();
+    seen[sr][sc] = true;
+    q.add(new int[]{sr, sc, 0});
+    int[][] dirs = {{-1,0},{1,0},{0,-1},{0,1}};
+    while (!q.isEmpty()) {
+        int[] cur = q.poll();
+        int r = cur[0], c = cur[1], d = cur[2];
+        // process...
+        for (int[] dir : dirs) {
+            int nr = r + dir[0], nc = c + dir[1];
+            if (nr >= 0 && nr < R && nc >= 0 && nc < C
+                && !seen[nr][nc] && g[nr][nc] != '#') {
+                seen[nr][nc] = true;
+                q.add(new int[]{nr, nc, d + 1});
+            }
+        }
+    }
+}
+```
+
+```cpp
+void bfsGrid(vector<vector<char>>& g, int sr, int sc) {
+    int R = g.size(), C = g[0].size();
+    vector<vector<bool>> seen(R, vector<bool>(C, false));
+    queue<tuple<int,int,int>> q;
+    seen[sr][sc] = true;
+    q.push({sr, sc, 0});
+    int dirs[4][2] = {{-1,0},{1,0},{0,-1},{0,1}};
+    while (!q.empty()) {
+        auto [r, c, d] = q.front(); q.pop();
+        // process...
+        for (auto& dir : dirs) {
+            int nr = r + dir[0], nc = c + dir[1];
+            if (nr >= 0 && nr < R && nc >= 0 && nc < C
+                && !seen[nr][nc] && g[nr][nc] != '#') {
+                seen[nr][nc] = true;
+                q.push({nr, nc, d + 1});
+            }
+        }
+    }
+}
+```
 :::
 **Classic problems.** Number of Islands (BFS), Rotting Oranges, Open the Lock.
 **Pitfall.** Using `list.pop(0)` → `O(n²)` BFS. Forgetting to mark `seen` *before* pushing → exponential blowup.
@@ -392,6 +580,35 @@ function minSpeed(piles, h) {
   return lo;
 }
 ```
+
+```java
+int minSpeed(int[] piles, int h) {
+    int lo = 1, hi = 0;
+    for (int p : piles) hi = Math.max(hi, p);
+    while (lo < hi) {
+        int mid = (lo + hi) >>> 1;
+        long hours = 0;
+        for (int p : piles) hours += (p + mid - 1) / mid;
+        if (hours <= h) hi = mid;
+        else            lo = mid + 1;
+    }
+    return lo;
+}
+```
+
+```cpp
+int minSpeed(const vector<int>& piles, int h) {
+    int lo = 1, hi = *max_element(piles.begin(), piles.end());
+    while (lo < hi) {
+        int mid = lo + (hi - lo) / 2;
+        long long hours = 0;
+        for (int p : piles) hours += (p + mid - 1) / mid;
+        if (hours <= h) hi = mid;
+        else            lo = mid + 1;
+    }
+    return lo;
+}
+```
 :::
 **Classic problems.** First Bad Version, Search in Rotated Sorted Array, Median of Two Sorted Arrays, Capacity to Ship Packages, Split Array Largest Sum.
 **Pitfall.** Off-by-one. Pick *one* template (`lo<hi`, `hi=mid`, `lo=mid+1`) and use it everywhere. Test on size 0/1/2.
@@ -427,6 +644,34 @@ function subsets(a) {
   return out;
 }
 ```
+
+```java
+List<List<Integer>> subsets(int[] a) {
+    List<List<Integer>> out = new ArrayList<>();
+    List<Integer> cur = new ArrayList<>();
+    go(a, 0, cur, out);
+    return out;
+}
+void go(int[] a, int i, List<Integer> cur, List<List<Integer>> out) {
+    if (i == a.length) { out.add(new ArrayList<>(cur)); return; }
+    go(a, i + 1, cur, out);                          // skip
+    cur.add(a[i]); go(a, i + 1, cur, out); cur.remove(cur.size() - 1); // take
+}
+```
+
+```cpp
+void go(const vector<int>& a, int i, vector<int>& cur, vector<vector<int>>& out) {
+    if (i == (int)a.size()) { out.push_back(cur); return; }
+    go(a, i + 1, cur, out);                          // skip
+    cur.push_back(a[i]); go(a, i + 1, cur, out); cur.pop_back(); // take
+}
+vector<vector<int>> subsets(const vector<int>& a) {
+    vector<vector<int>> out;
+    vector<int> cur;
+    go(a, 0, cur, out);
+    return out;
+}
+```
 :::
 **Classic problems.** Power Set, Permutations, Generate Parentheses, Reverse Linked List Recursive.
 **Pitfall.** Stack overflow at depth ~1000 in Python — use `sys.setrecursionlimit` or convert to iteration. Mutating shared state without backtrack = bugs.
@@ -456,6 +701,32 @@ function largestNumber(nums) {
   const s = nums.map(String);
   s.sort((a, b) => (b + a).localeCompare(a + b));
   return s.join('').replace(/^0+(?!$)/, '') || '0';
+}
+```
+
+```java
+String largestNumber(int[] nums) {
+    String[] s = new String[nums.length];
+    for (int i = 0; i < nums.length; i++) s[i] = String.valueOf(nums[i]);
+    Arrays.sort(s, (a, b) -> (b + a).compareTo(a + b));
+    if (s[0].equals("0")) return "0";
+    StringBuilder sb = new StringBuilder();
+    for (String x : s) sb.append(x);
+    return sb.toString();
+}
+```
+
+```cpp
+string largestNumber(const vector<int>& nums) {
+    vector<string> s;
+    for (int x : nums) s.push_back(to_string(x));
+    sort(s.begin(), s.end(), [](const string& a, const string& b) {
+        return a + b > b + a;
+    });
+    if (s[0] == "0") return "0";
+    string out;
+    for (auto& x : s) out += x;
+    return out;
 }
 ```
 :::
@@ -493,6 +764,32 @@ function reverse(head) {
     cur = nxt;
   }
   return prev;
+}
+```
+
+```java
+ListNode reverse(ListNode head) {
+    ListNode prev = null, cur = head;
+    while (cur != null) {
+        ListNode nxt = cur.next;
+        cur.next = prev;
+        prev = cur;
+        cur = nxt;
+    }
+    return prev;
+}
+```
+
+```cpp
+ListNode* reverse(ListNode* head) {
+    ListNode *prev = nullptr, *cur = head;
+    while (cur) {
+        ListNode* nxt = cur->next;
+        cur->next = prev;
+        prev = cur;
+        cur = nxt;
+    }
+    return prev;
 }
 ```
 :::
@@ -549,6 +846,61 @@ function levelorder(root) {
   return out;
 }
 ```
+
+```java
+void inorder(TreeNode root) {
+    if (root == null) return;
+    inorder(root.left);
+    System.out.println(root.val);
+    inorder(root.right);
+}
+
+List<List<Integer>> levelorder(TreeNode root) {
+    List<List<Integer>> out = new ArrayList<>();
+    Deque<TreeNode> q = new ArrayDeque<>();
+    if (root != null) q.add(root);
+    while (!q.isEmpty()) {
+        int size = q.size();
+        List<Integer> lvl = new ArrayList<>();
+        for (int i = 0; i < size; i++) {
+            TreeNode n = q.poll();
+            lvl.add(n.val);
+            if (n.left != null)  q.add(n.left);
+            if (n.right != null) q.add(n.right);
+        }
+        out.add(lvl);
+    }
+    return out;
+}
+```
+
+```cpp
+void inorder(TreeNode* root) {
+    if (!root) return;
+    inorder(root->left);
+    cout << root->val << "\n";
+    inorder(root->right);
+}
+
+vector<vector<int>> levelorder(TreeNode* root) {
+    vector<vector<int>> out;
+    if (!root) return out;
+    queue<TreeNode*> q;
+    q.push(root);
+    while (!q.empty()) {
+        int size = q.size();
+        vector<int> lvl;
+        for (int i = 0; i < size; i++) {
+            TreeNode* n = q.front(); q.pop();
+            lvl.push_back(n->val);
+            if (n->left)  q.push(n->left);
+            if (n->right) q.push(n->right);
+        }
+        out.push_back(lvl);
+    }
+    return out;
+}
+```
 :::
 **Classic problems.** Max Depth, Same Tree, Path Sum, Symmetric Tree, Binary Tree Level Order, Construct Tree from Preorder + Inorder.
 **Pitfall.** Iterative inorder is the trickiest — practice it.
@@ -573,6 +925,23 @@ function isBST(root, lo = -Infinity, hi = Infinity) {
   if (!root) return true;
   if (!(lo < root.val && root.val < hi)) return false;
   return isBST(root.left, lo, root.val) && isBST(root.right, root.val, hi);
+}
+```
+
+```java
+boolean isBST(TreeNode root) { return isBST(root, Long.MIN_VALUE, Long.MAX_VALUE); }
+boolean isBST(TreeNode root, long lo, long hi) {
+    if (root == null) return true;
+    if (!(lo < root.val && root.val < hi)) return false;
+    return isBST(root.left, lo, root.val) && isBST(root.right, root.val, hi);
+}
+```
+
+```cpp
+bool isBST(TreeNode* root, long lo = LLONG_MIN, long hi = LLONG_MAX) {
+    if (!root) return true;
+    if (!(lo < root->val && root->val < hi)) return false;
+    return isBST(root->left, lo, root->val) && isBST(root->right, root->val, hi);
 }
 ```
 :::
@@ -607,6 +976,31 @@ function buildGraph(n, edges) {
     g.get(v).push([u, w]);   // undirected
   }
   return g;
+}
+```
+
+```java
+List<List<int[]>> buildGraph(int n, int[][] edges) {
+    List<List<int[]>> g = new ArrayList<>();
+    for (int i = 0; i < n; i++) g.add(new ArrayList<>());
+    for (int[] e : edges) {
+        int u = e[0], v = e[1], w = e[2];
+        g.get(u).add(new int[]{v, w});
+        g.get(v).add(new int[]{u, w});   // undirected
+    }
+    return g;
+}
+```
+
+```cpp
+vector<vector<pair<int,int>>> buildGraph(int n, vector<vector<int>>& edges) {
+    vector<vector<pair<int,int>>> g(n);
+    for (auto& e : edges) {
+        int u = e[0], v = e[1], w = e[2];
+        g[u].push_back({v, w});
+        g[v].push_back({u, w});   // undirected
+    }
+    return g;
 }
 ```
 :::
@@ -645,6 +1039,36 @@ function numComponents(n, g) {
     if (!seen[u]) { cnt++; dfs(u); }
   }
   return cnt;
+}
+```
+
+```java
+int numComponents(int n, List<List<Integer>> g) {
+    boolean[] seen = new boolean[n];
+    int cnt = 0;
+    for (int u = 0; u < n; u++) {
+        if (!seen[u]) { cnt++; dfs(u, g, seen); }
+    }
+    return cnt;
+}
+void dfs(int u, List<List<Integer>> g, boolean[] seen) {
+    seen[u] = true;
+    for (int v : g.get(u)) if (!seen[v]) dfs(v, g, seen);
+}
+```
+
+```cpp
+void dfs(int u, vector<vector<int>>& g, vector<bool>& seen) {
+    seen[u] = true;
+    for (int v : g[u]) if (!seen[v]) dfs(v, g, seen);
+}
+int numComponents(int n, vector<vector<int>>& g) {
+    vector<bool> seen(n, false);
+    int cnt = 0;
+    for (int u = 0; u < n; u++) {
+        if (!seen[u]) { cnt++; dfs(u, g, seen); }
+    }
+    return cnt;
 }
 ```
 :::
@@ -692,6 +1116,41 @@ function topo(n, edges) {
   return out.length === n ? out : [];   // cycle if not all included
 }
 ```
+
+```java
+List<Integer> topo(int n, int[][] edges) {
+    List<List<Integer>> g = new ArrayList<>();
+    for (int i = 0; i < n; i++) g.add(new ArrayList<>());
+    int[] indeg = new int[n];
+    for (int[] e : edges) { g.get(e[0]).add(e[1]); indeg[e[1]]++; }
+    Deque<Integer> q = new ArrayDeque<>();
+    for (int i = 0; i < n; i++) if (indeg[i] == 0) q.add(i);
+    List<Integer> out = new ArrayList<>();
+    while (!q.isEmpty()) {
+        int u = q.poll();
+        out.add(u);
+        for (int v : g.get(u)) if (--indeg[v] == 0) q.add(v);
+    }
+    return out.size() == n ? out : new ArrayList<>(); // cycle if not all included
+}
+```
+
+```cpp
+vector<int> topo(int n, vector<vector<int>>& edges) {
+    vector<vector<int>> g(n);
+    vector<int> indeg(n, 0);
+    for (auto& e : edges) { g[e[0]].push_back(e[1]); indeg[e[1]]++; }
+    queue<int> q;
+    for (int i = 0; i < n; i++) if (indeg[i] == 0) q.push(i);
+    vector<int> out;
+    while (!q.empty()) {
+        int u = q.front(); q.pop();
+        out.push_back(u);
+        for (int v : g[u]) if (--indeg[v] == 0) q.push(v);
+    }
+    return (int)out.size() == n ? out : vector<int>{};   // cycle if not all included
+}
+```
 :::
 **Classic problems.** Course Schedule I & II, Alien Dictionary, Parallel Courses.
 **Pitfall.** Topological sort is undefined on graphs with cycles — always check.
@@ -720,6 +1179,39 @@ function topk(a, k) {
     .sort((p, q) => q[1] - p[1])
     .slice(0, k)
     .map(([x]) => x);
+}
+```
+
+```java
+List<Integer> topk(int[] a, int k) {
+    Map<Integer, Integer> c = new HashMap<>();
+    for (int x : a) c.merge(x, 1, Integer::sum);
+    // Min-heap of size k
+    PriorityQueue<int[]> pq = new PriorityQueue<>((p, q) -> p[1] - q[1]);
+    for (var e : c.entrySet()) {
+        pq.offer(new int[]{e.getKey(), e.getValue()});
+        if (pq.size() > k) pq.poll();
+    }
+    List<Integer> out = new ArrayList<>();
+    while (!pq.isEmpty()) out.add(0, pq.poll()[0]);
+    return out;
+}
+```
+
+```cpp
+vector<int> topk(const vector<int>& a, int k) {
+    unordered_map<int, int> c;
+    for (int x : a) c[x]++;
+    // Min-heap of size k
+    priority_queue<pair<int,int>, vector<pair<int,int>>, greater<>> pq;
+    for (auto& [x, f] : c) {
+        pq.push({f, x});
+        if ((int)pq.size() > k) pq.pop();
+    }
+    vector<int> out;
+    while (!pq.empty()) { out.push_back(pq.top().second); pq.pop(); }
+    reverse(out.begin(), out.end());
+    return out;
 }
 ```
 :::
@@ -751,6 +1243,30 @@ function backtrack(state) {
     backtrack(state);
     undo(choice, state);
   }
+}
+```
+
+```java
+void backtrack(State state) {
+    if (isSolution(state)) { record(state); return; }
+    for (Choice choice : choices(state)) {
+        if (!feasible(choice, state)) continue;
+        apply(choice, state);
+        backtrack(state);
+        undo(choice, state);
+    }
+}
+```
+
+```cpp
+void backtrack(State& state) {
+    if (isSolution(state)) { record(state); return; }
+    for (auto& choice : choices(state)) {
+        if (!feasible(choice, state)) continue;
+        apply(choice, state);
+        backtrack(state);
+        undo(choice, state);
+    }
 }
 ```
 :::
@@ -786,6 +1302,50 @@ function nQueens(n) {
   return sol;
 }
 ```
+
+```java
+List<List<Integer>> sol;
+void nQueensGo(int r, int n, int[] board, Set<Integer> cols, Set<Integer> d1, Set<Integer> d2) {
+    if (r == n) {
+        List<Integer> copy = new ArrayList<>();
+        for (int v : board) copy.add(v);
+        sol.add(copy);
+        return;
+    }
+    for (int c = 0; c < n; c++) {
+        if (cols.contains(c) || d1.contains(r - c) || d2.contains(r + c)) continue;
+        cols.add(c); d1.add(r - c); d2.add(r + c); board[r] = c;
+        nQueensGo(r + 1, n, board, cols, d1, d2);
+        cols.remove(c); d1.remove(r - c); d2.remove(r + c);
+    }
+}
+List<List<Integer>> nQueens(int n) {
+    sol = new ArrayList<>();
+    nQueensGo(0, n, new int[n], new HashSet<>(), new HashSet<>(), new HashSet<>());
+    return sol;
+}
+```
+
+```cpp
+void nQueensGo(int r, int n, vector<int>& board,
+               unordered_set<int>& cols, unordered_set<int>& d1, unordered_set<int>& d2,
+               vector<vector<int>>& sol) {
+    if (r == n) { sol.push_back(board); return; }
+    for (int c = 0; c < n; c++) {
+        if (cols.count(c) || d1.count(r - c) || d2.count(r + c)) continue;
+        cols.insert(c); d1.insert(r - c); d2.insert(r + c); board[r] = c;
+        nQueensGo(r + 1, n, board, cols, d1, d2, sol);
+        cols.erase(c); d1.erase(r - c); d2.erase(r + c);
+    }
+}
+vector<vector<int>> nQueens(int n) {
+    vector<vector<int>> sol;
+    vector<int> board(n);
+    unordered_set<int> cols, d1, d2;
+    nQueensGo(0, n, board, cols, d1, d2, sol);
+    return sol;
+}
+```
 :::
 **Classic problems.** N-Queens, Sudoku Solver, Word Search, Combination Sum, Permutations II, Letter Combinations.
 **Pitfall.** Forgetting to undo state. Slicing lists `cur[:]` to copy is necessary when storing.
@@ -819,6 +1379,29 @@ function maxMeetings(intervals) {
   return cnt;
 }
 ```
+
+```java
+int maxMeetings(int[][] intervals) {
+    Arrays.sort(intervals, (a, b) -> a[1] - b[1]);   // sort by END
+    int end = Integer.MIN_VALUE, cnt = 0;
+    for (int[] iv : intervals) {
+        if (iv[0] >= end) { cnt++; end = iv[1]; }
+    }
+    return cnt;
+}
+```
+
+```cpp
+int maxMeetings(vector<vector<int>>& intervals) {
+    sort(intervals.begin(), intervals.end(),
+         [](auto& a, auto& b) { return a[1] < b[1]; });   // sort by END
+    int end = INT_MIN, cnt = 0;
+    for (auto& iv : intervals) {
+        if (iv[0] >= end) { cnt++; end = iv[1]; }
+    }
+    return cnt;
+}
+```
 :::
 **Classic problems.** Activity Selection, Jump Game II, Gas Station, Task Scheduler, Minimum Number of Arrows to Burst Balloons.
 **Pitfall.** Untested greediness — most "obvious" greedy ideas are wrong (counterexample: coin change with coins {1,3,4} for amount 6).
@@ -848,6 +1431,22 @@ function singleNumber(a) {
   let r = 0;
   for (const x of a) r ^= x;
   return r;
+}
+```
+
+```java
+int singleNumber(int[] a) {
+    int r = 0;
+    for (int x : a) r ^= x;
+    return r;
+}
+```
+
+```cpp
+int singleNumber(const vector<int>& a) {
+    int r = 0;
+    for (int x : a) r ^= x;
+    return r;
 }
 ```
 :::
@@ -884,6 +1483,34 @@ function subarraySum(a, k) {
     cnt.set(s, (cnt.get(s) || 0) + 1);
   }
   return ans;
+}
+```
+
+```java
+int subarraySum(int[] a, int k) {
+    Map<Integer, Integer> cnt = new HashMap<>();
+    cnt.put(0, 1);
+    int s = 0, ans = 0;
+    for (int x : a) {
+        s += x;
+        ans += cnt.getOrDefault(s - k, 0);
+        cnt.merge(s, 1, Integer::sum);
+    }
+    return ans;
+}
+```
+
+```cpp
+int subarraySum(const vector<int>& a, int k) {
+    unordered_map<int, int> cnt;
+    cnt[0] = 1;
+    int s = 0, ans = 0;
+    for (int x : a) {
+        s += x;
+        if (cnt.count(s - k)) ans += cnt[s - k];
+        cnt[s]++;
+    }
+    return ans;
 }
 ```
 :::
@@ -936,6 +1563,54 @@ class DSU {
   }
 }
 ```
+
+```java
+class DSU {
+    int[] p, sz;
+    DSU(int n) {
+        p = new int[n]; sz = new int[n];
+        for (int i = 0; i < n; i++) { p[i] = i; sz[i] = 1; }
+    }
+    int find(int x) {
+        while (p[x] != x) {
+            p[x] = p[p[x]];   // path compression
+            x = p[x];
+        }
+        return x;
+    }
+    boolean union(int a, int b) {
+        a = find(a); b = find(b);
+        if (a == b) return false;
+        if (sz[a] < sz[b]) { int t = a; a = b; b = t; }
+        p[b] = a; sz[a] += sz[b];
+        return true;
+    }
+}
+```
+
+```cpp
+class DSU {
+public:
+    vector<int> p, sz;
+    DSU(int n) : p(n), sz(n, 1) {
+        iota(p.begin(), p.end(), 0);
+    }
+    int find(int x) {
+        while (p[x] != x) {
+            p[x] = p[p[x]];   // path compression
+            x = p[x];
+        }
+        return x;
+    }
+    bool unite(int a, int b) {
+        a = find(a); b = find(b);
+        if (a == b) return false;
+        if (sz[a] < sz[b]) swap(a, b);
+        p[b] = a; sz[a] += sz[b];
+        return true;
+    }
+};
+```
 :::
 **Classic problems.** Number of Connected Components, Redundant Connection, Accounts Merge, Most Stones Removed, Kruskal's MST.
 **Pitfall.** Forgetting path compression makes it `O(log n)` per op. Don't use rank *and* size — pick one.
@@ -982,6 +1657,54 @@ class Trie {
   }
 }
 ```
+
+```java
+class Trie {
+    static class Node { Map<Character, Node> next = new HashMap<>(); boolean end; }
+    Node root = new Node();
+
+    void insert(String w) {
+        Node n = root;
+        for (char c : w.toCharArray()) {
+            n = n.next.computeIfAbsent(c, k -> new Node());
+        }
+        n.end = true;
+    }
+    boolean startsWith(String p) {
+        Node n = root;
+        for (char c : p.toCharArray()) {
+            n = n.next.get(c);
+            if (n == null) return false;
+        }
+        return true;
+    }
+}
+```
+
+```cpp
+class Trie {
+    struct Node { unordered_map<char, Node*> next; bool end = false; };
+    Node* root = new Node();
+public:
+    void insert(const string& w) {
+        Node* n = root;
+        for (char c : w) {
+            if (!n->next.count(c)) n->next[c] = new Node();
+            n = n->next[c];
+        }
+        n->end = true;
+    }
+    bool startsWith(const string& p) {
+        Node* n = root;
+        for (char c : p) {
+            auto it = n->next.find(c);
+            if (it == n->next.end()) return false;
+            n = it->second;
+        }
+        return true;
+    }
+};
+```
 :::
 **Classic problems.** Implement Trie, Word Search II, Replace Words, Maximum XOR (binary trie), Design Search Autocomplete.
 **Pitfall.** Memory blowup — use arrays of 26 only when alphabet is fixed and small. Else use dict.
@@ -1016,6 +1739,37 @@ function nextGreater(a) {
   return res;
 }
 ```
+
+```java
+int[] nextGreater(int[] a) {
+    int n = a.length;
+    int[] res = new int[n];
+    Arrays.fill(res, -1);
+    Deque<Integer> st = new ArrayDeque<>();
+    for (int i = 0; i < n; i++) {
+        while (!st.isEmpty() && a[st.peek()] < a[i]) {
+            res[st.pop()] = a[i];
+        }
+        st.push(i);
+    }
+    return res;
+}
+```
+
+```cpp
+vector<int> nextGreater(const vector<int>& a) {
+    int n = a.size();
+    vector<int> res(n, -1);
+    stack<int> st;
+    for (int i = 0; i < n; i++) {
+        while (!st.empty() && a[st.top()] < a[i]) {
+            res[st.top()] = a[i]; st.pop();
+        }
+        st.push(i);
+    }
+    return res;
+}
+```
 :::
 **Example (sliding window max — monotonic deque).**
 :::tabs
@@ -1042,6 +1796,36 @@ function maxWindow(a, k) {
     if (i >= k - 1) out.push(a[dq[head]]);
   }
   return out;
+}
+```
+
+```java
+int[] maxWindow(int[] a, int k) {
+    Deque<Integer> dq = new ArrayDeque<>();
+    int n = a.length;
+    int[] out = new int[n - k + 1];
+    int idx = 0;
+    for (int i = 0; i < n; i++) {
+        while (!dq.isEmpty() && a[dq.peekLast()] <= a[i]) dq.pollLast();
+        dq.addLast(i);
+        if (dq.peekFirst() <= i - k) dq.pollFirst();
+        if (i >= k - 1) out[idx++] = a[dq.peekFirst()];
+    }
+    return out;
+}
+```
+
+```cpp
+vector<int> maxWindow(const vector<int>& a, int k) {
+    deque<int> dq;
+    vector<int> out;
+    for (int i = 0; i < (int)a.size(); i++) {
+        while (!dq.empty() && a[dq.back()] <= a[i]) dq.pop_back();
+        dq.push_back(i);
+        if (dq.front() <= i - k) dq.pop_front();
+        if (i >= k - 1) out.push_back(a[dq.front()]);
+    }
+    return out;
 }
 ```
 :::
@@ -1079,6 +1863,32 @@ function merge(iv) {
   return out;
 }
 ```
+
+```java
+int[][] merge(int[][] iv) {
+    Arrays.sort(iv, (a, b) -> a[0] != b[0] ? a[0] - b[0] : a[1] - b[1]);
+    List<int[]> out = new ArrayList<>();
+    for (int[] x : iv) {
+        if (!out.isEmpty() && x[0] <= out.get(out.size() - 1)[1]) {
+            out.get(out.size() - 1)[1] = Math.max(out.get(out.size() - 1)[1], x[1]);
+        } else out.add(new int[]{x[0], x[1]});
+    }
+    return out.toArray(new int[0][]);
+}
+```
+
+```cpp
+vector<vector<int>> merge(vector<vector<int>>& iv) {
+    sort(iv.begin(), iv.end());
+    vector<vector<int>> out;
+    for (auto& x : iv) {
+        if (!out.empty() && x[0] <= out.back()[1]) {
+            out.back()[1] = max(out.back()[1], x[1]);
+        } else out.push_back(x);
+    }
+    return out;
+}
+```
 :::
 **Example (meeting rooms II — sweep line).**
 :::tabs
@@ -1100,6 +1910,28 @@ function minRooms(iv) {
   let cur = 0, best = 0;
   for (const [, d] of ev) { cur += d; best = Math.max(best, cur); }
   return best;
+}
+```
+
+```java
+int minRooms(int[][] iv) {
+    List<int[]> ev = new ArrayList<>();
+    for (int[] x : iv) { ev.add(new int[]{x[0], +1}); ev.add(new int[]{x[1], -1}); }
+    ev.sort((a, b) -> a[0] != b[0] ? a[0] - b[0] : a[1] - b[1]);
+    int cur = 0, best = 0;
+    for (int[] e : ev) { cur += e[1]; best = Math.max(best, cur); }
+    return best;
+}
+```
+
+```cpp
+int minRooms(vector<vector<int>>& iv) {
+    vector<pair<int,int>> ev;
+    for (auto& x : iv) { ev.push_back({x[0], +1}); ev.push_back({x[1], -1}); }
+    sort(ev.begin(), ev.end());
+    int cur = 0, best = 0;
+    for (auto& [_, d] : ev) { cur += d; best = max(best, cur); }
+    return best;
 }
 ```
 :::
@@ -1148,6 +1980,44 @@ function fibBot(n) {
   return b;
 }
 ```
+
+```java
+Map<Integer, Integer> memo = new HashMap<>();
+int fibTop(int n) {
+    if (n < 2) return n;
+    Integer cached = memo.get(n);
+    if (cached != null) return cached;
+    int v = fibTop(n - 1) + fibTop(n - 2);
+    memo.put(n, v);
+    return v;
+}
+
+int fibBot(int n) {
+    if (n < 2) return n;
+    int a = 0, b = 1;
+    for (int i = 0; i < n - 1; i++) { int t = a + b; a = b; b = t; }
+    return b;
+}
+```
+
+```cpp
+unordered_map<int, int> memo;
+int fibTop(int n) {
+    if (n < 2) return n;
+    auto it = memo.find(n);
+    if (it != memo.end()) return it->second;
+    int v = fibTop(n - 1) + fibTop(n - 2);
+    memo[n] = v;
+    return v;
+}
+
+int fibBot(int n) {
+    if (n < 2) return n;
+    int a = 0, b = 1;
+    for (int i = 0; i < n - 1; i++) { int t = a + b; a = b; b = t; }
+    return b;
+}
+```
 :::
 **Pitfall.** Wrong state. Add or remove a dimension *deliberately* (see M.8).
 **Bridge → 3.2:** simplest case is a 1D state.
@@ -1170,6 +2040,28 @@ function rob(nums) {
   let p = 0, c = 0;
   for (const x of nums) [p, c] = [c, Math.max(c, p + x)];
   return c;
+}
+```
+
+```java
+int rob(int[] nums) {
+    int p = 0, c = 0;
+    for (int x : nums) {
+        int nc = Math.max(c, p + x);
+        p = c; c = nc;
+    }
+    return c;
+}
+```
+
+```cpp
+int rob(const vector<int>& nums) {
+    int p = 0, c = 0;
+    for (int x : nums) {
+        int nc = max(c, p + x);
+        p = c; c = nc;
+    }
+    return c;
 }
 ```
 :::
@@ -1201,6 +2093,34 @@ function lis(a) {
   return tails.length;
 }
 ```
+
+```java
+int lis(int[] a) {
+    List<Integer> tails = new ArrayList<>();
+    for (int x : a) {
+        int lo = 0, hi = tails.size();
+        while (lo < hi) {
+            int mid = (lo + hi) >>> 1;
+            if (tails.get(mid) < x) lo = mid + 1; else hi = mid;
+        }
+        if (lo == tails.size()) tails.add(x);
+        else tails.set(lo, x);
+    }
+    return tails.size();
+}
+```
+
+```cpp
+int lis(const vector<int>& a) {
+    vector<int> tails;
+    for (int x : a) {
+        auto it = lower_bound(tails.begin(), tails.end(), x);
+        if (it == tails.end()) tails.push_back(x);
+        else *it = x;
+    }
+    return (int)tails.size();
+}
+```
 :::
 **Classic problems.** House Robber I/II, Climbing Stairs, Decode Ways, LIS, Word Break, Coin Change (1D).
 **Pitfall.** Using only the last value when you actually need 2 prior states (Robber needs `p` *and* `c`).
@@ -1227,6 +2147,28 @@ function uniquePaths(m, n) {
     for (let j = 1; j < n; j++)
       dp[i][j] = dp[i - 1][j] + dp[i][j - 1];
   return dp[m - 1][n - 1];
+}
+```
+
+```java
+int uniquePaths(int m, int n) {
+    int[][] dp = new int[m][n];
+    for (int i = 0; i < m; i++) dp[i][0] = 1;
+    for (int j = 0; j < n; j++) dp[0][j] = 1;
+    for (int i = 1; i < m; i++)
+        for (int j = 1; j < n; j++)
+            dp[i][j] = dp[i - 1][j] + dp[i][j - 1];
+    return dp[m - 1][n - 1];
+}
+```
+
+```cpp
+int uniquePaths(int m, int n) {
+    vector<vector<int>> dp(m, vector<int>(n, 1));
+    for (int i = 1; i < m; i++)
+        for (int j = 1; j < n; j++)
+            dp[i][j] = dp[i - 1][j] + dp[i][j - 1];
+    return dp[m - 1][n - 1];
 }
 ```
 :::
@@ -1260,6 +2202,38 @@ function edit(a, b) {
   return dp[n][m];
 }
 ```
+
+```java
+int edit(String a, String b) {
+    int n = a.length(), m = b.length();
+    int[][] dp = new int[n + 1][m + 1];
+    for (int i = 0; i <= n; i++) dp[i][0] = i;
+    for (int j = 0; j <= m; j++) dp[0][j] = j;
+    for (int i = 1; i <= n; i++) {
+        for (int j = 1; j <= m; j++) {
+            if (a.charAt(i - 1) == b.charAt(j - 1)) dp[i][j] = dp[i - 1][j - 1];
+            else dp[i][j] = 1 + Math.min(dp[i - 1][j - 1], Math.min(dp[i - 1][j], dp[i][j - 1]));
+        }
+    }
+    return dp[n][m];
+}
+```
+
+```cpp
+int edit(const string& a, const string& b) {
+    int n = a.size(), m = b.size();
+    vector<vector<int>> dp(n + 1, vector<int>(m + 1, 0));
+    for (int i = 0; i <= n; i++) dp[i][0] = i;
+    for (int j = 0; j <= m; j++) dp[0][j] = j;
+    for (int i = 1; i <= n; i++) {
+        for (int j = 1; j <= m; j++) {
+            if (a[i - 1] == b[j - 1]) dp[i][j] = dp[i - 1][j - 1];
+            else dp[i][j] = 1 + min({dp[i - 1][j - 1], dp[i - 1][j], dp[i][j - 1]});
+        }
+    }
+    return dp[n][m];
+}
+```
 :::
 **Classic problems.** Unique Paths I/II, Min Path Sum, Edit Distance, Longest Common Subsequence, Maximal Square, Dungeon Game.
 **Pitfall.** Off-by-one on boundaries; allocate `(n+1) × (m+1)` and treat row/col 0 as base case.
@@ -1290,6 +2264,31 @@ function knapsack(W, items) {
   return dp[W];
 }
 ```
+
+```java
+int knapsack(int W, int[][] items) {
+    int[] dp = new int[W + 1];
+    for (int[] it : items) {
+        int w = it[0], v = it[1];
+        for (int c = W; c >= w; c--) {
+            dp[c] = Math.max(dp[c], dp[c - w] + v);
+        }
+    }
+    return dp[W];
+}
+```
+
+```cpp
+int knapsack(int W, const vector<pair<int,int>>& items) {
+    vector<int> dp(W + 1, 0);
+    for (auto& [w, v] : items) {
+        for (int c = W; c >= w; c--) {
+            dp[c] = max(dp[c], dp[c - w] + v);
+        }
+    }
+    return dp[W];
+}
+```
 :::
 **Example (Coin Change unbounded — min coins).**
 :::tabs
@@ -1312,6 +2311,33 @@ function coinChange(coins, amt) {
     for (let x = c; x <= amt; x++)
       dp[x] = Math.min(dp[x], dp[x - c] + 1);
   return dp[amt] === INF ? -1 : dp[amt];
+}
+```
+
+```java
+int coinChange(int[] coins, int amt) {
+    int INF = Integer.MAX_VALUE;
+    int[] dp = new int[amt + 1];
+    Arrays.fill(dp, INF);
+    dp[0] = 0;
+    for (int c : coins)
+        for (int x = c; x <= amt; x++)
+            if (dp[x - c] != INF)
+                dp[x] = Math.min(dp[x], dp[x - c] + 1);
+    return dp[amt] == INF ? -1 : dp[amt];
+}
+```
+
+```cpp
+int coinChange(const vector<int>& coins, int amt) {
+    const int INF = INT_MAX;
+    vector<int> dp(amt + 1, INF);
+    dp[0] = 0;
+    for (int c : coins)
+        for (int x = c; x <= amt; x++)
+            if (dp[x - c] != INF)
+                dp[x] = min(dp[x], dp[x - c] + 1);
+    return dp[amt] == INF ? -1 : dp[amt];
 }
 ```
 :::
@@ -1352,6 +2378,43 @@ function maxCoins(a) {
   return dp[0][n - 1];
 }
 ```
+
+```java
+int maxCoins(int[] a) {
+    int n = a.length + 2;
+    int[] b = new int[n];
+    b[0] = 1; b[n - 1] = 1;
+    for (int i = 0; i < a.length; i++) b[i + 1] = a[i];
+    int[][] dp = new int[n][n];
+    for (int length = 2; length < n; length++) {
+        for (int l = 0; l < n - length; l++) {
+            int r = l + length;
+            for (int k = l + 1; k < r; k++) {
+                dp[l][r] = Math.max(dp[l][r], dp[l][k] + dp[k][r] + b[l] * b[k] * b[r]);
+            }
+        }
+    }
+    return dp[0][n - 1];
+}
+```
+
+```cpp
+int maxCoins(vector<int> a) {
+    a.insert(a.begin(), 1);
+    a.push_back(1);
+    int n = a.size();
+    vector<vector<int>> dp(n, vector<int>(n, 0));
+    for (int length = 2; length < n; length++) {
+        for (int l = 0; l < n - length; l++) {
+            int r = l + length;
+            for (int k = l + 1; k < r; k++) {
+                dp[l][r] = max(dp[l][r], dp[l][k] + dp[k][r] + a[l] * a[k] * a[r]);
+            }
+        }
+    }
+    return dp[0][n - 1];
+}
+```
 :::
 **Classic problems.** Matrix Chain Multiplication, Burst Balloons, Stone Game, Strange Printer, Remove Boxes.
 **Pitfall.** Iteration order — increasing length, then left endpoint.
@@ -1383,6 +2446,35 @@ function robTree(root) {
     return [take, skip];
   };
   return Math.max(...go(root));
+}
+```
+
+```java
+int[] robTreeGo(TreeNode u) {
+    if (u == null) return new int[]{0, 0};
+    int[] L = robTreeGo(u.left), R = robTreeGo(u.right);
+    int take = u.val + L[1] + R[1];                                  // take u → skip kids
+    int skip = Math.max(L[0], L[1]) + Math.max(R[0], R[1]);          // skip u → choose max
+    return new int[]{take, skip};
+}
+int robTree(TreeNode root) {
+    int[] r = robTreeGo(root);
+    return Math.max(r[0], r[1]);
+}
+```
+
+```cpp
+pair<int,int> robTreeGo(TreeNode* u) {
+    if (!u) return {0, 0};
+    auto [Lt, Ls] = robTreeGo(u->left);
+    auto [Rt, Rs] = robTreeGo(u->right);
+    int take = u->val + Ls + Rs;             // take u → skip kids
+    int skip = max(Lt, Ls) + max(Rt, Rs);    // skip u → choose max
+    return {take, skip};
+}
+int robTree(TreeNode* root) {
+    auto [t, s] = robTreeGo(root);
+    return max(t, s);
 }
 ```
 :::
@@ -1433,6 +2525,56 @@ function tsp(dist) {
   let best = INF;
   for (let u = 0; u < n; u++) best = Math.min(best, dp[(1 << n) - 1][u] + dist[u][0]);
   return best;
+}
+```
+
+```java
+int tsp(int[][] dist) {
+    int n = dist.length, INF = Integer.MAX_VALUE / 2;
+    int[][] dp = new int[1 << n][n];
+    for (int[] row : dp) Arrays.fill(row, INF);
+    dp[1][0] = 0;
+    for (int mask = 0; mask < (1 << n); mask++) {
+        for (int u = 0; u < n; u++) {
+            if (((mask >> u) & 1) == 0) continue;
+            if (dp[mask][u] >= INF) continue;
+            for (int v = 0; v < n; v++) {
+                if (((mask >> v) & 1) != 0) continue;
+                int nm = mask | (1 << v);
+                if (dp[mask][u] + dist[u][v] < dp[nm][v]) {
+                    dp[nm][v] = dp[mask][u] + dist[u][v];
+                }
+            }
+        }
+    }
+    int best = INF;
+    for (int u = 0; u < n; u++) best = Math.min(best, dp[(1 << n) - 1][u] + dist[u][0]);
+    return best;
+}
+```
+
+```cpp
+int tsp(const vector<vector<int>>& dist) {
+    int n = dist.size();
+    const int INF = INT_MAX / 2;
+    vector<vector<int>> dp(1 << n, vector<int>(n, INF));
+    dp[1][0] = 0;
+    for (int mask = 0; mask < (1 << n); mask++) {
+        for (int u = 0; u < n; u++) {
+            if (!((mask >> u) & 1)) continue;
+            if (dp[mask][u] >= INF) continue;
+            for (int v = 0; v < n; v++) {
+                if ((mask >> v) & 1) continue;
+                int nm = mask | (1 << v);
+                if (dp[mask][u] + dist[u][v] < dp[nm][v]) {
+                    dp[nm][v] = dp[mask][u] + dist[u][v];
+                }
+            }
+        }
+    }
+    int best = INF;
+    for (int u = 0; u < n; u++) best = min(best, dp[(1 << n) - 1][u] + dist[u][0]);
+    return best;
 }
 ```
 :::
@@ -1502,6 +2644,45 @@ function bf(n, edges, s) {
   return d;
 }
 ```
+
+```java
+int[] bf(int n, int[][] edges, int s) {
+    int INF = Integer.MAX_VALUE / 2;
+    int[] d = new int[n];
+    Arrays.fill(d, INF);
+    d[s] = 0;
+    for (int i = 0; i < n - 1; i++) {
+        for (int[] e : edges) {
+            int u = e[0], v = e[1], w = e[2];
+            if (d[u] + w < d[v]) d[v] = d[u] + w;
+        }
+    }
+    // negative cycle?
+    for (int[] e : edges) {
+        if (d[e[0]] + e[2] < d[e[1]]) return null;
+    }
+    return d;
+}
+```
+
+```cpp
+optional<vector<int>> bf(int n, vector<vector<int>>& edges, int s) {
+    const int INF = INT_MAX / 2;
+    vector<int> d(n, INF);
+    d[s] = 0;
+    for (int i = 0; i < n - 1; i++) {
+        for (auto& e : edges) {
+            int u = e[0], v = e[1], w = e[2];
+            if (d[u] + w < d[v]) d[v] = d[u] + w;
+        }
+    }
+    // negative cycle?
+    for (auto& e : edges) {
+        if (d[e[0]] + e[2] < d[e[1]]) return nullopt;
+    }
+    return d;
+}
+```
 :::
 **Classic problems.** Detect Negative Cycle, Cheapest Flights with K Stops, Currency Arbitrage.
 **Pitfall.** Don't use SPFA in problems where adversarial inputs are possible — it can degrade to `O(VE)`.
@@ -1537,6 +2718,37 @@ function fw(n, edges) {
       for (let j = 0; j < n; j++)
         if (d[i][k] + d[k][j] < d[i][j]) d[i][j] = d[i][k] + d[k][j];
   return d;
+}
+```
+
+```java
+int[][] fw(int n, int[][] edges) {
+    int INF = Integer.MAX_VALUE / 2;
+    int[][] d = new int[n][n];
+    for (int[] row : d) Arrays.fill(row, INF);
+    for (int i = 0; i < n; i++) d[i][i] = 0;
+    for (int[] e : edges) d[e[0]][e[1]] = Math.min(d[e[0]][e[1]], e[2]);
+    for (int k = 0; k < n; k++)
+        for (int i = 0; i < n; i++)
+            for (int j = 0; j < n; j++)
+                if (d[i][k] + d[k][j] < d[i][j])
+                    d[i][j] = d[i][k] + d[k][j];
+    return d;
+}
+```
+
+```cpp
+vector<vector<int>> fw(int n, vector<vector<int>>& edges) {
+    const int INF = INT_MAX / 2;
+    vector<vector<int>> d(n, vector<int>(n, INF));
+    for (int i = 0; i < n; i++) d[i][i] = 0;
+    for (auto& e : edges) d[e[0]][e[1]] = min(d[e[0]][e[1]], e[2]);
+    for (int k = 0; k < n; k++)
+        for (int i = 0; i < n; i++)
+            for (int j = 0; j < n; j++)
+                if (d[i][k] + d[k][j] < d[i][j])
+                    d[i][j] = d[i][k] + d[k][j];
+    return d;
 }
 ```
 :::
@@ -1579,6 +2791,43 @@ function kruskal(n, edges) {
     if (ru !== rv) { p[ru] = rv; total += w; used++; }
   }
   return used === n - 1 ? total : -1;
+}
+```
+
+```java
+int kruskalFind(int[] p, int x) {
+    while (p[x] != x) { p[x] = p[p[x]]; x = p[x]; }
+    return x;
+}
+int kruskal(int n, int[][] edges) {
+    Arrays.sort(edges, (a, b) -> a[2] - b[2]);
+    int[] p = new int[n];
+    for (int i = 0; i < n; i++) p[i] = i;
+    int total = 0, used = 0;
+    for (int[] e : edges) {
+        int ru = kruskalFind(p, e[0]), rv = kruskalFind(p, e[1]);
+        if (ru != rv) { p[ru] = rv; total += e[2]; used++; }
+    }
+    return used == n - 1 ? total : -1;
+}
+```
+
+```cpp
+int kruskalFind(vector<int>& p, int x) {
+    while (p[x] != x) { p[x] = p[p[x]]; x = p[x]; }
+    return x;
+}
+int kruskal(int n, vector<vector<int>>& edges) {
+    sort(edges.begin(), edges.end(),
+         [](auto& a, auto& b) { return a[2] < b[2]; });
+    vector<int> p(n);
+    iota(p.begin(), p.end(), 0);
+    int total = 0, used = 0;
+    for (auto& e : edges) {
+        int ru = kruskalFind(p, e[0]), rv = kruskalFind(p, e[1]);
+        if (ru != rv) { p[ru] = rv; total += e[2]; used++; }
+    }
+    return used == n - 1 ? total : -1;
 }
 ```
 :::
@@ -1643,6 +2892,69 @@ class SegTree {
   }
 }
 ```
+
+```java
+class SegTree {
+    int n;
+    long[] t;
+    SegTree(int[] a) {
+        n = a.length;
+        t = new long[4 * n];
+        build(1, 0, n - 1, a);
+    }
+    void build(int node, int l, int r, int[] a) {
+        if (l == r) { t[node] = a[l]; return; }
+        int m = (l + r) >>> 1;
+        build(2 * node, l, m, a);
+        build(2 * node + 1, m + 1, r, a);
+        t[node] = t[2 * node] + t[2 * node + 1];
+    }
+    void update(int node, int l, int r, int i, int v) {
+        if (l == r) { t[node] = v; return; }
+        int m = (l + r) >>> 1;
+        if (i <= m) update(2 * node, l, m, i, v);
+        else        update(2 * node + 1, m + 1, r, i, v);
+        t[node] = t[2 * node] + t[2 * node + 1];
+    }
+    long query(int node, int l, int r, int ql, int qr) {
+        if (qr < l || r < ql) return 0;
+        if (ql <= l && r <= qr) return t[node];
+        int m = (l + r) >>> 1;
+        return query(2 * node, l, m, ql, qr) + query(2 * node + 1, m + 1, r, ql, qr);
+    }
+}
+```
+
+```cpp
+class SegTree {
+public:
+    int n;
+    vector<long long> t;
+    SegTree(const vector<int>& a) : n(a.size()), t(4 * a.size(), 0) {
+        build(1, 0, n - 1, a);
+    }
+    void build(int node, int l, int r, const vector<int>& a) {
+        if (l == r) { t[node] = a[l]; return; }
+        int m = (l + r) / 2;
+        build(2 * node, l, m, a);
+        build(2 * node + 1, m + 1, r, a);
+        t[node] = t[2 * node] + t[2 * node + 1];
+    }
+    void update(int node, int l, int r, int i, int v) {
+        if (l == r) { t[node] = v; return; }
+        int m = (l + r) / 2;
+        if (i <= m) update(2 * node, l, m, i, v);
+        else        update(2 * node + 1, m + 1, r, i, v);
+        t[node] = t[2 * node] + t[2 * node + 1];
+    }
+    long long query(int node, int l, int r, int ql, int qr) {
+        if (qr < l || r < ql) return 0;
+        if (ql <= l && r <= qr) return t[node];
+        int m = (l + r) / 2;
+        return query(2 * node, l, m, ql, qr) + query(2 * node + 1, m + 1, r, ql, qr);
+    }
+};
+```
 :::
 **Classic problems.** Range Sum Query Mutable, Count Smaller After Self, Reverse Pairs, Range Min Query.
 **Pitfall.** Allocate `4n` nodes, not `2n` (recursion-style needs the slack).
@@ -1678,6 +2990,41 @@ class BIT {
   }
   range(l, r) { return this.query(r) - this.query(l - 1); }
 }
+```
+
+```java
+class BIT {
+    int n;
+    long[] t;
+    BIT(int n) { this.n = n; this.t = new long[n + 1]; }
+    void update(int i, long v) {     // 1-indexed
+        for (; i <= n; i += i & -i) t[i] += v;
+    }
+    long query(int i) {
+        long s = 0;
+        for (; i > 0; i -= i & -i) s += t[i];
+        return s;
+    }
+    long range(int l, int r) { return query(r) - query(l - 1); }
+}
+```
+
+```cpp
+class BIT {
+public:
+    int n;
+    vector<long long> t;
+    BIT(int n) : n(n), t(n + 1, 0) {}
+    void update(int i, long long v) {     // 1-indexed
+        for (; i <= n; i += i & -i) t[i] += v;
+    }
+    long long query(int i) {
+        long long s = 0;
+        for (; i > 0; i -= i & -i) s += t[i];
+        return s;
+    }
+    long long range(int l, int r) { return query(r) - query(l - 1); }
+};
 ```
 :::
 **Classic problems.** Count of Smaller Numbers After Self, Reverse Pairs, Number of Inversions.
@@ -1775,6 +3122,34 @@ function zFunction(s) {
   return z;
 }
 ```
+
+```java
+int[] zFunction(String s) {
+    int n = s.length();
+    int[] z = new int[n];
+    int l = 0, r = 0;
+    for (int i = 1; i < n; i++) {
+        if (i < r) z[i] = Math.min(r - i, z[i - l]);
+        while (i + z[i] < n && s.charAt(z[i]) == s.charAt(i + z[i])) z[i]++;
+        if (i + z[i] > r) { l = i; r = i + z[i]; }
+    }
+    return z;
+}
+```
+
+```cpp
+vector<int> zFunction(const string& s) {
+    int n = s.size();
+    vector<int> z(n, 0);
+    int l = 0, r = 0;
+    for (int i = 1; i < n; i++) {
+        if (i < r) z[i] = min(r - i, z[i - l]);
+        while (i + z[i] < n && s[z[i]] == s[i + z[i]]) z[i]++;
+        if (i + z[i] > r) { l = i; r = i + z[i]; }
+    }
+    return z;
+}
+```
 :::
 **Classic problems.** Pattern Match (alternative to KMP), Palindromic Decomposition, String Matching with Wildcards.
 **Pitfall.** Many implementations subtly differ — pick one.
@@ -1818,6 +3193,48 @@ function rabinKarp(s, p, MOD = (1n << 61n) - 1n, BASE = 131n) {
     if (hp === ht && s.slice(i - m + 1, i + 1) === p) return i - m + 1;
   }
   return -1;
+}
+```
+
+```java
+int rabinKarp(String s, String p) {
+    final long MOD = (1L << 61) - 1, BASE = 131;
+    int n = s.length(), m = p.length();
+    if (m > n) return -1;
+    long hp = 0, ht = 0, pw = 1;
+    for (int i = 0; i < m; i++) {
+        hp = (hp * BASE + p.charAt(i)) % MOD;
+        ht = (ht * BASE + s.charAt(i)) % MOD;
+        if (i < m - 1) pw = pw * BASE % MOD;
+    }
+    if (hp == ht && s.substring(0, m).equals(p)) return 0;
+    for (int i = m; i < n; i++) {
+        ht = ((ht - s.charAt(i - m) * pw) % MOD * BASE + s.charAt(i)) % MOD;
+        ht = (ht % MOD + MOD) % MOD;          // keep non-negative
+        if (hp == ht && s.substring(i - m + 1, i + 1).equals(p)) return i - m + 1;
+    }
+    return -1;
+}
+```
+
+```cpp
+int rabinKarp(const string& s, const string& p) {
+    const long long MOD = (1LL << 61) - 1, BASE = 131;
+    int n = s.size(), m = p.size();
+    if (m > n) return -1;
+    long long hp = 0, ht = 0, pw = 1;
+    for (int i = 0; i < m; i++) {
+        hp = (hp * BASE + p[i]) % MOD;
+        ht = (ht * BASE + s[i]) % MOD;
+        if (i < m - 1) pw = pw * BASE % MOD;
+    }
+    if (hp == ht && s.substr(0, m) == p) return 0;
+    for (int i = m; i < n; i++) {
+        ht = ((ht - s[i - m] * pw) % MOD * BASE + s[i]) % MOD;
+        ht = (ht % MOD + MOD) % MOD;          // keep non-negative
+        if (hp == ht && s.substr(i - m + 1, m) == p) return i - m + 1;
+    }
+    return -1;
 }
 ```
 :::
@@ -1987,6 +3404,38 @@ function reservoir(stream, k = 1) {
     i++;
   }
   return res;
+}
+```
+
+```java
+List<Integer> reservoir(int[] stream, int k) {
+    Random rng = new Random();
+    List<Integer> res = new ArrayList<>();
+    for (int i = 0; i < stream.length; i++) {
+        if (i < k) res.add(stream[i]);
+        else if (rng.nextDouble() < (double) k / (i + 1)) {
+            res.set(rng.nextInt(k), stream[i]);
+        }
+    }
+    return res;
+}
+```
+
+```cpp
+vector<int> reservoir(const vector<int>& stream, int k) {
+    static mt19937 rng(random_device{}());
+    vector<int> res;
+    for (int i = 0; i < (int)stream.size(); i++) {
+        if (i < k) res.push_back(stream[i]);
+        else {
+            uniform_real_distribution<double> u(0.0, 1.0);
+            if (u(rng) < (double)k / (i + 1)) {
+                uniform_int_distribution<int> d(0, k - 1);
+                res[d(rng)] = stream[i];
+            }
+        }
+    }
+    return res;
 }
 ```
 :::

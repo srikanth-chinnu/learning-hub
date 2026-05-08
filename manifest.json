@@ -96,10 +96,10 @@
                   "text": "Sections in this guide"
                 }
               ],
-              "summary": "1. Data Structures & Problem Solving — From Beginner to Expert 2. TIER 1 — Beginner (foundations you cannot skip) - TIER 1 — Beginner (foundations you cannot skip) — Part 1: 1.1 Big-O thinking → 1.7 Queues - TIER 1 —…",
+              "summary": "1. Data Structures & Problem Solving — From Beginner to Expert 2. TIER 1 — Beginner (foundations you cannot skip) - TIER 1 — Beginner (foundations you cannot skip) — Part 1: 1.1 Big-O thinking → 1.5 Sliding window -…",
               "tag": "curriculum",
               "difficulty": "all-levels",
-              "words": 396,
+              "words": 536,
               "read_min": 2,
               "order": 1,
               "prev": "roadmap/main",
@@ -138,12 +138,12 @@
               "read_min": 3,
               "order": 2,
               "prev": "dsa/full",
-              "next": "dsa/full/tier-1-beginner-foundations-you-cannot-skip-part-1-11-big-o-thinking-17-queues"
+              "next": "dsa/full/tier-1-beginner-foundations-you-cannot-skip-part-1-11-big-o-thinking-15-sliding"
             },
             {
-              "id": "dsa/full/tier-1-beginner-foundations-you-cannot-skip-part-1-11-big-o-thinking-17-queues",
-              "title": "TIER 1 — Beginner (foundations you cannot skip) — Part 1: 1.1 Big-O thinking → 1.7 Queues",
-              "src": "content/dsa/full/tier-1-beginner-foundations-you-cannot-skip-part-1-11-big-o-thinking-17-queues.html",
+              "id": "dsa/full/tier-1-beginner-foundations-you-cannot-skip-part-1-11-big-o-thinking-15-sliding",
+              "title": "TIER 1 — Beginner (foundations you cannot skip) — Part 1: 1.1 Big-O thinking → 1.5 Sliding window",
+              "src": "content/dsa/full/tier-1-beginner-foundations-you-cannot-skip-part-1-11-big-o-thinking-15-sliding.html",
               "anchors": [
                 {
                   "level": 2,
@@ -169,7 +169,22 @@
                   "level": 2,
                   "id": "15-sliding-window",
                   "text": "1.5 Sliding window"
-                },
+                }
+              ],
+              "summary": "TIER 1 — Beginner (foundations you cannot skip) — Part 1: 1.1 Big-O thinking → 1.5 Sliding window",
+              "tag": "5-min",
+              "difficulty": "beginner",
+              "words": 1217,
+              "read_min": 6,
+              "order": 3,
+              "prev": "dsa/full/data-structures-problem-solving-from-beginner-to-expert",
+              "next": "dsa/full/tier-1-beginner-foundations-you-cannot-skip-part-2-16-stacks-19-recursion"
+            },
+            {
+              "id": "dsa/full/tier-1-beginner-foundations-you-cannot-skip-part-2-16-stacks-19-recursion",
+              "title": "TIER 1 — Beginner (foundations you cannot skip) — Part 2: 1.6 Stacks → 1.9 Recursion",
+              "src": "content/dsa/full/tier-1-beginner-foundations-you-cannot-skip-part-2-16-stacks-19-recursion.html",
+              "anchors": [
                 {
                   "level": 2,
                   "id": "16-stacks",
@@ -179,22 +194,7 @@
                   "level": 2,
                   "id": "17-queues",
                   "text": "1.7 Queues"
-                }
-              ],
-              "summary": "TIER 1 — Beginner (foundations you cannot skip) — Part 1: 1.1 Big-O thinking → 1.7 Queues",
-              "tag": "5-min",
-              "difficulty": "beginner",
-              "words": 1196,
-              "read_min": 5,
-              "order": 3,
-              "prev": "dsa/full/data-structures-problem-solving-from-beginner-to-expert",
-              "next": "dsa/full/tier-1-beginner-foundations-you-cannot-skip-part-2-18-binary-search-111-linked-l"
-            },
-            {
-              "id": "dsa/full/tier-1-beginner-foundations-you-cannot-skip-part-2-18-binary-search-111-linked-l",
-              "title": "TIER 1 — Beginner (foundations you cannot skip) — Part 2: 1.8 Binary search → 1.11 Linked lists",
-              "src": "content/dsa/full/tier-1-beginner-foundations-you-cannot-skip-part-2-18-binary-search-111-linked-l.html",
-              "anchors": [
+                },
                 {
                   "level": 2,
                   "id": "18-binary-search",
@@ -204,7 +204,22 @@
                   "level": 2,
                   "id": "19-recursion",
                   "text": "1.9 Recursion"
-                },
+                }
+              ],
+              "summary": "TIER 1 — Beginner (foundations you cannot skip) — Part 2: 1.6 Stacks → 1.9 Recursion",
+              "tag": "5-min",
+              "difficulty": "beginner",
+              "words": 1272,
+              "read_min": 6,
+              "order": 4,
+              "prev": "dsa/full/tier-1-beginner-foundations-you-cannot-skip-part-1-11-big-o-thinking-15-sliding",
+              "next": "dsa/full/tier-1-beginner-foundations-you-cannot-skip-part-3-110-sorting-basics-111-linked"
+            },
+            {
+              "id": "dsa/full/tier-1-beginner-foundations-you-cannot-skip-part-3-110-sorting-basics-111-linked",
+              "title": "TIER 1 — Beginner (foundations you cannot skip) — Part 3: 1.10 Sorting basics → 1.11 Linked lists",
+              "src": "content/dsa/full/tier-1-beginner-foundations-you-cannot-skip-part-3-110-sorting-basics-111-linked.html",
+              "anchors": [
                 {
                   "level": 2,
                   "id": "110-sorting-basics",
@@ -216,19 +231,19 @@
                   "text": "1.11 Linked lists"
                 }
               ],
-              "summary": "TIER 1 — Beginner (foundations you cannot skip) — Part 2: 1.8 Binary search → 1.11 Linked lists",
+              "summary": "TIER 1 — Beginner (foundations you cannot skip) — Part 3: 1.10 Sorting basics → 1.11 Linked lists",
               "tag": "5-min",
               "difficulty": "beginner",
-              "words": 711,
-              "read_min": 3,
-              "order": 4,
-              "prev": "dsa/full/tier-1-beginner-foundations-you-cannot-skip-part-1-11-big-o-thinking-17-queues",
-              "next": "dsa/full/tier-2-intermediate-interview-ready-part-1-21-tree-traversals-27-backtracking"
+              "words": 518,
+              "read_min": 2,
+              "order": 5,
+              "prev": "dsa/full/tier-1-beginner-foundations-you-cannot-skip-part-2-16-stacks-19-recursion",
+              "next": "dsa/full/tier-2-intermediate-interview-ready-part-1-21-tree-traversals-24-bfs-dfs"
             },
             {
-              "id": "dsa/full/tier-2-intermediate-interview-ready-part-1-21-tree-traversals-27-backtracking",
-              "title": "TIER 2 — Intermediate (interview-ready) — Part 1: 2.1 Tree traversals → 2.7 Backtracking",
-              "src": "content/dsa/full/tier-2-intermediate-interview-ready-part-1-21-tree-traversals-27-backtracking.html",
+              "id": "dsa/full/tier-2-intermediate-interview-ready-part-1-21-tree-traversals-24-bfs-dfs",
+              "title": "TIER 2 — Intermediate (interview-ready) — Part 1: 2.1 Tree traversals → 2.4 BFS / DFS",
+              "src": "content/dsa/full/tier-2-intermediate-interview-ready-part-1-21-tree-traversals-24-bfs-dfs.html",
               "anchors": [
                 {
                   "level": 2,
@@ -249,7 +264,22 @@
                   "level": 2,
                   "id": "24-bfs-dfs",
                   "text": "2.4 BFS / DFS"
-                },
+                }
+              ],
+              "summary": "def levelorder(root): from collections import deque q, out = deque([root]), [] while q: lvl = [] for in range(len(q)): n = q.popleft() if n: lvl.append(n.val); q.append(n.left); q.append(n.right) if lvl:…",
+              "tag": "5-min",
+              "difficulty": "intermediate",
+              "words": 1182,
+              "read_min": 5,
+              "order": 6,
+              "prev": "dsa/full/tier-1-beginner-foundations-you-cannot-skip-part-3-110-sorting-basics-111-linked",
+              "next": "dsa/full/tier-2-intermediate-interview-ready-part-2-25-topological-sort-27-backtracking"
+            },
+            {
+              "id": "dsa/full/tier-2-intermediate-interview-ready-part-2-25-topological-sort-27-backtracking",
+              "title": "TIER 2 — Intermediate (interview-ready) — Part 2: 2.5 Topological sort → 2.7 Backtracking",
+              "src": "content/dsa/full/tier-2-intermediate-interview-ready-part-2-25-topological-sort-27-backtracking.html",
+              "anchors": [
                 {
                   "level": 2,
                   "id": "25-topological-sort",
@@ -266,19 +296,19 @@
                   "text": "2.7 Backtracking"
                 }
               ],
-              "summary": "def levelorder(root): from collections import deque q, out = deque([root]), [] while q: lvl = [] for in range(len(q)): n = q.popleft() if n: lvl.append(n.val); q.append(n.left); q.append(n.right) if lvl:…",
+              "summary": "TIER 2 — Intermediate (interview-ready) — Part 2: 2.5 Topological sort → 2.7 Backtracking",
               "tag": "5-min",
               "difficulty": "intermediate",
-              "words": 1376,
+              "words": 1321,
               "read_min": 6,
-              "order": 5,
-              "prev": "dsa/full/tier-1-beginner-foundations-you-cannot-skip-part-2-18-binary-search-111-linked-l",
-              "next": "dsa/full/tier-2-intermediate-interview-ready-part-2-28-greedy-with-proof-213-monotonic-st"
+              "order": 7,
+              "prev": "dsa/full/tier-2-intermediate-interview-ready-part-1-21-tree-traversals-24-bfs-dfs",
+              "next": "dsa/full/tier-2-intermediate-interview-ready-part-3-28-greedy-with-proof-211-union-find-d"
             },
             {
-              "id": "dsa/full/tier-2-intermediate-interview-ready-part-2-28-greedy-with-proof-213-monotonic-st",
-              "title": "TIER 2 — Intermediate (interview-ready) — Part 2: 2.8 Greedy with proof → 2.13 Monotonic stack/deque",
-              "src": "content/dsa/full/tier-2-intermediate-interview-ready-part-2-28-greedy-with-proof-213-monotonic-st.html",
+              "id": "dsa/full/tier-2-intermediate-interview-ready-part-3-28-greedy-with-proof-211-union-find-d",
+              "title": "TIER 2 — Intermediate (interview-ready) — Part 3: 2.8 Greedy with proof → 2.11 Union-Find (DSU)",
+              "src": "content/dsa/full/tier-2-intermediate-interview-ready-part-3-28-greedy-with-proof-211-union-find-d.html",
               "anchors": [
                 {
                   "level": 2,
@@ -299,7 +329,22 @@
                   "level": 2,
                   "id": "211-union-find-dsu",
                   "text": "2.11 Union-Find (DSU)"
-                },
+                }
+              ],
+              "summary": "TIER 2 — Intermediate (interview-ready) — Part 3: 2.8 Greedy with proof → 2.11 Union-Find (DSU)",
+              "tag": "5-min",
+              "difficulty": "intermediate",
+              "words": 1125,
+              "read_min": 5,
+              "order": 8,
+              "prev": "dsa/full/tier-2-intermediate-interview-ready-part-2-25-topological-sort-27-backtracking",
+              "next": "dsa/full/tier-2-intermediate-interview-ready-part-4-212-tries-214-interval-problems"
+            },
+            {
+              "id": "dsa/full/tier-2-intermediate-interview-ready-part-4-212-tries-214-interval-problems",
+              "title": "TIER 2 — Intermediate (interview-ready) — Part 4: 2.12 Tries → 2.14 Interval problems",
+              "src": "content/dsa/full/tier-2-intermediate-interview-ready-part-4-212-tries-214-interval-problems.html",
+              "anchors": [
                 {
                   "level": 2,
                   "id": "212-tries",
@@ -309,41 +354,26 @@
                   "level": 2,
                   "id": "213-monotonic-stackdeque",
                   "text": "2.13 Monotonic stack/deque"
-                }
-              ],
-              "summary": "TIER 2 — Intermediate (interview-ready) — Part 2: 2.8 Greedy with proof → 2.13 Monotonic stack/deque",
-              "tag": "5-min",
-              "difficulty": "intermediate",
-              "words": 1210,
-              "read_min": 6,
-              "order": 6,
-              "prev": "dsa/full/tier-2-intermediate-interview-ready-part-1-21-tree-traversals-27-backtracking",
-              "next": "dsa/full/tier-2-intermediate-interview-ready-part-3-214-interval-problems"
-            },
-            {
-              "id": "dsa/full/tier-2-intermediate-interview-ready-part-3-214-interval-problems",
-              "title": "TIER 2 — Intermediate (interview-ready) — Part 3: 2.14 Interval problems",
-              "src": "content/dsa/full/tier-2-intermediate-interview-ready-part-3-214-interval-problems.html",
-              "anchors": [
+                },
                 {
                   "level": 2,
                   "id": "214-interval-problems",
                   "text": "2.14 Interval problems"
                 }
               ],
-              "summary": "TIER 2 — Intermediate (interview-ready) — Part 3: 2.14 Interval problems",
+              "summary": "void insert(String w) { Node n = root; for (char c : w.toCharArray()) { n = n.next.computeIfAbsent(c, k -> new Node()); } n.end = true; } boolean startsWith(String p) { Node n = root; for (char c : p.toCharArray()) { n…",
               "tag": "5-min",
               "difficulty": "intermediate",
-              "words": 273,
-              "read_min": 1,
-              "order": 7,
-              "prev": "dsa/full/tier-2-intermediate-interview-ready-part-2-28-greedy-with-proof-213-monotonic-st",
-              "next": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-1-31-dp-first-principles-35"
+              "words": 1307,
+              "read_min": 6,
+              "order": 9,
+              "prev": "dsa/full/tier-2-intermediate-interview-ready-part-3-28-greedy-with-proof-211-union-find-d",
+              "next": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-1-31-dp-first-principles-33"
             },
             {
-              "id": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-1-31-dp-first-principles-35",
-              "title": "TIER 3 — Advanced (DP, shortest paths, segment trees) — Part 1: 3.1 DP: first principles → 3.5 Interval DP",
-              "src": "content/dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-1-31-dp-first-principles-35.html",
+              "id": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-1-31-dp-first-principles-33",
+              "title": "TIER 3 — Advanced (DP, shortest paths, segment trees) — Part 1: 3.1 DP: first principles → 3.3 2D / grid DP",
+              "src": "content/dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-1-31-dp-first-principles-33.html",
               "anchors": [
                 {
                   "level": 2,
@@ -359,7 +389,22 @@
                   "level": 2,
                   "id": "33-2d-grid-dp",
                   "text": "3.3 2D / grid DP"
-                },
+                }
+              ],
+              "summary": "def fibbot(n): if n < 2: return n a, b = 0, 1 for in range(n - 1): a, b = b, a + b return b ",
+              "tag": "5-min",
+              "difficulty": "advanced",
+              "words": 1425,
+              "read_min": 6,
+              "order": 10,
+              "prev": "dsa/full/tier-2-intermediate-interview-ready-part-4-212-tries-214-interval-problems",
+              "next": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-2-34-knapsack-family-36-tre"
+            },
+            {
+              "id": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-2-34-knapsack-family-36-tre",
+              "title": "TIER 3 — Advanced (DP, shortest paths, segment trees) — Part 2: 3.4 Knapsack family → 3.6 Tree DP",
+              "src": "content/dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-2-34-knapsack-family-36-tre.html",
+              "anchors": [
                 {
                   "level": 2,
                   "id": "34-knapsack-family",
@@ -369,27 +414,27 @@
                   "level": 2,
                   "id": "35-interval-dp",
                   "text": "3.5 Interval DP"
-                }
-              ],
-              "summary": "def fibbot(n): if n < 2: return n a, b = 0, 1 for in range(n - 1): a, b = b, a + b return b ",
-              "tag": "5-min",
-              "difficulty": "advanced",
-              "words": 1276,
-              "read_min": 6,
-              "order": 8,
-              "prev": "dsa/full/tier-2-intermediate-interview-ready-part-3-214-interval-problems",
-              "next": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-2-36-tree-dp-310-floydwarsh"
-            },
-            {
-              "id": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-2-36-tree-dp-310-floydwarsh",
-              "title": "TIER 3 — Advanced (DP, shortest paths, segment trees) — Part 2: 3.6 Tree DP → 3.10 Floyd–Warshall",
-              "src": "content/dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-2-36-tree-dp-310-floydwarsh.html",
-              "anchors": [
+                },
                 {
                   "level": 2,
                   "id": "36-tree-dp",
                   "text": "3.6 Tree DP"
-                },
+                }
+              ],
+              "summary": "TIER 3 — Advanced (DP, shortest paths, segment trees) — Part 2: 3.4 Knapsack family → 3.6 Tree DP",
+              "tag": "5-min",
+              "difficulty": "advanced",
+              "words": 1164,
+              "read_min": 5,
+              "order": 11,
+              "prev": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-1-31-dp-first-principles-33",
+              "next": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-3-37-bitmask-dp-310-floydwa"
+            },
+            {
+              "id": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-3-37-bitmask-dp-310-floydwa",
+              "title": "TIER 3 — Advanced (DP, shortest paths, segment trees) — Part 3: 3.7 Bitmask DP → 3.10 Floyd–Warshall",
+              "src": "content/dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-3-37-bitmask-dp-310-floydwa.html",
+              "anchors": [
                 {
                   "level": 2,
                   "id": "37-bitmask-dp",
@@ -411,19 +456,19 @@
                   "text": "3.10 Floyd–Warshall"
                 }
               ],
-              "summary": "TIER 3 — Advanced (DP, shortest paths, segment trees) — Part 2: 3.6 Tree DP → 3.10 Floyd–Warshall",
+              "summary": "TIER 3 — Advanced (DP, shortest paths, segment trees) — Part 3: 3.7 Bitmask DP → 3.10 Floyd–Warshall",
               "tag": "5-min",
               "difficulty": "advanced",
-              "words": 1122,
-              "read_min": 5,
-              "order": 9,
-              "prev": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-1-31-dp-first-principles-35",
-              "next": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-3-311-mst-kruskal-prim-315"
+              "words": 1516,
+              "read_min": 7,
+              "order": 12,
+              "prev": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-2-34-knapsack-family-36-tre",
+              "next": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-4-311-mst-kruskal-prim-312"
             },
             {
-              "id": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-3-311-mst-kruskal-prim-315",
-              "title": "TIER 3 — Advanced (DP, shortest paths, segment trees) — Part 3: 3.11 MST: Kruskal & Prim → 3.15 KMP",
-              "src": "content/dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-3-311-mst-kruskal-prim-315.html",
+              "id": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-4-311-mst-kruskal-prim-312",
+              "title": "TIER 3 — Advanced (DP, shortest paths, segment trees) — Part 4: 3.11 MST: Kruskal & Prim → 3.12 Segment tree (point update)",
+              "src": "content/dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-4-311-mst-kruskal-prim-312.html",
               "anchors": [
                 {
                   "level": 2,
@@ -434,7 +479,22 @@
                   "level": 2,
                   "id": "312-segment-tree-point-update",
                   "text": "3.12 Segment tree (point update)"
-                },
+                }
+              ],
+              "summary": "TIER 3 — Advanced (DP, shortest paths, segment trees) — Part 4: 3.11 MST: Kruskal & Prim → 3.12 Segment tree (point update)",
+              "tag": "5-min",
+              "difficulty": "advanced",
+              "words": 1204,
+              "read_min": 5,
+              "order": 13,
+              "prev": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-3-37-bitmask-dp-310-floydwa",
+              "next": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-5-313-fenwick-bit-316-z-alg"
+            },
+            {
+              "id": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-5-313-fenwick-bit-316-z-alg",
+              "title": "TIER 3 — Advanced (DP, shortest paths, segment trees) — Part 5: 3.13 Fenwick / BIT → 3.16 Z-algorithm",
+              "src": "content/dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-5-313-fenwick-bit-316-z-alg.html",
+              "anchors": [
                 {
                   "level": 2,
                   "id": "313-fenwick-bit",
@@ -449,27 +509,27 @@
                   "level": 2,
                   "id": "315-kmp",
                   "text": "3.15 KMP"
-                }
-              ],
-              "summary": "TIER 3 — Advanced (DP, shortest paths, segment trees) — Part 3: 3.11 MST: Kruskal & Prim → 3.15 KMP",
-              "tag": "5-min",
-              "difficulty": "advanced",
-              "words": 1242,
-              "read_min": 6,
-              "order": 10,
-              "prev": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-2-36-tree-dp-310-floydwarsh",
-              "next": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-4-316-z-algorithm-318-a-sea"
-            },
-            {
-              "id": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-4-316-z-algorithm-318-a-sea",
-              "title": "TIER 3 — Advanced (DP, shortest paths, segment trees) — Part 4: 3.16 Z-algorithm → 3.18 A* search",
-              "src": "content/dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-4-316-z-algorithm-318-a-sea.html",
-              "anchors": [
+                },
                 {
                   "level": 2,
                   "id": "316-z-algorithm",
                   "text": "3.16 Z-algorithm"
-                },
+                }
+              ],
+              "summary": "TIER 3 — Advanced (DP, shortest paths, segment trees) — Part 5: 3.13 Fenwick / BIT → 3.16 Z-algorithm",
+              "tag": "5-min",
+              "difficulty": "advanced",
+              "words": 1041,
+              "read_min": 5,
+              "order": 14,
+              "prev": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-4-311-mst-kruskal-prim-312",
+              "next": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-6-317-rabinkarp-318-a-searc"
+            },
+            {
+              "id": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-6-317-rabinkarp-318-a-searc",
+              "title": "TIER 3 — Advanced (DP, shortest paths, segment trees) — Part 6: 3.17 Rabin–Karp → 3.18 A* search",
+              "src": "content/dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-6-317-rabinkarp-318-a-searc.html",
+              "anchors": [
                 {
                   "level": 2,
                   "id": "317-rabinkarp",
@@ -481,13 +541,13 @@
                   "text": "3.18 A* search"
                 }
               ],
-              "summary": "TIER 3 — Advanced (DP, shortest paths, segment trees) — Part 4: 3.16 Z-algorithm → 3.18 A* search",
+              "summary": "TIER 3 — Advanced (DP, shortest paths, segment trees) — Part 6: 3.17 Rabin–Karp → 3.18 A* search",
               "tag": "5-min",
               "difficulty": "advanced",
-              "words": 564,
+              "words": 617,
               "read_min": 3,
-              "order": 11,
-              "prev": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-3-311-mst-kruskal-prim-315",
+              "order": 15,
+              "prev": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-5-313-fenwick-bit-316-z-alg",
               "next": "dsa/full/tier-4-expert-rarely-interviewed-often-contest-decisive"
             },
             {
@@ -599,10 +659,10 @@
               "summary": "TIER 4 — Expert (rarely interviewed, often contest-decisive)",
               "tag": "5-min",
               "difficulty": "expert",
-              "words": 1305,
+              "words": 1415,
               "read_min": 6,
-              "order": 12,
-              "prev": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-4-316-z-algorithm-318-a-sea",
+              "order": 16,
+              "prev": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-6-317-rabinkarp-318-a-searc",
               "next": "dsa/full/meta-cross-cutting-problem-solving-skills"
             },
             {
@@ -686,7 +746,7 @@
               "difficulty": "all-levels",
               "words": 966,
               "read_min": 4,
-              "order": 13,
+              "order": 17,
               "prev": "dsa/full/tier-4-expert-rarely-interviewed-often-contest-decisive",
               "next": "dsa/full/practice-plan"
             },
@@ -716,7 +776,7 @@
               "difficulty": "all-levels",
               "words": 165,
               "read_min": 1,
-              "order": 14,
+              "order": 18,
               "prev": "dsa/full/meta-cross-cutting-problem-solving-skills",
               "next": "dsa/full/resources"
             },
@@ -730,7 +790,7 @@
               "difficulty": "all-levels",
               "words": 133,
               "read_min": 1,
-              "order": 15,
+              "order": 19,
               "prev": "dsa/full/practice-plan",
               "next": "dsa/full/footnotes-confidence"
             },
@@ -750,20 +810,20 @@
               "difficulty": "all-levels",
               "words": 280,
               "read_min": 1,
-              "order": 16,
+              "order": 20,
               "prev": "dsa/full/resources",
               "next": "sd/overview"
             }
           ]
         }
       ],
-      "total_min": 59,
-      "total_items": 16,
+      "total_min": 85,
+      "total_items": 20,
       "difficulty_counts": {
         "all-levels": 6,
-        "beginner": 2,
-        "intermediate": 3,
-        "advanced": 4,
+        "beginner": 3,
+        "intermediate": 4,
+        "advanced": 6,
         "expert": 1
       }
     },
@@ -856,7 +916,7 @@
               "difficulty": "all-levels",
               "words": 890,
               "read_min": 4,
-              "order": 17,
+              "order": 21,
               "prev": "dsa/full/footnotes-confidence",
               "next": "sd/tier-beginner"
             }
@@ -1016,7 +1076,7 @@
               "difficulty": "beginner",
               "words": 1194,
               "read_min": 5,
-              "order": 18,
+              "order": 22,
               "prev": "sd/overview",
               "next": "sd/tier-intermediate"
             },
@@ -1151,7 +1211,7 @@
               "difficulty": "intermediate",
               "words": 1399,
               "read_min": 6,
-              "order": 19,
+              "order": 23,
               "prev": "sd/tier-beginner",
               "next": "sd/tier-advanced"
             },
@@ -1431,7 +1491,7 @@
               "difficulty": "advanced",
               "words": 1754,
               "read_min": 8,
-              "order": 20,
+              "order": 24,
               "prev": "sd/tier-intermediate",
               "next": "sd/tier-expert"
             },
@@ -1561,7 +1621,7 @@
               "difficulty": "expert",
               "words": 1873,
               "read_min": 9,
-              "order": 21,
+              "order": 25,
               "prev": "sd/tier-advanced",
               "next": "sd/tradeoffs"
             }
@@ -1586,7 +1646,7 @@
               "difficulty": "advanced",
               "words": 281,
               "read_min": 1,
-              "order": 22,
+              "order": 26,
               "prev": "sd/tier-expert",
               "next": "sd/tradeoffs/trade-offs-in-system-design-a-comprehensive-guide-hld-lld-in-python-c"
             }
@@ -1611,7 +1671,7 @@
               "difficulty": "advanced",
               "words": 379,
               "read_min": 2,
-              "order": 23,
+              "order": 27,
               "prev": "sd/tradeoffs",
               "next": "sd/tradeoffs/part-1-how-to-think-about-trade-offs"
             },
@@ -1666,7 +1726,7 @@
               "difficulty": "advanced",
               "words": 857,
               "read_min": 4,
-              "order": 24,
+              "order": 28,
               "prev": "sd/tradeoffs/trade-offs-in-system-design-a-comprehensive-guide-hld-lld-in-python-c",
               "next": "sd/tradeoffs/part-2-hld-trade-offs-part-1-2a-foundational-theorems-2b-data-tier-trade-offs"
             },
@@ -1766,7 +1826,7 @@
               "difficulty": "advanced",
               "words": 1616,
               "read_min": 7,
-              "order": 25,
+              "order": 29,
               "prev": "sd/tradeoffs/part-1-how-to-think-about-trade-offs",
               "next": "sd/tradeoffs/part-2-hld-trade-offs-part-2-2c-architecture-pattern-trade-offs-2e-operations-tr"
             },
@@ -1866,7 +1926,7 @@
               "difficulty": "advanced",
               "words": 1197,
               "read_min": 5,
-              "order": 26,
+              "order": 30,
               "prev": "sd/tradeoffs/part-2-hld-trade-offs-part-1-2a-foundational-theorems-2b-data-tier-trade-offs",
               "next": "sd/tradeoffs/part-3-lld-trade-offs-python"
             },
@@ -1966,7 +2026,7 @@
               "difficulty": "advanced",
               "words": 1471,
               "read_min": 7,
-              "order": 27,
+              "order": 31,
               "prev": "sd/tradeoffs/part-2-hld-trade-offs-part-2-2c-architecture-pattern-trade-offs-2e-operations-tr",
               "next": "sd/tradeoffs/part-4-lld-trade-offs-c-part-1-41-parameter-passing-cg-f16-f17-f18-f19-f20-49-in"
             },
@@ -2026,7 +2086,7 @@
               "difficulty": "advanced",
               "words": 1137,
               "read_min": 5,
-              "order": 28,
+              "order": 32,
               "prev": "sd/tradeoffs/part-3-lld-trade-offs-python",
               "next": "sd/tradeoffs/part-4-lld-trade-offs-c-part-2-410-ebo-and-no_unique_address-c20-422-pimpl-idiom"
             },
@@ -2106,7 +2166,7 @@
               "difficulty": "advanced",
               "words": 1151,
               "read_min": 5,
-              "order": 29,
+              "order": 33,
               "prev": "sd/tradeoffs/part-4-lld-trade-offs-c-part-1-41-parameter-passing-cg-f16-f17-f18-f19-f20-49-in",
               "next": "sd/tradeoffs/part-5-decision-matrices"
             },
@@ -2146,7 +2206,7 @@
               "difficulty": "advanced",
               "words": 324,
               "read_min": 1,
-              "order": 30,
+              "order": 34,
               "prev": "sd/tradeoffs/part-4-lld-trade-offs-c-part-2-410-ebo-and-no_unique_address-c20-422-pimpl-idiom",
               "next": "sd/tradeoffs/part-6-real-world-case-studies"
             },
@@ -2171,7 +2231,7 @@
               "difficulty": "advanced",
               "words": 352,
               "read_min": 2,
-              "order": 31,
+              "order": 35,
               "prev": "sd/tradeoffs/part-5-decision-matrices",
               "next": "sd/tradeoffs/confidence-assessment"
             },
@@ -2185,7 +2245,7 @@
               "difficulty": "advanced",
               "words": 147,
               "read_min": 1,
-              "order": 32,
+              "order": 36,
               "prev": "sd/tradeoffs/part-6-real-world-case-studies",
               "next": "sd/tradeoffs/citations-references"
             },
@@ -2199,7 +2259,7 @@
               "difficulty": "advanced",
               "words": 339,
               "read_min": 2,
-              "order": 33,
+              "order": 37,
               "prev": "sd/tradeoffs/confidence-assessment",
               "next": "sd/5min/index"
             }
@@ -2274,7 +2334,7 @@
               "difficulty": "all-levels",
               "words": 533,
               "read_min": 2,
-              "order": 34,
+              "order": 38,
               "prev": "sd/tradeoffs/citations-references",
               "next": "sd/5min/what-is-system-design"
             },
@@ -2329,7 +2389,7 @@
               "difficulty": "all-levels",
               "words": 563,
               "read_min": 3,
-              "order": 35,
+              "order": 39,
               "prev": "sd/5min/index",
               "next": "sd/5min/scalability-basics"
             },
@@ -2399,7 +2459,7 @@
               "difficulty": "all-levels",
               "words": 601,
               "read_min": 3,
-              "order": 36,
+              "order": 40,
               "prev": "sd/5min/what-is-system-design",
               "next": "sd/5min/latency-vs-throughput"
             },
@@ -2459,7 +2519,7 @@
               "difficulty": "all-levels",
               "words": 620,
               "read_min": 3,
-              "order": 37,
+              "order": 41,
               "prev": "sd/5min/scalability-basics",
               "next": "sd/5min/api-styles"
             },
@@ -2539,7 +2599,7 @@
               "difficulty": "all-levels",
               "words": 538,
               "read_min": 2,
-              "order": 38,
+              "order": 42,
               "prev": "sd/5min/latency-vs-throughput",
               "next": "sd/5min/sql-vs-nosql"
             },
@@ -2614,7 +2674,7 @@
               "difficulty": "all-levels",
               "words": 696,
               "read_min": 3,
-              "order": 39,
+              "order": 43,
               "prev": "sd/5min/api-styles",
               "next": "sd/5min/load-balancing"
             },
@@ -2684,7 +2744,7 @@
               "difficulty": "all-levels",
               "words": 658,
               "read_min": 3,
-              "order": 40,
+              "order": 44,
               "prev": "sd/5min/sql-vs-nosql",
               "next": "sd/5min/caching"
             },
@@ -2774,7 +2834,7 @@
               "difficulty": "all-levels",
               "words": 735,
               "read_min": 3,
-              "order": 41,
+              "order": 45,
               "prev": "sd/5min/load-balancing",
               "next": "sd/5min/cdn"
             },
@@ -2864,7 +2924,7 @@
               "difficulty": "all-levels",
               "words": 660,
               "read_min": 3,
-              "order": 42,
+              "order": 46,
               "prev": "sd/5min/caching",
               "next": "sd/5min/database-replication"
             },
@@ -2959,7 +3019,7 @@
               "difficulty": "all-levels",
               "words": 656,
               "read_min": 3,
-              "order": 43,
+              "order": 47,
               "prev": "sd/5min/cdn",
               "next": "sd/5min/database-sharding"
             },
@@ -3069,7 +3129,7 @@
               "difficulty": "all-levels",
               "words": 744,
               "read_min": 3,
-              "order": 44,
+              "order": 48,
               "prev": "sd/5min/database-replication",
               "next": "sd/5min/consistent-hashing"
             },
@@ -3154,7 +3214,7 @@
               "difficulty": "all-levels",
               "words": 729,
               "read_min": 3,
-              "order": 45,
+              "order": 49,
               "prev": "sd/5min/database-sharding",
               "next": "sd/5min/microservices"
             },
@@ -3234,7 +3294,7 @@
               "difficulty": "all-levels",
               "words": 720,
               "read_min": 3,
-              "order": 46,
+              "order": 50,
               "prev": "sd/5min/consistent-hashing",
               "next": "sd/5min/message-queues"
             },
@@ -3339,7 +3399,7 @@
               "difficulty": "all-levels",
               "words": 740,
               "read_min": 3,
-              "order": 47,
+              "order": 51,
               "prev": "sd/5min/microservices",
               "next": "sd/5min/rate-limiting"
             },
@@ -3454,7 +3514,7 @@
               "difficulty": "all-levels",
               "words": 808,
               "read_min": 4,
-              "order": 48,
+              "order": 52,
               "prev": "sd/5min/message-queues",
               "next": "sd/5min/cap-theorem"
             },
@@ -3549,7 +3609,7 @@
               "difficulty": "all-levels",
               "words": 755,
               "read_min": 3,
-              "order": 49,
+              "order": 53,
               "prev": "sd/5min/rate-limiting",
               "next": "sd/5min/consistency-models"
             },
@@ -3639,7 +3699,7 @@
               "difficulty": "all-levels",
               "words": 756,
               "read_min": 3,
-              "order": 50,
+              "order": 54,
               "prev": "sd/5min/cap-theorem",
               "next": "sd/5min/consensus-raft-paxos"
             },
@@ -3729,7 +3789,7 @@
               "difficulty": "all-levels",
               "words": 923,
               "read_min": 4,
-              "order": 51,
+              "order": 55,
               "prev": "sd/5min/consistency-models",
               "next": "sd/5min/event-driven-and-saga"
             },
@@ -3834,7 +3894,7 @@
               "difficulty": "all-levels",
               "words": 774,
               "read_min": 4,
-              "order": 52,
+              "order": 56,
               "prev": "sd/5min/consensus-raft-paxos",
               "next": "sd/5min/resilience-patterns"
             },
@@ -3952,9 +4012,9 @@
               "summary": "You have 10 microservices. Service B starts responding slowly. Service A calls B, A's threads pile up waiting. Service C calls A, C's threads pile up waiting. The whole system grinds to a halt.",
               "tag": "5-min",
               "difficulty": "all-levels",
-              "words": 951,
-              "read_min": 4,
-              "order": 53,
+              "words": 1156,
+              "read_min": 5,
+              "order": 57,
               "prev": "sd/5min/event-driven-and-saga",
               "next": "sd/5min/observability"
             },
@@ -4034,14 +4094,14 @@
               "difficulty": "all-levels",
               "words": 943,
               "read_min": 4,
-              "order": 54,
+              "order": 58,
               "prev": "sd/5min/resilience-patterns",
               "next": null
             }
           ]
         }
       ],
-      "total_min": 140,
+      "total_min": 141,
       "total_items": 38,
       "difficulty_counts": {
         "all-levels": 22,
@@ -4124,10 +4184,10 @@
           "text": "Sections in this guide"
         }
       ],
-      "summary": "1. Data Structures & Problem Solving — From Beginner to Expert 2. TIER 1 — Beginner (foundations you cannot skip) - TIER 1 — Beginner (foundations you cannot skip) — Part 1: 1.1 Big-O thinking → 1.7 Queues - TIER 1 —…",
+      "summary": "1. Data Structures & Problem Solving — From Beginner to Expert 2. TIER 1 — Beginner (foundations you cannot skip) - TIER 1 — Beginner (foundations you cannot skip) — Part 1: 1.1 Big-O thinking → 1.5 Sliding window -…",
       "tag": "curriculum",
       "difficulty": "all-levels",
-      "words": 396,
+      "words": 536,
       "read_min": 2,
       "order": 1,
       "prev": "roadmap/main",
@@ -4161,12 +4221,12 @@
       "read_min": 3,
       "order": 2,
       "prev": "dsa/full",
-      "next": "dsa/full/tier-1-beginner-foundations-you-cannot-skip-part-1-11-big-o-thinking-17-queues"
+      "next": "dsa/full/tier-1-beginner-foundations-you-cannot-skip-part-1-11-big-o-thinking-15-sliding"
     },
     {
-      "id": "dsa/full/tier-1-beginner-foundations-you-cannot-skip-part-1-11-big-o-thinking-17-queues",
-      "title": "TIER 1 — Beginner (foundations you cannot skip) — Part 1: 1.1 Big-O thinking → 1.7 Queues",
-      "src": "content/dsa/full/tier-1-beginner-foundations-you-cannot-skip-part-1-11-big-o-thinking-17-queues.html",
+      "id": "dsa/full/tier-1-beginner-foundations-you-cannot-skip-part-1-11-big-o-thinking-15-sliding",
+      "title": "TIER 1 — Beginner (foundations you cannot skip) — Part 1: 1.1 Big-O thinking → 1.5 Sliding window",
+      "src": "content/dsa/full/tier-1-beginner-foundations-you-cannot-skip-part-1-11-big-o-thinking-15-sliding.html",
       "anchors": [
         {
           "level": 2,
@@ -4192,7 +4252,22 @@
           "level": 2,
           "id": "15-sliding-window",
           "text": "1.5 Sliding window"
-        },
+        }
+      ],
+      "summary": "TIER 1 — Beginner (foundations you cannot skip) — Part 1: 1.1 Big-O thinking → 1.5 Sliding window",
+      "tag": "5-min",
+      "difficulty": "beginner",
+      "words": 1217,
+      "read_min": 6,
+      "order": 3,
+      "prev": "dsa/full/data-structures-problem-solving-from-beginner-to-expert",
+      "next": "dsa/full/tier-1-beginner-foundations-you-cannot-skip-part-2-16-stacks-19-recursion"
+    },
+    {
+      "id": "dsa/full/tier-1-beginner-foundations-you-cannot-skip-part-2-16-stacks-19-recursion",
+      "title": "TIER 1 — Beginner (foundations you cannot skip) — Part 2: 1.6 Stacks → 1.9 Recursion",
+      "src": "content/dsa/full/tier-1-beginner-foundations-you-cannot-skip-part-2-16-stacks-19-recursion.html",
+      "anchors": [
         {
           "level": 2,
           "id": "16-stacks",
@@ -4202,22 +4277,7 @@
           "level": 2,
           "id": "17-queues",
           "text": "1.7 Queues"
-        }
-      ],
-      "summary": "TIER 1 — Beginner (foundations you cannot skip) — Part 1: 1.1 Big-O thinking → 1.7 Queues",
-      "tag": "5-min",
-      "difficulty": "beginner",
-      "words": 1196,
-      "read_min": 5,
-      "order": 3,
-      "prev": "dsa/full/data-structures-problem-solving-from-beginner-to-expert",
-      "next": "dsa/full/tier-1-beginner-foundations-you-cannot-skip-part-2-18-binary-search-111-linked-l"
-    },
-    {
-      "id": "dsa/full/tier-1-beginner-foundations-you-cannot-skip-part-2-18-binary-search-111-linked-l",
-      "title": "TIER 1 — Beginner (foundations you cannot skip) — Part 2: 1.8 Binary search → 1.11 Linked lists",
-      "src": "content/dsa/full/tier-1-beginner-foundations-you-cannot-skip-part-2-18-binary-search-111-linked-l.html",
-      "anchors": [
+        },
         {
           "level": 2,
           "id": "18-binary-search",
@@ -4227,7 +4287,22 @@
           "level": 2,
           "id": "19-recursion",
           "text": "1.9 Recursion"
-        },
+        }
+      ],
+      "summary": "TIER 1 — Beginner (foundations you cannot skip) — Part 2: 1.6 Stacks → 1.9 Recursion",
+      "tag": "5-min",
+      "difficulty": "beginner",
+      "words": 1272,
+      "read_min": 6,
+      "order": 4,
+      "prev": "dsa/full/tier-1-beginner-foundations-you-cannot-skip-part-1-11-big-o-thinking-15-sliding",
+      "next": "dsa/full/tier-1-beginner-foundations-you-cannot-skip-part-3-110-sorting-basics-111-linked"
+    },
+    {
+      "id": "dsa/full/tier-1-beginner-foundations-you-cannot-skip-part-3-110-sorting-basics-111-linked",
+      "title": "TIER 1 — Beginner (foundations you cannot skip) — Part 3: 1.10 Sorting basics → 1.11 Linked lists",
+      "src": "content/dsa/full/tier-1-beginner-foundations-you-cannot-skip-part-3-110-sorting-basics-111-linked.html",
+      "anchors": [
         {
           "level": 2,
           "id": "110-sorting-basics",
@@ -4239,19 +4314,19 @@
           "text": "1.11 Linked lists"
         }
       ],
-      "summary": "TIER 1 — Beginner (foundations you cannot skip) — Part 2: 1.8 Binary search → 1.11 Linked lists",
+      "summary": "TIER 1 — Beginner (foundations you cannot skip) — Part 3: 1.10 Sorting basics → 1.11 Linked lists",
       "tag": "5-min",
       "difficulty": "beginner",
-      "words": 711,
-      "read_min": 3,
-      "order": 4,
-      "prev": "dsa/full/tier-1-beginner-foundations-you-cannot-skip-part-1-11-big-o-thinking-17-queues",
-      "next": "dsa/full/tier-2-intermediate-interview-ready-part-1-21-tree-traversals-27-backtracking"
+      "words": 518,
+      "read_min": 2,
+      "order": 5,
+      "prev": "dsa/full/tier-1-beginner-foundations-you-cannot-skip-part-2-16-stacks-19-recursion",
+      "next": "dsa/full/tier-2-intermediate-interview-ready-part-1-21-tree-traversals-24-bfs-dfs"
     },
     {
-      "id": "dsa/full/tier-2-intermediate-interview-ready-part-1-21-tree-traversals-27-backtracking",
-      "title": "TIER 2 — Intermediate (interview-ready) — Part 1: 2.1 Tree traversals → 2.7 Backtracking",
-      "src": "content/dsa/full/tier-2-intermediate-interview-ready-part-1-21-tree-traversals-27-backtracking.html",
+      "id": "dsa/full/tier-2-intermediate-interview-ready-part-1-21-tree-traversals-24-bfs-dfs",
+      "title": "TIER 2 — Intermediate (interview-ready) — Part 1: 2.1 Tree traversals → 2.4 BFS / DFS",
+      "src": "content/dsa/full/tier-2-intermediate-interview-ready-part-1-21-tree-traversals-24-bfs-dfs.html",
       "anchors": [
         {
           "level": 2,
@@ -4272,7 +4347,22 @@
           "level": 2,
           "id": "24-bfs-dfs",
           "text": "2.4 BFS / DFS"
-        },
+        }
+      ],
+      "summary": "def levelorder(root): from collections import deque q, out = deque([root]), [] while q: lvl = [] for in range(len(q)): n = q.popleft() if n: lvl.append(n.val); q.append(n.left); q.append(n.right) if lvl:…",
+      "tag": "5-min",
+      "difficulty": "intermediate",
+      "words": 1182,
+      "read_min": 5,
+      "order": 6,
+      "prev": "dsa/full/tier-1-beginner-foundations-you-cannot-skip-part-3-110-sorting-basics-111-linked",
+      "next": "dsa/full/tier-2-intermediate-interview-ready-part-2-25-topological-sort-27-backtracking"
+    },
+    {
+      "id": "dsa/full/tier-2-intermediate-interview-ready-part-2-25-topological-sort-27-backtracking",
+      "title": "TIER 2 — Intermediate (interview-ready) — Part 2: 2.5 Topological sort → 2.7 Backtracking",
+      "src": "content/dsa/full/tier-2-intermediate-interview-ready-part-2-25-topological-sort-27-backtracking.html",
+      "anchors": [
         {
           "level": 2,
           "id": "25-topological-sort",
@@ -4289,19 +4379,19 @@
           "text": "2.7 Backtracking"
         }
       ],
-      "summary": "def levelorder(root): from collections import deque q, out = deque([root]), [] while q: lvl = [] for in range(len(q)): n = q.popleft() if n: lvl.append(n.val); q.append(n.left); q.append(n.right) if lvl:…",
+      "summary": "TIER 2 — Intermediate (interview-ready) — Part 2: 2.5 Topological sort → 2.7 Backtracking",
       "tag": "5-min",
       "difficulty": "intermediate",
-      "words": 1376,
+      "words": 1321,
       "read_min": 6,
-      "order": 5,
-      "prev": "dsa/full/tier-1-beginner-foundations-you-cannot-skip-part-2-18-binary-search-111-linked-l",
-      "next": "dsa/full/tier-2-intermediate-interview-ready-part-2-28-greedy-with-proof-213-monotonic-st"
+      "order": 7,
+      "prev": "dsa/full/tier-2-intermediate-interview-ready-part-1-21-tree-traversals-24-bfs-dfs",
+      "next": "dsa/full/tier-2-intermediate-interview-ready-part-3-28-greedy-with-proof-211-union-find-d"
     },
     {
-      "id": "dsa/full/tier-2-intermediate-interview-ready-part-2-28-greedy-with-proof-213-monotonic-st",
-      "title": "TIER 2 — Intermediate (interview-ready) — Part 2: 2.8 Greedy with proof → 2.13 Monotonic stack/deque",
-      "src": "content/dsa/full/tier-2-intermediate-interview-ready-part-2-28-greedy-with-proof-213-monotonic-st.html",
+      "id": "dsa/full/tier-2-intermediate-interview-ready-part-3-28-greedy-with-proof-211-union-find-d",
+      "title": "TIER 2 — Intermediate (interview-ready) — Part 3: 2.8 Greedy with proof → 2.11 Union-Find (DSU)",
+      "src": "content/dsa/full/tier-2-intermediate-interview-ready-part-3-28-greedy-with-proof-211-union-find-d.html",
       "anchors": [
         {
           "level": 2,
@@ -4322,7 +4412,22 @@
           "level": 2,
           "id": "211-union-find-dsu",
           "text": "2.11 Union-Find (DSU)"
-        },
+        }
+      ],
+      "summary": "TIER 2 — Intermediate (interview-ready) — Part 3: 2.8 Greedy with proof → 2.11 Union-Find (DSU)",
+      "tag": "5-min",
+      "difficulty": "intermediate",
+      "words": 1125,
+      "read_min": 5,
+      "order": 8,
+      "prev": "dsa/full/tier-2-intermediate-interview-ready-part-2-25-topological-sort-27-backtracking",
+      "next": "dsa/full/tier-2-intermediate-interview-ready-part-4-212-tries-214-interval-problems"
+    },
+    {
+      "id": "dsa/full/tier-2-intermediate-interview-ready-part-4-212-tries-214-interval-problems",
+      "title": "TIER 2 — Intermediate (interview-ready) — Part 4: 2.12 Tries → 2.14 Interval problems",
+      "src": "content/dsa/full/tier-2-intermediate-interview-ready-part-4-212-tries-214-interval-problems.html",
+      "anchors": [
         {
           "level": 2,
           "id": "212-tries",
@@ -4332,41 +4437,26 @@
           "level": 2,
           "id": "213-monotonic-stackdeque",
           "text": "2.13 Monotonic stack/deque"
-        }
-      ],
-      "summary": "TIER 2 — Intermediate (interview-ready) — Part 2: 2.8 Greedy with proof → 2.13 Monotonic stack/deque",
-      "tag": "5-min",
-      "difficulty": "intermediate",
-      "words": 1210,
-      "read_min": 6,
-      "order": 6,
-      "prev": "dsa/full/tier-2-intermediate-interview-ready-part-1-21-tree-traversals-27-backtracking",
-      "next": "dsa/full/tier-2-intermediate-interview-ready-part-3-214-interval-problems"
-    },
-    {
-      "id": "dsa/full/tier-2-intermediate-interview-ready-part-3-214-interval-problems",
-      "title": "TIER 2 — Intermediate (interview-ready) — Part 3: 2.14 Interval problems",
-      "src": "content/dsa/full/tier-2-intermediate-interview-ready-part-3-214-interval-problems.html",
-      "anchors": [
+        },
         {
           "level": 2,
           "id": "214-interval-problems",
           "text": "2.14 Interval problems"
         }
       ],
-      "summary": "TIER 2 — Intermediate (interview-ready) — Part 3: 2.14 Interval problems",
+      "summary": "void insert(String w) { Node n = root; for (char c : w.toCharArray()) { n = n.next.computeIfAbsent(c, k -> new Node()); } n.end = true; } boolean startsWith(String p) { Node n = root; for (char c : p.toCharArray()) { n…",
       "tag": "5-min",
       "difficulty": "intermediate",
-      "words": 273,
-      "read_min": 1,
-      "order": 7,
-      "prev": "dsa/full/tier-2-intermediate-interview-ready-part-2-28-greedy-with-proof-213-monotonic-st",
-      "next": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-1-31-dp-first-principles-35"
+      "words": 1307,
+      "read_min": 6,
+      "order": 9,
+      "prev": "dsa/full/tier-2-intermediate-interview-ready-part-3-28-greedy-with-proof-211-union-find-d",
+      "next": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-1-31-dp-first-principles-33"
     },
     {
-      "id": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-1-31-dp-first-principles-35",
-      "title": "TIER 3 — Advanced (DP, shortest paths, segment trees) — Part 1: 3.1 DP: first principles → 3.5 Interval DP",
-      "src": "content/dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-1-31-dp-first-principles-35.html",
+      "id": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-1-31-dp-first-principles-33",
+      "title": "TIER 3 — Advanced (DP, shortest paths, segment trees) — Part 1: 3.1 DP: first principles → 3.3 2D / grid DP",
+      "src": "content/dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-1-31-dp-first-principles-33.html",
       "anchors": [
         {
           "level": 2,
@@ -4382,7 +4472,22 @@
           "level": 2,
           "id": "33-2d-grid-dp",
           "text": "3.3 2D / grid DP"
-        },
+        }
+      ],
+      "summary": "def fibbot(n): if n < 2: return n a, b = 0, 1 for in range(n - 1): a, b = b, a + b return b ",
+      "tag": "5-min",
+      "difficulty": "advanced",
+      "words": 1425,
+      "read_min": 6,
+      "order": 10,
+      "prev": "dsa/full/tier-2-intermediate-interview-ready-part-4-212-tries-214-interval-problems",
+      "next": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-2-34-knapsack-family-36-tre"
+    },
+    {
+      "id": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-2-34-knapsack-family-36-tre",
+      "title": "TIER 3 — Advanced (DP, shortest paths, segment trees) — Part 2: 3.4 Knapsack family → 3.6 Tree DP",
+      "src": "content/dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-2-34-knapsack-family-36-tre.html",
+      "anchors": [
         {
           "level": 2,
           "id": "34-knapsack-family",
@@ -4392,27 +4497,27 @@
           "level": 2,
           "id": "35-interval-dp",
           "text": "3.5 Interval DP"
-        }
-      ],
-      "summary": "def fibbot(n): if n < 2: return n a, b = 0, 1 for in range(n - 1): a, b = b, a + b return b ",
-      "tag": "5-min",
-      "difficulty": "advanced",
-      "words": 1276,
-      "read_min": 6,
-      "order": 8,
-      "prev": "dsa/full/tier-2-intermediate-interview-ready-part-3-214-interval-problems",
-      "next": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-2-36-tree-dp-310-floydwarsh"
-    },
-    {
-      "id": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-2-36-tree-dp-310-floydwarsh",
-      "title": "TIER 3 — Advanced (DP, shortest paths, segment trees) — Part 2: 3.6 Tree DP → 3.10 Floyd–Warshall",
-      "src": "content/dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-2-36-tree-dp-310-floydwarsh.html",
-      "anchors": [
+        },
         {
           "level": 2,
           "id": "36-tree-dp",
           "text": "3.6 Tree DP"
-        },
+        }
+      ],
+      "summary": "TIER 3 — Advanced (DP, shortest paths, segment trees) — Part 2: 3.4 Knapsack family → 3.6 Tree DP",
+      "tag": "5-min",
+      "difficulty": "advanced",
+      "words": 1164,
+      "read_min": 5,
+      "order": 11,
+      "prev": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-1-31-dp-first-principles-33",
+      "next": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-3-37-bitmask-dp-310-floydwa"
+    },
+    {
+      "id": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-3-37-bitmask-dp-310-floydwa",
+      "title": "TIER 3 — Advanced (DP, shortest paths, segment trees) — Part 3: 3.7 Bitmask DP → 3.10 Floyd–Warshall",
+      "src": "content/dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-3-37-bitmask-dp-310-floydwa.html",
+      "anchors": [
         {
           "level": 2,
           "id": "37-bitmask-dp",
@@ -4434,19 +4539,19 @@
           "text": "3.10 Floyd–Warshall"
         }
       ],
-      "summary": "TIER 3 — Advanced (DP, shortest paths, segment trees) — Part 2: 3.6 Tree DP → 3.10 Floyd–Warshall",
+      "summary": "TIER 3 — Advanced (DP, shortest paths, segment trees) — Part 3: 3.7 Bitmask DP → 3.10 Floyd–Warshall",
       "tag": "5-min",
       "difficulty": "advanced",
-      "words": 1122,
-      "read_min": 5,
-      "order": 9,
-      "prev": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-1-31-dp-first-principles-35",
-      "next": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-3-311-mst-kruskal-prim-315"
+      "words": 1516,
+      "read_min": 7,
+      "order": 12,
+      "prev": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-2-34-knapsack-family-36-tre",
+      "next": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-4-311-mst-kruskal-prim-312"
     },
     {
-      "id": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-3-311-mst-kruskal-prim-315",
-      "title": "TIER 3 — Advanced (DP, shortest paths, segment trees) — Part 3: 3.11 MST: Kruskal & Prim → 3.15 KMP",
-      "src": "content/dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-3-311-mst-kruskal-prim-315.html",
+      "id": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-4-311-mst-kruskal-prim-312",
+      "title": "TIER 3 — Advanced (DP, shortest paths, segment trees) — Part 4: 3.11 MST: Kruskal & Prim → 3.12 Segment tree (point update)",
+      "src": "content/dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-4-311-mst-kruskal-prim-312.html",
       "anchors": [
         {
           "level": 2,
@@ -4457,7 +4562,22 @@
           "level": 2,
           "id": "312-segment-tree-point-update",
           "text": "3.12 Segment tree (point update)"
-        },
+        }
+      ],
+      "summary": "TIER 3 — Advanced (DP, shortest paths, segment trees) — Part 4: 3.11 MST: Kruskal & Prim → 3.12 Segment tree (point update)",
+      "tag": "5-min",
+      "difficulty": "advanced",
+      "words": 1204,
+      "read_min": 5,
+      "order": 13,
+      "prev": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-3-37-bitmask-dp-310-floydwa",
+      "next": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-5-313-fenwick-bit-316-z-alg"
+    },
+    {
+      "id": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-5-313-fenwick-bit-316-z-alg",
+      "title": "TIER 3 — Advanced (DP, shortest paths, segment trees) — Part 5: 3.13 Fenwick / BIT → 3.16 Z-algorithm",
+      "src": "content/dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-5-313-fenwick-bit-316-z-alg.html",
+      "anchors": [
         {
           "level": 2,
           "id": "313-fenwick-bit",
@@ -4472,27 +4592,27 @@
           "level": 2,
           "id": "315-kmp",
           "text": "3.15 KMP"
-        }
-      ],
-      "summary": "TIER 3 — Advanced (DP, shortest paths, segment trees) — Part 3: 3.11 MST: Kruskal & Prim → 3.15 KMP",
-      "tag": "5-min",
-      "difficulty": "advanced",
-      "words": 1242,
-      "read_min": 6,
-      "order": 10,
-      "prev": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-2-36-tree-dp-310-floydwarsh",
-      "next": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-4-316-z-algorithm-318-a-sea"
-    },
-    {
-      "id": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-4-316-z-algorithm-318-a-sea",
-      "title": "TIER 3 — Advanced (DP, shortest paths, segment trees) — Part 4: 3.16 Z-algorithm → 3.18 A* search",
-      "src": "content/dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-4-316-z-algorithm-318-a-sea.html",
-      "anchors": [
+        },
         {
           "level": 2,
           "id": "316-z-algorithm",
           "text": "3.16 Z-algorithm"
-        },
+        }
+      ],
+      "summary": "TIER 3 — Advanced (DP, shortest paths, segment trees) — Part 5: 3.13 Fenwick / BIT → 3.16 Z-algorithm",
+      "tag": "5-min",
+      "difficulty": "advanced",
+      "words": 1041,
+      "read_min": 5,
+      "order": 14,
+      "prev": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-4-311-mst-kruskal-prim-312",
+      "next": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-6-317-rabinkarp-318-a-searc"
+    },
+    {
+      "id": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-6-317-rabinkarp-318-a-searc",
+      "title": "TIER 3 — Advanced (DP, shortest paths, segment trees) — Part 6: 3.17 Rabin–Karp → 3.18 A* search",
+      "src": "content/dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-6-317-rabinkarp-318-a-searc.html",
+      "anchors": [
         {
           "level": 2,
           "id": "317-rabinkarp",
@@ -4504,13 +4624,13 @@
           "text": "3.18 A* search"
         }
       ],
-      "summary": "TIER 3 — Advanced (DP, shortest paths, segment trees) — Part 4: 3.16 Z-algorithm → 3.18 A* search",
+      "summary": "TIER 3 — Advanced (DP, shortest paths, segment trees) — Part 6: 3.17 Rabin–Karp → 3.18 A* search",
       "tag": "5-min",
       "difficulty": "advanced",
-      "words": 564,
+      "words": 617,
       "read_min": 3,
-      "order": 11,
-      "prev": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-3-311-mst-kruskal-prim-315",
+      "order": 15,
+      "prev": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-5-313-fenwick-bit-316-z-alg",
       "next": "dsa/full/tier-4-expert-rarely-interviewed-often-contest-decisive"
     },
     {
@@ -4622,10 +4742,10 @@
       "summary": "TIER 4 — Expert (rarely interviewed, often contest-decisive)",
       "tag": "5-min",
       "difficulty": "expert",
-      "words": 1305,
+      "words": 1415,
       "read_min": 6,
-      "order": 12,
-      "prev": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-4-316-z-algorithm-318-a-sea",
+      "order": 16,
+      "prev": "dsa/full/tier-3-advanced-dp-shortest-paths-segment-trees-part-6-317-rabinkarp-318-a-searc",
       "next": "dsa/full/meta-cross-cutting-problem-solving-skills"
     },
     {
@@ -4709,7 +4829,7 @@
       "difficulty": "all-levels",
       "words": 966,
       "read_min": 4,
-      "order": 13,
+      "order": 17,
       "prev": "dsa/full/tier-4-expert-rarely-interviewed-often-contest-decisive",
       "next": "dsa/full/practice-plan"
     },
@@ -4739,7 +4859,7 @@
       "difficulty": "all-levels",
       "words": 165,
       "read_min": 1,
-      "order": 14,
+      "order": 18,
       "prev": "dsa/full/meta-cross-cutting-problem-solving-skills",
       "next": "dsa/full/resources"
     },
@@ -4753,7 +4873,7 @@
       "difficulty": "all-levels",
       "words": 133,
       "read_min": 1,
-      "order": 15,
+      "order": 19,
       "prev": "dsa/full/practice-plan",
       "next": "dsa/full/footnotes-confidence"
     },
@@ -4773,7 +4893,7 @@
       "difficulty": "all-levels",
       "words": 280,
       "read_min": 1,
-      "order": 16,
+      "order": 20,
       "prev": "dsa/full/resources",
       "next": "sd/overview"
     },
@@ -4858,7 +4978,7 @@
       "difficulty": "all-levels",
       "words": 890,
       "read_min": 4,
-      "order": 17,
+      "order": 21,
       "prev": "dsa/full/footnotes-confidence",
       "next": "sd/tier-beginner"
     },
@@ -5013,7 +5133,7 @@
       "difficulty": "beginner",
       "words": 1194,
       "read_min": 5,
-      "order": 18,
+      "order": 22,
       "prev": "sd/overview",
       "next": "sd/tier-intermediate"
     },
@@ -5148,7 +5268,7 @@
       "difficulty": "intermediate",
       "words": 1399,
       "read_min": 6,
-      "order": 19,
+      "order": 23,
       "prev": "sd/tier-beginner",
       "next": "sd/tier-advanced"
     },
@@ -5428,7 +5548,7 @@
       "difficulty": "advanced",
       "words": 1754,
       "read_min": 8,
-      "order": 20,
+      "order": 24,
       "prev": "sd/tier-intermediate",
       "next": "sd/tier-expert"
     },
@@ -5558,7 +5678,7 @@
       "difficulty": "expert",
       "words": 1873,
       "read_min": 9,
-      "order": 21,
+      "order": 25,
       "prev": "sd/tier-advanced",
       "next": "sd/tradeoffs"
     },
@@ -5578,7 +5698,7 @@
       "difficulty": "advanced",
       "words": 281,
       "read_min": 1,
-      "order": 22,
+      "order": 26,
       "prev": "sd/tier-expert",
       "next": "sd/tradeoffs/trade-offs-in-system-design-a-comprehensive-guide-hld-lld-in-python-c"
     },
@@ -5598,7 +5718,7 @@
       "difficulty": "advanced",
       "words": 379,
       "read_min": 2,
-      "order": 23,
+      "order": 27,
       "prev": "sd/tradeoffs",
       "next": "sd/tradeoffs/part-1-how-to-think-about-trade-offs"
     },
@@ -5653,7 +5773,7 @@
       "difficulty": "advanced",
       "words": 857,
       "read_min": 4,
-      "order": 24,
+      "order": 28,
       "prev": "sd/tradeoffs/trade-offs-in-system-design-a-comprehensive-guide-hld-lld-in-python-c",
       "next": "sd/tradeoffs/part-2-hld-trade-offs-part-1-2a-foundational-theorems-2b-data-tier-trade-offs"
     },
@@ -5753,7 +5873,7 @@
       "difficulty": "advanced",
       "words": 1616,
       "read_min": 7,
-      "order": 25,
+      "order": 29,
       "prev": "sd/tradeoffs/part-1-how-to-think-about-trade-offs",
       "next": "sd/tradeoffs/part-2-hld-trade-offs-part-2-2c-architecture-pattern-trade-offs-2e-operations-tr"
     },
@@ -5853,7 +5973,7 @@
       "difficulty": "advanced",
       "words": 1197,
       "read_min": 5,
-      "order": 26,
+      "order": 30,
       "prev": "sd/tradeoffs/part-2-hld-trade-offs-part-1-2a-foundational-theorems-2b-data-tier-trade-offs",
       "next": "sd/tradeoffs/part-3-lld-trade-offs-python"
     },
@@ -5953,7 +6073,7 @@
       "difficulty": "advanced",
       "words": 1471,
       "read_min": 7,
-      "order": 27,
+      "order": 31,
       "prev": "sd/tradeoffs/part-2-hld-trade-offs-part-2-2c-architecture-pattern-trade-offs-2e-operations-tr",
       "next": "sd/tradeoffs/part-4-lld-trade-offs-c-part-1-41-parameter-passing-cg-f16-f17-f18-f19-f20-49-in"
     },
@@ -6013,7 +6133,7 @@
       "difficulty": "advanced",
       "words": 1137,
       "read_min": 5,
-      "order": 28,
+      "order": 32,
       "prev": "sd/tradeoffs/part-3-lld-trade-offs-python",
       "next": "sd/tradeoffs/part-4-lld-trade-offs-c-part-2-410-ebo-and-no_unique_address-c20-422-pimpl-idiom"
     },
@@ -6093,7 +6213,7 @@
       "difficulty": "advanced",
       "words": 1151,
       "read_min": 5,
-      "order": 29,
+      "order": 33,
       "prev": "sd/tradeoffs/part-4-lld-trade-offs-c-part-1-41-parameter-passing-cg-f16-f17-f18-f19-f20-49-in",
       "next": "sd/tradeoffs/part-5-decision-matrices"
     },
@@ -6133,7 +6253,7 @@
       "difficulty": "advanced",
       "words": 324,
       "read_min": 1,
-      "order": 30,
+      "order": 34,
       "prev": "sd/tradeoffs/part-4-lld-trade-offs-c-part-2-410-ebo-and-no_unique_address-c20-422-pimpl-idiom",
       "next": "sd/tradeoffs/part-6-real-world-case-studies"
     },
@@ -6158,7 +6278,7 @@
       "difficulty": "advanced",
       "words": 352,
       "read_min": 2,
-      "order": 31,
+      "order": 35,
       "prev": "sd/tradeoffs/part-5-decision-matrices",
       "next": "sd/tradeoffs/confidence-assessment"
     },
@@ -6172,7 +6292,7 @@
       "difficulty": "advanced",
       "words": 147,
       "read_min": 1,
-      "order": 32,
+      "order": 36,
       "prev": "sd/tradeoffs/part-6-real-world-case-studies",
       "next": "sd/tradeoffs/citations-references"
     },
@@ -6186,7 +6306,7 @@
       "difficulty": "advanced",
       "words": 339,
       "read_min": 2,
-      "order": 33,
+      "order": 37,
       "prev": "sd/tradeoffs/confidence-assessment",
       "next": "sd/5min/index"
     },
@@ -6256,7 +6376,7 @@
       "difficulty": "all-levels",
       "words": 533,
       "read_min": 2,
-      "order": 34,
+      "order": 38,
       "prev": "sd/tradeoffs/citations-references",
       "next": "sd/5min/what-is-system-design"
     },
@@ -6311,7 +6431,7 @@
       "difficulty": "all-levels",
       "words": 563,
       "read_min": 3,
-      "order": 35,
+      "order": 39,
       "prev": "sd/5min/index",
       "next": "sd/5min/scalability-basics"
     },
@@ -6381,7 +6501,7 @@
       "difficulty": "all-levels",
       "words": 601,
       "read_min": 3,
-      "order": 36,
+      "order": 40,
       "prev": "sd/5min/what-is-system-design",
       "next": "sd/5min/latency-vs-throughput"
     },
@@ -6441,7 +6561,7 @@
       "difficulty": "all-levels",
       "words": 620,
       "read_min": 3,
-      "order": 37,
+      "order": 41,
       "prev": "sd/5min/scalability-basics",
       "next": "sd/5min/api-styles"
     },
@@ -6521,7 +6641,7 @@
       "difficulty": "all-levels",
       "words": 538,
       "read_min": 2,
-      "order": 38,
+      "order": 42,
       "prev": "sd/5min/latency-vs-throughput",
       "next": "sd/5min/sql-vs-nosql"
     },
@@ -6596,7 +6716,7 @@
       "difficulty": "all-levels",
       "words": 696,
       "read_min": 3,
-      "order": 39,
+      "order": 43,
       "prev": "sd/5min/api-styles",
       "next": "sd/5min/load-balancing"
     },
@@ -6666,7 +6786,7 @@
       "difficulty": "all-levels",
       "words": 658,
       "read_min": 3,
-      "order": 40,
+      "order": 44,
       "prev": "sd/5min/sql-vs-nosql",
       "next": "sd/5min/caching"
     },
@@ -6756,7 +6876,7 @@
       "difficulty": "all-levels",
       "words": 735,
       "read_min": 3,
-      "order": 41,
+      "order": 45,
       "prev": "sd/5min/load-balancing",
       "next": "sd/5min/cdn"
     },
@@ -6846,7 +6966,7 @@
       "difficulty": "all-levels",
       "words": 660,
       "read_min": 3,
-      "order": 42,
+      "order": 46,
       "prev": "sd/5min/caching",
       "next": "sd/5min/database-replication"
     },
@@ -6941,7 +7061,7 @@
       "difficulty": "all-levels",
       "words": 656,
       "read_min": 3,
-      "order": 43,
+      "order": 47,
       "prev": "sd/5min/cdn",
       "next": "sd/5min/database-sharding"
     },
@@ -7051,7 +7171,7 @@
       "difficulty": "all-levels",
       "words": 744,
       "read_min": 3,
-      "order": 44,
+      "order": 48,
       "prev": "sd/5min/database-replication",
       "next": "sd/5min/consistent-hashing"
     },
@@ -7136,7 +7256,7 @@
       "difficulty": "all-levels",
       "words": 729,
       "read_min": 3,
-      "order": 45,
+      "order": 49,
       "prev": "sd/5min/database-sharding",
       "next": "sd/5min/microservices"
     },
@@ -7216,7 +7336,7 @@
       "difficulty": "all-levels",
       "words": 720,
       "read_min": 3,
-      "order": 46,
+      "order": 50,
       "prev": "sd/5min/consistent-hashing",
       "next": "sd/5min/message-queues"
     },
@@ -7321,7 +7441,7 @@
       "difficulty": "all-levels",
       "words": 740,
       "read_min": 3,
-      "order": 47,
+      "order": 51,
       "prev": "sd/5min/microservices",
       "next": "sd/5min/rate-limiting"
     },
@@ -7436,7 +7556,7 @@
       "difficulty": "all-levels",
       "words": 808,
       "read_min": 4,
-      "order": 48,
+      "order": 52,
       "prev": "sd/5min/message-queues",
       "next": "sd/5min/cap-theorem"
     },
@@ -7531,7 +7651,7 @@
       "difficulty": "all-levels",
       "words": 755,
       "read_min": 3,
-      "order": 49,
+      "order": 53,
       "prev": "sd/5min/rate-limiting",
       "next": "sd/5min/consistency-models"
     },
@@ -7621,7 +7741,7 @@
       "difficulty": "all-levels",
       "words": 756,
       "read_min": 3,
-      "order": 50,
+      "order": 54,
       "prev": "sd/5min/cap-theorem",
       "next": "sd/5min/consensus-raft-paxos"
     },
@@ -7711,7 +7831,7 @@
       "difficulty": "all-levels",
       "words": 923,
       "read_min": 4,
-      "order": 51,
+      "order": 55,
       "prev": "sd/5min/consistency-models",
       "next": "sd/5min/event-driven-and-saga"
     },
@@ -7816,7 +7936,7 @@
       "difficulty": "all-levels",
       "words": 774,
       "read_min": 4,
-      "order": 52,
+      "order": 56,
       "prev": "sd/5min/consensus-raft-paxos",
       "next": "sd/5min/resilience-patterns"
     },
@@ -7934,9 +8054,9 @@
       "summary": "You have 10 microservices. Service B starts responding slowly. Service A calls B, A's threads pile up waiting. Service C calls A, C's threads pile up waiting. The whole system grinds to a halt.",
       "tag": "5-min",
       "difficulty": "all-levels",
-      "words": 951,
-      "read_min": 4,
-      "order": 53,
+      "words": 1156,
+      "read_min": 5,
+      "order": 57,
       "prev": "sd/5min/event-driven-and-saga",
       "next": "sd/5min/observability"
     },
@@ -8016,7 +8136,7 @@
       "difficulty": "all-levels",
       "words": 943,
       "read_min": 4,
-      "order": 54,
+      "order": 58,
       "prev": "sd/5min/resilience-patterns",
       "next": null
     }

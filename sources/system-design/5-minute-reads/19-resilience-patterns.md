@@ -61,6 +61,29 @@ const getUserProfile = circuitBreaker(
   { failureThreshold: 5, recoveryTimeoutMs: 30_000 }
 );
 ```
+
+```java
+// Resilience4j-style wrapper
+CircuitBreaker breaker = CircuitBreaker.of("userProfile",
+    CircuitBreakerConfig.custom()
+        .failureRateThreshold(50)
+        .slidingWindowSize(10)
+        .waitDurationInOpenState(Duration.ofSeconds(30))
+        .build());
+
+UserProfile getUserProfile(String userId) {
+    return breaker.executeSupplier(() -> userService.get(userId));
+}
+```
+
+```cpp
+// Wrapper class around any callable
+CircuitBreaker breaker(/*failureThreshold=*/5, /*recoveryTimeout=*/30s);
+
+UserProfile getUserProfile(const string& userId) {
+    return breaker.execute([&]() { return userService.get(userId); });
+}
+```
 :::
 After 5 failures within a window:
 - Breaker opens for 30 seconds
@@ -129,6 +152,35 @@ try {
   clearTimeout(id);
 }
 ```
+
+```java
+// DANGEROUS
+HttpResponse<String> r = HttpClient.newHttpClient()
+    .send(HttpRequest.newBuilder(URI.create(url)).build(),
+          HttpResponse.BodyHandlers.ofString());     // waits forever
+
+// CORRECT — connect & request timeouts
+HttpClient client = HttpClient.newBuilder()
+    .connectTimeout(Duration.ofSeconds(5))
+    .build();
+HttpRequest req = HttpRequest.newBuilder(URI.create(url))
+    .timeout(Duration.ofSeconds(5))                  // fail after 5 seconds
+    .build();
+HttpResponse<String> r = client.send(req, HttpResponse.BodyHandlers.ofString());
+```
+
+```cpp
+// DANGEROUS
+auto fut = std::async(std::launch::async, [&] { return httpGet(url); });
+auto response = fut.get();                            // waits forever
+
+// CORRECT — wait_for + timeout
+auto fut2 = std::async(std::launch::async, [&] { return httpGet(url); });
+if (fut2.wait_for(std::chrono::seconds(5)) == std::future_status::timeout) {
+    throw std::runtime_error("request timed out");    // fail after 5 seconds
+}
+auto response2 = fut2.get();
+```
 :::
 
 ### Setting Timeouts
@@ -166,6 +218,16 @@ delay = base * 2**attempt + random(0, base)  # add randomness
 
 ```javascript
 const delay = base * 2 ** attempt + Math.random() * base;  // add randomness
+```
+
+```java
+long delay = base * (1L << attempt) + (long)(Math.random() * base);  // add randomness
+```
+
+```cpp
+static thread_local std::mt19937 rng(std::random_device{}());
+std::uniform_real_distribution<double> u(0.0, 1.0);
+long delay = base * (1L << attempt) + (long)(u(rng) * base);          // add randomness
 ```
 :::
 
