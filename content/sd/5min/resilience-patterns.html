@@ -37,11 +37,14 @@
 <li><strong>HALF-OPEN</strong>: After a cool-off, allow one test call; if it succeeds, close the breaker</li>
 </ul>
 <h3 id="code-level-example-hystrix-style">Code-Level Example (Hystrix-style)</h3>
-<div class="codehilite"><pre><span></span><code><span class="nd">@circuit_breaker</span><span class="p">(</span><span class="n">failure_threshold</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">recovery_timeout</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+<div class="codetabs" data-langs="python,javascript"><div class="codetabs-tabs" role="tablist"><button type="button" class="codetabs-tab is-active" role="tab" aria-selected="true" data-lang="python">Python</button><button type="button" class="codetabs-tab" role="tab" aria-selected="false" data-lang="javascript">JavaScript</button></div><div class="codetabs-pane is-active" role="tabpanel" data-lang="python"><button type="button" class="codetabs-copy" aria-label="Copy code">Copy</button><div class="codehilite"><pre><span></span><code><span class="nd">@circuit_breaker</span><span class="p">(</span><span class="n">failure_threshold</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">recovery_timeout</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_user_profile</span><span class="p">(</span><span class="n">user_id</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">user_service</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">user_id</span><span class="p">)</span>
-</code></pre></div>
-
+</code></pre></div></div><div class="codetabs-pane" role="tabpanel" data-lang="javascript"><button type="button" class="codetabs-copy" aria-label="Copy code">Copy</button><div class="codehilite"><pre><span></span><code><span class="kd">const</span><span class="w"> </span><span class="nx">getUserProfile</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">circuitBreaker</span><span class="p">(</span>
+<span class="w">  </span><span class="p">(</span><span class="nx">userId</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">userService</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">userId</span><span class="p">),</span>
+<span class="w">  </span><span class="p">{</span><span class="w"> </span><span class="nx">failureThreshold</span><span class="o">:</span><span class="w"> </span><span class="mf">5</span><span class="p">,</span><span class="w"> </span><span class="nx">recoveryTimeoutMs</span><span class="o">:</span><span class="w"> </span><span class="mf">30</span><span class="nx">_000</span><span class="w"> </span><span class="p">}</span>
+<span class="p">);</span>
+</code></pre></div></div></div>
 <p>After 5 failures within a window:
 - Breaker opens for 30 seconds
 - All calls return <code>CircuitBreakerOpenError</code> instantly (no network call)
@@ -76,12 +79,23 @@
 <hr>
 <h2 id="pattern-3-timeouts">⏱️ Pattern #3: Timeouts</h2>
 <p><strong>Always set a timeout on every network call.</strong> Most languages default to "wait forever," which is catastrophic.</p>
-<div class="codehilite"><pre><span></span><code><span class="c1"># DANGEROUS</span>
+<div class="codetabs" data-langs="python,javascript"><div class="codetabs-tabs" role="tablist"><button type="button" class="codetabs-tab is-active" role="tab" aria-selected="true" data-lang="python">Python</button><button type="button" class="codetabs-tab" role="tab" aria-selected="false" data-lang="javascript">JavaScript</button></div><div class="codetabs-pane is-active" role="tabpanel" data-lang="python"><button type="button" class="codetabs-copy" aria-label="Copy code">Copy</button><div class="codehilite"><pre><span></span><code><span class="c1"># DANGEROUS</span>
 <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>  <span class="c1"># waits forever if server hangs</span>
 
 <span class="c1"># CORRECT</span>
 <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>  <span class="c1"># fail after 5 seconds</span>
-</code></pre></div>
+</code></pre></div></div><div class="codetabs-pane" role="tabpanel" data-lang="javascript"><button type="button" class="codetabs-copy" aria-label="Copy code">Copy</button><div class="codehilite"><pre><span></span><code><span class="c1">// DANGEROUS</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">response</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">fetch</span><span class="p">(</span><span class="nx">url</span><span class="p">);</span><span class="w">            </span><span class="c1">// hangs forever if server stalls</span>
+
+<span class="c1">// CORRECT — AbortController + timeout</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">ctl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">AbortController</span><span class="p">();</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">setTimeout</span><span class="p">(()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">ctl</span><span class="p">.</span><span class="nx">abort</span><span class="p">(),</span><span class="w"> </span><span class="mf">5</span><span class="nx">_000</span><span class="p">);</span><span class="w">  </span><span class="c1">// fail after 5 seconds</span>
+<span class="k">try</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">fetch</span><span class="p">(</span><span class="nx">url</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">signal</span><span class="o">:</span><span class="w"> </span><span class="nx">ctl</span><span class="p">.</span><span class="nx">signal</span><span class="w"> </span><span class="p">});</span>
+<span class="p">}</span><span class="w"> </span><span class="k">finally</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">clearTimeout</span><span class="p">(</span><span class="nx">id</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div></div>
 
 <h3 id="setting-timeouts">Setting Timeouts</h3>
 <ul>
@@ -107,8 +121,9 @@
 </code></pre></div>
 
 <h3 id="jitter-critical">Jitter (critical!)</h3>
-<div class="codehilite"><pre><span></span><code><span class="n">delay</span> <span class="o">=</span> <span class="n">base</span> <span class="o">*</span> <span class="mi">2</span><span class="o">^</span><span class="n">attempt</span> <span class="o">+</span> <span class="n">random</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">base</span><span class="p">)</span>  <span class="c1"># add randomness</span>
-</code></pre></div>
+<div class="codetabs" data-langs="python,javascript"><div class="codetabs-tabs" role="tablist"><button type="button" class="codetabs-tab is-active" role="tab" aria-selected="true" data-lang="python">Python</button><button type="button" class="codetabs-tab" role="tab" aria-selected="false" data-lang="javascript">JavaScript</button></div><div class="codetabs-pane is-active" role="tabpanel" data-lang="python"><button type="button" class="codetabs-copy" aria-label="Copy code">Copy</button><div class="codehilite"><pre><span></span><code><span class="n">delay</span> <span class="o">=</span> <span class="n">base</span> <span class="o">*</span> <span class="mi">2</span><span class="o">**</span><span class="n">attempt</span> <span class="o">+</span> <span class="n">random</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">base</span><span class="p">)</span>  <span class="c1"># add randomness</span>
+</code></pre></div></div><div class="codetabs-pane" role="tabpanel" data-lang="javascript"><button type="button" class="codetabs-copy" aria-label="Copy code">Copy</button><div class="codehilite"><pre><span></span><code><span class="kd">const</span><span class="w"> </span><span class="nx">delay</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">base</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">2</span><span class="w"> </span><span class="o">**</span><span class="w"> </span><span class="nx">attempt</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">Math</span><span class="p">.</span><span class="nx">random</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nx">base</span><span class="p">;</span><span class="w">  </span><span class="c1">// add randomness</span>
+</code></pre></div></div></div>
 
 <p>Without jitter, clients all retry simultaneously → "retry storms." With jitter, retries spread out.[^1]</p>
 <h3 id="idempotency-required">Idempotency Required</h3>

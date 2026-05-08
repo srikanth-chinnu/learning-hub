@@ -48,12 +48,20 @@ Inspired by electrical circuit breakers. **Stops calling a failing service** to 
 
 ### Code-Level Example (Hystrix-style)
 
+:::tabs
 ```python
 @circuit_breaker(failure_threshold=5, recovery_timeout=30)
 def get_user_profile(user_id):
     return user_service.get(user_id)
 ```
 
+```javascript
+const getUserProfile = circuitBreaker(
+  (userId) => userService.get(userId),
+  { failureThreshold: 5, recoveryTimeoutMs: 30_000 }
+);
+```
+:::
 After 5 failures within a window:
 - Breaker opens for 30 seconds
 - All calls return `CircuitBreakerOpenError` instantly (no network call)
@@ -99,6 +107,7 @@ This is also why microservices are deployed in **separate processes** — natura
 
 **Always set a timeout on every network call.** Most languages default to "wait forever," which is catastrophic.
 
+:::tabs
 ```python
 # DANGEROUS
 response = requests.get(url)  # waits forever if server hangs
@@ -106,6 +115,21 @@ response = requests.get(url)  # waits forever if server hangs
 # CORRECT
 response = requests.get(url, timeout=5)  # fail after 5 seconds
 ```
+
+```javascript
+// DANGEROUS
+const response = await fetch(url);            // hangs forever if server stalls
+
+// CORRECT — AbortController + timeout
+const ctl = new AbortController();
+const id = setTimeout(() => ctl.abort(), 5_000);  // fail after 5 seconds
+try {
+  const r = await fetch(url, { signal: ctl.signal });
+} finally {
+  clearTimeout(id);
+}
+```
+:::
 
 ### Setting Timeouts
 - Use **percentile-based** timeouts: timeout = p99 latency × 2
@@ -135,9 +159,15 @@ attempt 4: wait 800ms
 ```
 
 ### Jitter (critical!)
+:::tabs
 ```python
-delay = base * 2^attempt + random(0, base)  # add randomness
+delay = base * 2**attempt + random(0, base)  # add randomness
 ```
+
+```javascript
+const delay = base * 2 ** attempt + Math.random() * base;  // add randomness
+```
+:::
 
 Without jitter, clients all retry simultaneously → "retry storms." With jitter, retries spread out.[^1]
 

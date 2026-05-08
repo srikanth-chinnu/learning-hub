@@ -78,9 +78,121 @@ class HeadingExtractor(HTMLParser):
             self._buf.append(data)
 
 
+def _render_single_codeblock(lang: str, code: str) -> str:
+    """Render a single fenced code block to HTML via markdown+pygments."""
+    md = markdown.Markdown(
+        extensions=["markdown.extensions.fenced_code", "markdown.extensions.codehilite"],
+        output_format="html5",
+    )
+    return md.convert(f"```{lang}\n{code}\n```")
+
+
+LANG_LABELS = {
+    "python": "Python", "py": "Python",
+    "javascript": "JavaScript", "js": "JavaScript",
+    "typescript": "TypeScript", "ts": "TypeScript",
+    "java": "Java",
+    "cpp": "C++", "c++": "C++", "cxx": "C++",
+    "c": "C",
+    "go": "Go", "golang": "Go",
+    "rust": "Rust", "rs": "Rust",
+    "csharp": "C#", "cs": "C#",
+    "ruby": "Ruby", "rb": "Ruby",
+    "kotlin": "Kotlin", "kt": "Kotlin",
+    "swift": "Swift",
+    "php": "PHP",
+    "scala": "Scala",
+}
+
+
+def _render_tabs_html(tabs: list[tuple[str, str]]) -> str:
+    """Build the tab container HTML from a list of (lang, code) pairs."""
+    if not tabs:
+        return ""
+    if len(tabs) == 1:
+        lang, code = tabs[0]
+        return _render_single_codeblock(lang, code)
+    langs_attr = ",".join(t[0] for t in tabs)
+    parts = [f'<div class="codetabs" data-langs="{langs_attr}">']
+    parts.append('<div class="codetabs-tabs" role="tablist">')
+    for i, (lang, _) in enumerate(tabs):
+        label = LANG_LABELS.get(lang.lower(), lang.capitalize())
+        active = " is-active" if i == 0 else ""
+        aria = "true" if i == 0 else "false"
+        parts.append(
+            f'<button type="button" class="codetabs-tab{active}" '
+            f'role="tab" aria-selected="{aria}" data-lang="{lang}">{label}</button>'
+        )
+    parts.append("</div>")
+    for i, (lang, code) in enumerate(tabs):
+        active = " is-active" if i == 0 else ""
+        rendered = _render_single_codeblock(lang, code)
+        parts.append(
+            f'<div class="codetabs-pane{active}" role="tabpanel" '
+            f'data-lang="{lang}"><button type="button" class="codetabs-copy" '
+            f'aria-label="Copy code">Copy</button>{rendered}</div>'
+        )
+    parts.append("</div>")
+    return "".join(parts)
+
+
+_TABS_OPEN = re.compile(r"^:::tabs\s*$", re.MULTILINE)
+_FENCE_OPEN = re.compile(r"^```(\w+)\s*$")
+_FENCE_CLOSE = re.compile(r"^```\s*$")
+
+
+def _preprocess_tabs(text: str) -> tuple[str, dict]:
+    """
+    Find :::tabs ... ::: blocks; replace each with a unique placeholder.
+    Return (transformed_text, {placeholder: html}).
+    Inner fenced ```LANG ... ``` blocks are extracted and rendered into a tab UI.
+    """
+    placeholders: dict[str, str] = {}
+    if ":::tabs" not in text:
+        return text, placeholders
+    lines = text.split("\n")
+    out: list[str] = []
+    i = 0
+    n = len(lines)
+    while i < n:
+        if _TABS_OPEN.match(lines[i]):
+            j = i + 1
+            inner: list[str] = []
+            while j < n and lines[j].strip() != ":::":
+                inner.append(lines[j])
+                j += 1
+            tabs: list[tuple[str, str]] = []
+            k = 0
+            m = len(inner)
+            while k < m:
+                fo = _FENCE_OPEN.match(inner[k])
+                if fo:
+                    lang = fo.group(1)
+                    k += 1
+                    code_buf: list[str] = []
+                    while k < m and not _FENCE_CLOSE.match(inner[k]):
+                        code_buf.append(inner[k])
+                        k += 1
+                    k += 1
+                    tabs.append((lang, "\n".join(code_buf)))
+                else:
+                    k += 1
+            token = f"<!--CODETABS-{len(placeholders)}-->"
+            placeholders[token] = _render_tabs_html(tabs)
+            out.append(token)
+            i = j + 1
+        else:
+            out.append(lines[i])
+            i += 1
+    return "\n".join(out), placeholders
+
+
 def render_md(text: str):
+    text, placeholders = _preprocess_tabs(text)
     md = markdown.Markdown(extensions=MD_EXT, output_format="html5")
     html = md.convert(text)
+    for token, replacement in placeholders.items():
+        html = html.replace(f"<p>{token}</p>", replacement).replace(token, replacement)
     extractor = HeadingExtractor()
     extractor.feed(html)
     return html, extractor.headings
@@ -1758,6 +1870,74 @@ body[data-sidebar="open"] .sidebar-backdrop { display: block; }
 .welcome-prompt p { margin: 0; font-size: 13px; color: var(--text-dim); }
 .welcome-prompt .actions { display: flex; gap: 8px; flex-shrink: 0; }
 
+/* ---- Code tabs (multi-language code blocks) ---- */
+.codetabs {
+  margin: 18px 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-elev);
+  overflow: hidden;
+}
+.codetabs-tabs {
+  display: flex;
+  gap: 2px;
+  padding: 6px 6px 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-elev-2);
+  overflow-x: auto;
+}
+.codetabs-tab {
+  border: 0;
+  background: transparent;
+  color: var(--text-dim);
+  padding: 8px 14px;
+  border-radius: 6px 6px 0 0;
+  font: 500 13px var(--mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .12s ease, color .12s ease;
+}
+.codetabs-tab:hover { background: var(--bg-elev); color: var(--text); }
+.codetabs-tab.is-active {
+  background: var(--bg-elev);
+  color: var(--text);
+  border-bottom: 2px solid var(--accent);
+  margin-bottom: -1px;
+}
+.codetabs-pane {
+  display: none;
+  position: relative;
+}
+.codetabs-pane.is-active { display: block; }
+.codetabs-pane .codehilite {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.codetabs-pane .codehilite pre { margin: 0; border: 0; border-radius: 0; }
+.codetabs-copy {
+  position: absolute;
+  top: 8px; right: 10px;
+  z-index: 2;
+  border: 1px solid var(--border);
+  background: var(--bg-elev-2);
+  color: var(--text-dim);
+  font: 500 11px var(--mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity .15s ease, background .12s ease, color .12s ease;
+}
+.codetabs-pane:hover .codetabs-copy { opacity: 1; }
+.codetabs-copy:hover { background: var(--bg-elev); color: var(--text); }
+.codetabs-copy.is-copied { color: #10b981; border-color: #10b981; opacity: 1; }
+@media (max-width: 540px) {
+  .codetabs-tab { padding: 7px 10px; font-size: 12px; }
+  .codetabs-copy { opacity: 1; }
+}
+
 /* ---- Search panel (floating Ask widget) ---- */
 .ap-fab {
   position: fixed; right: 24px; bottom: 24px; z-index: 80;
@@ -1902,6 +2082,7 @@ APP_JS = r"""
   const LS_RECENT = "lh:recent";
   const LS_OPEN = "lh:open";
   const LS_AUTO_MARK = "lh:auto-mark";
+  const LS_LANG = "lh:lang";
 
   let manifest = null;
   let byId = new Map();   // id -> item
@@ -2266,6 +2447,7 @@ APP_JS = r"""
       highlightSidebar();
       pushRecent(id);
       armAutoMark(item);
+      wireCodeTabs(article);
 
       if (anchor) {
         const el = document.getElementById(anchor);
@@ -2642,6 +2824,106 @@ APP_JS = r"""
   }
 
   // --- bootstrap --- //
+  // --- code tabs (multi-language code blocks) --- //
+  function getPreferredLang() {
+    try { return localStorage.getItem(LS_LANG) || ""; } catch (e) { return ""; }
+  }
+  function setPreferredLang(lang) {
+    try { localStorage.setItem(LS_LANG, lang || ""); } catch (e) {}
+  }
+
+  function activateLang(group, lang) {
+    const tabs = group.querySelectorAll(".codetabs-tab");
+    const panes = group.querySelectorAll(".codetabs-pane");
+    let matched = false;
+    tabs.forEach(t => {
+      const on = t.dataset.lang === lang;
+      t.classList.toggle("is-active", on);
+      t.setAttribute("aria-selected", on ? "true" : "false");
+      if (on) matched = true;
+    });
+    panes.forEach(p => p.classList.toggle("is-active", p.dataset.lang === lang));
+    return matched;
+  }
+
+  function applyPreferredLangToGroup(group) {
+    const pref = getPreferredLang();
+    if (!pref) return;
+    const has = (group.dataset.langs || "").split(",").includes(pref);
+    if (has) activateLang(group, pref);
+  }
+
+  function copyCode(pane, btn) {
+    const code = pane.querySelector("pre code") || pane.querySelector("pre");
+    if (!code) return;
+    const text = code.innerText;
+    const done = () => {
+      btn.classList.add("is-copied");
+      const orig = btn.textContent;
+      btn.textContent = "Copied";
+      setTimeout(() => {
+        btn.classList.remove("is-copied");
+        btn.textContent = orig === "Copied" ? "Copy" : orig;
+      }, 1400);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done).catch(() => {
+        const ta = document.createElement("textarea");
+        ta.value = text; document.body.appendChild(ta); ta.select();
+        try { document.execCommand("copy"); done(); } catch (_) {}
+        ta.remove();
+      });
+    } else {
+      const ta = document.createElement("textarea");
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); done(); } catch (_) {}
+      ta.remove();
+    }
+  }
+
+  function wireCodeTabs(scope) {
+    scope = scope || document;
+    const groups = scope.querySelectorAll(".codetabs");
+    groups.forEach(g => applyPreferredLangToGroup(g));
+    if (document.body.dataset.codetabsBound === "1") return;
+    document.body.dataset.codetabsBound = "1";
+    document.addEventListener("click", e => {
+      const tab = e.target.closest(".codetabs-tab");
+      if (tab) {
+        const group = tab.closest(".codetabs");
+        if (!group) return;
+        const lang = tab.dataset.lang;
+        setPreferredLang(lang);
+        document.querySelectorAll(".codetabs").forEach(g => {
+          if ((g.dataset.langs || "").split(",").includes(lang)) {
+            activateLang(g, lang);
+          }
+        });
+        return;
+      }
+      const copy = e.target.closest(".codetabs-copy");
+      if (copy) {
+        const pane = copy.closest(".codetabs-pane");
+        if (pane) copyCode(pane, copy);
+      }
+    });
+    document.addEventListener("keydown", e => {
+      if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+      const tab = document.activeElement;
+      if (!tab || !tab.classList || !tab.classList.contains("codetabs-tab")) return;
+      const group = tab.closest(".codetabs");
+      if (!group) return;
+      const tabs = Array.from(group.querySelectorAll(".codetabs-tab"));
+      const i = tabs.indexOf(tab);
+      if (i < 0) return;
+      const j = e.key === "ArrowRight" ? (i + 1) % tabs.length : (i - 1 + tabs.length) % tabs.length;
+      tabs[j].focus();
+      tabs[j].click();
+      e.preventDefault();
+    });
+  }
+
+  // --- bootstrap --- //
   // --- search panel (floating "Ask" widget) --- //
   let searchIndex = null;
   let searchHover = -1;
@@ -2909,6 +3191,7 @@ APP_JS = r"""
     wireModals();
     wireSettings();
     wireSearchPanel();
+    wireCodeTabs();
 
     setupKeys();
     route();

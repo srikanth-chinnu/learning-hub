@@ -1146,6 +1146,74 @@ body[data-sidebar="open"] .sidebar-backdrop { display: block; }
 .welcome-prompt p { margin: 0; font-size: 13px; color: var(--text-dim); }
 .welcome-prompt .actions { display: flex; gap: 8px; flex-shrink: 0; }
 
+/* ---- Code tabs (multi-language code blocks) ---- */
+.codetabs {
+  margin: 18px 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-elev);
+  overflow: hidden;
+}
+.codetabs-tabs {
+  display: flex;
+  gap: 2px;
+  padding: 6px 6px 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-elev-2);
+  overflow-x: auto;
+}
+.codetabs-tab {
+  border: 0;
+  background: transparent;
+  color: var(--text-dim);
+  padding: 8px 14px;
+  border-radius: 6px 6px 0 0;
+  font: 500 13px var(--mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .12s ease, color .12s ease;
+}
+.codetabs-tab:hover { background: var(--bg-elev); color: var(--text); }
+.codetabs-tab.is-active {
+  background: var(--bg-elev);
+  color: var(--text);
+  border-bottom: 2px solid var(--accent);
+  margin-bottom: -1px;
+}
+.codetabs-pane {
+  display: none;
+  position: relative;
+}
+.codetabs-pane.is-active { display: block; }
+.codetabs-pane .codehilite {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.codetabs-pane .codehilite pre { margin: 0; border: 0; border-radius: 0; }
+.codetabs-copy {
+  position: absolute;
+  top: 8px; right: 10px;
+  z-index: 2;
+  border: 1px solid var(--border);
+  background: var(--bg-elev-2);
+  color: var(--text-dim);
+  font: 500 11px var(--mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity .15s ease, background .12s ease, color .12s ease;
+}
+.codetabs-pane:hover .codetabs-copy { opacity: 1; }
+.codetabs-copy:hover { background: var(--bg-elev); color: var(--text); }
+.codetabs-copy.is-copied { color: #10b981; border-color: #10b981; opacity: 1; }
+@media (max-width: 540px) {
+  .codetabs-tab { padding: 7px 10px; font-size: 12px; }
+  .codetabs-copy { opacity: 1; }
+}
+
 /* ---- Search panel (floating Ask widget) ---- */
 .ap-fab {
   position: fixed; right: 24px; bottom: 24px; z-index: 80;

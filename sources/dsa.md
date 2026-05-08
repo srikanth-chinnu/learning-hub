@@ -128,6 +128,7 @@
 - n ≤ 10⁸: `O(n)` or `O(log n)`
 
 **Example (Python).**
+:::tabs
 ```python
 # O(n) — single pass
 def has_duplicate(a):
@@ -137,6 +138,19 @@ def has_duplicate(a):
         seen.add(x)
     return False
 ```
+
+```javascript
+// O(n) — single pass
+function hasDuplicate(a) {
+  const seen = new Set();
+  for (const x of a) {
+    if (seen.has(x)) return true;
+    seen.add(x);
+  }
+  return false;
+}
+```
+:::
 **Classic problems.** Two Sum, Contains Duplicate, Maximum Subarray.
 **Pitfall.** Hidden costs: `s in list` is `O(n)`, `s in set` is `O(1)`. String concatenation in a loop is `O(n²)`.
 **Bridge → 1.2:** the data structure choice *is* the complexity.
@@ -147,12 +161,21 @@ def has_duplicate(a):
 **When.** Default container. If you don't know what to use, use an array.
 
 **Example (Python).**
+:::tabs
 ```python
 a = [3, 1, 4, 1, 5]   # dynamic array (list)
 a.append(9)           # O(1) amortized
 a.pop()               # O(1)
 a.insert(0, 7)        # O(n) — avoid
 ```
+
+```javascript
+const a = [3, 1, 4, 1, 5]; // dynamic array
+a.push(9);                  // O(1) amortized
+a.pop();                    // O(1)
+a.unshift(7);               // O(n) — avoid
+```
+:::
 **Classic problems.** Move Zeros, Remove Duplicates from Sorted Array, Best Time to Buy/Sell Stock.
 **Pitfall.** Repeated `del a[0]` is `O(n)` each time → `O(n²)`. Use a deque or two pointers.
 **Bridge → 1.3:** when "lookup by value" matters, array isn't enough.
@@ -163,6 +186,7 @@ a.insert(0, 7)        # O(n) — avoid
 **When.** "Have I seen this before?", counting frequencies, group by key.
 
 **Example.**
+:::tabs
 ```python
 from collections import Counter, defaultdict
 def two_sum(a, t):
@@ -171,6 +195,17 @@ def two_sum(a, t):
         if t - x in seen: return [seen[t-x], i]
         seen[x] = i
 ```
+
+```javascript
+function twoSum(a, t) {
+  const seen = new Map();
+  for (let i = 0; i < a.length; i++) {
+    if (seen.has(t - a[i])) return [seen.get(t - a[i]), i];
+    seen.set(a[i], i);
+  }
+}
+```
+:::
 **Classic problems.** Two Sum, Group Anagrams, Longest Substring Without Repeating Characters, Top K Frequent Elements.
 **Pitfall.** Worst-case `O(n)` per op with adversarial keys (rare in interviews, real in CP — see 4.20). Iteration order is insertion-order in Python 3.7+.
 **Bridge → 1.4:** when the array is *sorted* you often don't need a hash map.
@@ -181,6 +216,7 @@ def two_sum(a, t):
 **When.** Sorted array problems; pair/triplet-sum; in-place partition; palindrome check.
 
 **Example.**
+:::tabs
 ```python
 def two_sum_sorted(a, t):
     i, j = 0, len(a) - 1
@@ -190,6 +226,19 @@ def two_sum_sorted(a, t):
         if s < t: i += 1
         else:     j -= 1
 ```
+
+```javascript
+function twoSumSorted(a, t) {
+  let i = 0, j = a.length - 1;
+  while (i < j) {
+    const s = a[i] + a[j];
+    if (s === t) return [i, j];
+    if (s < t) i++;
+    else       j--;
+  }
+}
+```
+:::
 **Classic problems.** 3Sum, Container With Most Water, Trapping Rain Water, Remove Duplicates Sorted.
 **Pitfall.** Forgetting to skip duplicates → counting same triplet multiple times.
 **Bridge → 1.5:** what if the window has variable size and slides?
@@ -200,6 +249,7 @@ def two_sum_sorted(a, t):
 **When.** "Longest/shortest/count-of subarrays satisfying property X." Property must be *monotone* in window size.
 
 **Example.**
+:::tabs
 ```python
 def longest_unique(s):
     last, L, best = {}, 0, 0
@@ -210,6 +260,21 @@ def longest_unique(s):
         best = max(best, R - L + 1)
     return best
 ```
+
+```javascript
+function longestUnique(s) {
+  const last = new Map();
+  let L = 0, best = 0;
+  for (let R = 0; R < s.length; R++) {
+    const c = s[R];
+    if (last.has(c) && last.get(c) >= L) L = last.get(c) + 1;
+    last.set(c, R);
+    best = Math.max(best, R - L + 1);
+  }
+  return best;
+}
+```
+:::
 **Classic problems.** Longest Substring Without Repeats, Min Window Substring, Subarrays with Sum K (positives), Permutation in String.
 **Pitfall.** Negative numbers / non-monotone constraints break the technique → see prefix sums (2.10).
 **Bridge → 1.6:** what if order matters, like matching brackets?
@@ -220,6 +285,7 @@ def longest_unique(s):
 **When.** Bracket matching, expression evaluation, undo, DFS iterative, monotonic stack (2.13).
 
 **Example.**
+:::tabs
 ```python
 def valid_parens(s):
     pair = {')':'(', ']':'[', '}':'{'}
@@ -229,6 +295,19 @@ def valid_parens(s):
         elif not st or st.pop() != pair[c]: return False
     return not st
 ```
+
+```javascript
+function validParens(s) {
+  const pair = { ')': '(', ']': '[', '}': '{' };
+  const st = [];
+  for (const c of s) {
+    if ('([{'.includes(c)) st.push(c);
+    else if (!st.length || st.pop() !== pair[c]) return false;
+  }
+  return st.length === 0;
+}
+```
+:::
 **Classic problems.** Valid Parentheses, Min Stack, Daily Temperatures (2.13), Evaluate RPN.
 **Pitfall.** Forgetting to check stack non-empty before pop.
 **Bridge → 1.7:** what if you want FIFO instead of LIFO?
@@ -239,6 +318,7 @@ def valid_parens(s):
 **When.** BFS, level-order traversal, scheduling, sliding window max (2.13).
 
 **Example.**
+:::tabs
 ```python
 from collections import deque
 def bfs_grid(g, sr, sc):
@@ -253,6 +333,29 @@ def bfs_grid(g, sr, sc):
             if 0<=nr<R and 0<=nc<C and (nr,nc) not in seen and g[nr][nc] != '#':
                 seen.add((nr,nc)); q.append((nr,nc,d+1))
 ```
+
+```javascript
+function bfsGrid(g, sr, sc) {
+  const R = g.length, C = g[0].length;
+  const key = (r, c) => r * C + c;
+  const seen = new Set([key(sr, sc)]);
+  const q = [[sr, sc, 0]];
+  let head = 0;
+  while (head < q.length) {
+    const [r, c, d] = q[head++];
+    // process...
+    for (const [dr, dc] of [[-1,0],[1,0],[0,-1],[0,1]]) {
+      const nr = r + dr, nc = c + dc;
+      if (nr >= 0 && nr < R && nc >= 0 && nc < C
+          && !seen.has(key(nr, nc)) && g[nr][nc] !== '#') {
+        seen.add(key(nr, nc));
+        q.push([nr, nc, d + 1]);
+      }
+    }
+  }
+}
+```
+:::
 **Classic problems.** Number of Islands (BFS), Rotting Oranges, Open the Lock.
 **Pitfall.** Using `list.pop(0)` → `O(n²)` BFS. Forgetting to mark `seen` *before* pushing → exponential blowup.
 **Bridge → 1.8:** when the search space is sorted, you can be smarter than scanning.
@@ -265,6 +368,7 @@ def bfs_grid(g, sr, sc):
 2. **On answer** — binary search the answer; check feasibility.
 
 **Example (binary search on answer — Koko Bananas).**
+:::tabs
 ```python
 def min_speed(piles, h):
     def hours(k): return sum((p + k - 1) // k for p in piles)
@@ -275,6 +379,20 @@ def min_speed(piles, h):
         else:               lo = mid + 1
     return lo
 ```
+
+```javascript
+function minSpeed(piles, h) {
+  const hours = k => piles.reduce((s, p) => s + Math.ceil(p / k), 0);
+  let lo = 1, hi = Math.max(...piles);
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1;
+    if (hours(mid) <= h) hi = mid;
+    else                 lo = mid + 1;
+  }
+  return lo;
+}
+```
+:::
 **Classic problems.** First Bad Version, Search in Rotated Sorted Array, Median of Two Sorted Arrays, Capacity to Ship Packages, Split Array Largest Sum.
 **Pitfall.** Off-by-one. Pick *one* template (`lo<hi`, `hi=mid`, `lo=mid+1`) and use it everywhere. Test on size 0/1/2.
 **Bridge → 1.9:** halving is a form of recursion.
@@ -285,6 +403,7 @@ def min_speed(piles, h):
 **When.** Trees, divide-and-conquer, backtracking, DP (2.7, 3.x).
 
 **Example (subsets).**
+:::tabs
 ```python
 def subsets(a):
     out = []
@@ -295,6 +414,20 @@ def subsets(a):
     go(0, [])
     return out
 ```
+
+```javascript
+function subsets(a) {
+  const out = [];
+  const go = (i, cur) => {
+    if (i === a.length) { out.push([...cur]); return; }
+    go(i + 1, cur);                                 // skip
+    cur.push(a[i]); go(i + 1, cur); cur.pop();      // take
+  };
+  go(0, []);
+  return out;
+}
+```
+:::
 **Classic problems.** Power Set, Permutations, Generate Parentheses, Reverse Linked List Recursive.
 **Pitfall.** Stack overflow at depth ~1000 in Python — use `sys.setrecursionlimit` or convert to iteration. Mutating shared state without backtrack = bugs.
 **Bridge → 1.10:** divide-and-conquer's flagship is sorting.
@@ -309,6 +442,7 @@ def subsets(a):
 - **Counting/radix** — `O(n)` for small integer range.
 
 **Example (custom comparator — sort by string concat to form largest number).**
+:::tabs
 ```python
 from functools import cmp_to_key
 def largest_number(nums):
@@ -316,6 +450,15 @@ def largest_number(nums):
     s.sort(key=cmp_to_key(lambda a,b: -1 if a+b > b+a else 1))
     return ''.join(s).lstrip('0') or '0'
 ```
+
+```javascript
+function largestNumber(nums) {
+  const s = nums.map(String);
+  s.sort((a, b) => (b + a).localeCompare(a + b));
+  return s.join('').replace(/^0+(?!$)/, '') || '0';
+}
+```
+:::
 **Classic problems.** Sort Colors (3-way), Merge Intervals, K Closest Points, Largest Number, Inversion Count.
 **Pitfall.** `sorted(arr, key=...)` is stable; `arr.sort(key=...)` mutates in place. Custom comparator on floats — use a small epsilon.
 **Bridge → 1.11:** what if the data isn't contiguous?
@@ -329,6 +472,7 @@ def largest_number(nums):
 3. **Reversal** — three-pointer iterative.
 
 **Example (reverse).**
+:::tabs
 ```python
 def reverse(head):
     prev, cur = None, head
@@ -338,6 +482,20 @@ def reverse(head):
         prev, cur = cur, nxt
     return prev
 ```
+
+```javascript
+function reverse(head) {
+  let prev = null, cur = head;
+  while (cur) {
+    const nxt = cur.next;
+    cur.next = prev;
+    prev = cur;
+    cur = nxt;
+  }
+  return prev;
+}
+```
+:::
 **Classic problems.** Reverse Linked List, Merge Two Sorted Lists, Linked List Cycle (Floyd's), Reorder List, LRU Cache (with hashmap).
 **Pitfall.** Losing the next pointer before reassigning. Always draw the diagram for 3 nodes; don't reason in your head.
 **Bridge → Tier 2:** branching pointers → trees and graphs.
@@ -350,6 +508,7 @@ def reverse(head):
 **Mental model.** Visit every node exactly once. Three DFS orders (pre/in/post) and one BFS (level).
 
 **Example.**
+:::tabs
 ```python
 def inorder(root):
     if not root: return
@@ -366,6 +525,31 @@ def levelorder(root):
         if lvl: out.append(lvl)
     return out
 ```
+
+```javascript
+function inorder(root) {
+  if (!root) return;
+  inorder(root.left);
+  console.log(root.val);
+  inorder(root.right);
+}
+
+function levelorder(root) {
+  const q = [root], out = [];
+  let head = 0;
+  while (head < q.length) {
+    const lvl = [];
+    const size = q.length - head;
+    for (let i = 0; i < size; i++) {
+      const n = q[head++];
+      if (n) { lvl.push(n.val); q.push(n.left); q.push(n.right); }
+    }
+    if (lvl.length) out.push(lvl);
+  }
+  return out;
+}
+```
+:::
 **Classic problems.** Max Depth, Same Tree, Path Sum, Symmetric Tree, Binary Tree Level Order, Construct Tree from Preorder + Inorder.
 **Pitfall.** Iterative inorder is the trickiest — practice it.
 **Bridge → 2.2:** when the tree has order, search becomes logarithmic (on balance).
@@ -376,12 +560,22 @@ def levelorder(root):
 **When.** When you need *ordered* hash-map-like operations: range queries, k-th element, predecessor/successor. Pure BSTs are rarely interview material; the *invariant* and *successor* are what matter. In practice, use `SortedList` (Python's `sortedcontainers`) or `std::set` (C++).
 
 **Example (validate BST).**
+:::tabs
 ```python
 def is_bst(root, lo=float('-inf'), hi=float('inf')):
     if not root: return True
     if not (lo < root.val < hi): return False
     return is_bst(root.left, lo, root.val) and is_bst(root.right, root.val, hi)
 ```
+
+```javascript
+function isBST(root, lo = -Infinity, hi = Infinity) {
+  if (!root) return true;
+  if (!(lo < root.val && root.val < hi)) return false;
+  return isBST(root.left, lo, root.val) && isBST(root.right, root.val, hi);
+}
+```
+:::
 **Classic problems.** Validate BST, Kth Smallest in BST, Lowest Common Ancestor of BST, Recover BST.
 **Pitfall.** Equal values — pick a convention (strict `<` everywhere) and stick to it.
 **Bridge → 2.3:** trees are graphs without cycles.
@@ -393,6 +587,7 @@ def is_bst(root, lo=float('-inf'), hi=float('inf')):
 - **Edge list** — `[(u,v,w)]`. Use for Kruskal, Bellman–Ford.
 
 **Example.**
+:::tabs
 ```python
 from collections import defaultdict
 def build_graph(n, edges):
@@ -402,6 +597,19 @@ def build_graph(n, edges):
         g[v].append((u, w))   # undirected
     return g
 ```
+
+```javascript
+function buildGraph(n, edges) {
+  const g = new Map();
+  for (let i = 0; i < n; i++) g.set(i, []);
+  for (const [u, v, w] of edges) {
+    g.get(u).push([v, w]);
+    g.get(v).push([u, w]);   // undirected
+  }
+  return g;
+}
+```
+:::
 **Pitfall.** Forgetting directionality. Forgetting to handle disconnected components (loop over all vertices).
 **Bridge → 2.4:** how do we visit all vertices?
 
@@ -411,6 +619,7 @@ def build_graph(n, edges):
 - **DFS** — stack/recursion, depth-first, gives connectivity, cycle detection, topological order.
 
 **Example (DFS connected components).**
+:::tabs
 ```python
 def num_components(n, g):
     seen = [False]*n
@@ -423,6 +632,22 @@ def num_components(n, g):
         if not seen[u]: cnt += 1; dfs(u)
     return cnt
 ```
+
+```javascript
+function numComponents(n, g) {
+  const seen = new Array(n).fill(false);
+  let cnt = 0;
+  const dfs = u => {
+    seen[u] = true;
+    for (const v of (g[u] || [])) if (!seen[v]) dfs(v);
+  };
+  for (let u = 0; u < n; u++) {
+    if (!seen[u]) { cnt++; dfs(u); }
+  }
+  return cnt;
+}
+```
+:::
 **Classic problems.** Number of Islands, Word Ladder (BFS), Course Schedule (cycle), Clone Graph, Pacific Atlantic, Surrounded Regions.
 **Pitfall.** BFS on weighted graph gives wrong shortest path — use Dijkstra (3.8).
 **Bridge → 2.5:** ordering nodes by dependency.
@@ -431,6 +656,7 @@ def num_components(n, g):
 **Mental model.** Linear ordering of DAG vertices such that for every edge `u→v`, `u` comes before `v`. Two algorithms: **Kahn's** (BFS on in-degree 0) and **DFS post-order reversed**.
 
 **Example (Kahn's).**
+:::tabs
 ```python
 from collections import deque, defaultdict
 def topo(n, edges):
@@ -446,6 +672,27 @@ def topo(n, edges):
             if indeg[v] == 0: q.append(v)
     return out if len(out) == n else []   # cycle if not all included
 ```
+
+```javascript
+function topo(n, edges) {
+  const g = Array.from({ length: n }, () => []);
+  const indeg = new Array(n).fill(0);
+  for (const [u, v] of edges) { g[u].push(v); indeg[v]++; }
+  const q = [];
+  for (let i = 0; i < n; i++) if (indeg[i] === 0) q.push(i);
+  const out = [];
+  let head = 0;
+  while (head < q.length) {
+    const u = q[head++];
+    out.push(u);
+    for (const v of g[u]) {
+      if (--indeg[v] === 0) q.push(v);
+    }
+  }
+  return out.length === n ? out : [];   // cycle if not all included
+}
+```
+:::
 **Classic problems.** Course Schedule I & II, Alien Dictionary, Parallel Courses.
 **Pitfall.** Topological sort is undefined on graphs with cycles — always check.
 **Bridge → 2.6:** what if instead of any order, we want minimum/maximum?
@@ -456,6 +703,7 @@ def topo(n, edges):
 **When.** Top-k, scheduling, Dijkstra, merge k sorted lists, median maintenance.
 
 **Example (top-k frequent).**
+:::tabs
 ```python
 import heapq
 from collections import Counter
@@ -463,6 +711,18 @@ def topk(a, k):
     c = Counter(a)
     return [x for x, _ in heapq.nlargest(k, c.items(), key=lambda kv: kv[1])]
 ```
+
+```javascript
+function topk(a, k) {
+  const c = new Map();
+  for (const x of a) c.set(x, (c.get(x) || 0) + 1);
+  return [...c.entries()]
+    .sort((p, q) => q[1] - p[1])
+    .slice(0, k)
+    .map(([x]) => x);
+}
+```
+:::
 **Classic problems.** Kth Largest, Merge K Sorted Lists, Find Median from Data Stream (two heaps), Task Scheduler, Reorganize String.
 **Pitfall.** Python's `heapq` is min-heap only — negate for max-heap. For tuples, all fields must be comparable.
 **Bridge → 2.7:** when the search tree is exponential, prune.
@@ -471,6 +731,7 @@ def topk(a, k):
 **Mental model.** DFS through the *decision tree*. Try a choice, recurse, undo. Prune impossible branches as early as possible.
 
 **Template.**
+:::tabs
 ```python
 def backtrack(state):
     if is_solution(state): record(state); return
@@ -480,7 +741,21 @@ def backtrack(state):
         backtrack(state)
         undo(choice, state)
 ```
+
+```javascript
+function backtrack(state) {
+  if (isSolution(state)) { record(state); return; }
+  for (const choice of choices(state)) {
+    if (!feasible(choice, state)) continue;
+    apply(choice, state);
+    backtrack(state);
+    undo(choice, state);
+  }
+}
+```
+:::
 **Example (N-Queens).**
+:::tabs
 ```python
 def n_queens(n):
     cols, d1, d2, sol = set(), set(), set(), []
@@ -494,6 +769,24 @@ def n_queens(n):
     go(0, [])
     return sol
 ```
+
+```javascript
+function nQueens(n) {
+  const cols = new Set(), d1 = new Set(), d2 = new Set(), sol = [];
+  const go = (r, board) => {
+    if (r === n) { sol.push([...board]); return; }
+    for (let c = 0; c < n; c++) {
+      if (cols.has(c) || d1.has(r - c) || d2.has(r + c)) continue;
+      cols.add(c); d1.add(r - c); d2.add(r + c); board.push(c);
+      go(r + 1, board);
+      cols.delete(c); d1.delete(r - c); d2.delete(r + c); board.pop();
+    }
+  };
+  go(0, []);
+  return sol;
+}
+```
+:::
 **Classic problems.** N-Queens, Sudoku Solver, Word Search, Combination Sum, Permutations II, Letter Combinations.
 **Pitfall.** Forgetting to undo state. Slicing lists `cur[:]` to copy is necessary when storing.
 **Bridge → 2.8:** sometimes the optimal local choice *is* the global solution.
@@ -506,6 +799,7 @@ def n_queens(n):
 - **Stays-ahead** — at every step the greedy is at least as good as any other.
 
 **Example (interval scheduling — max non-overlapping).**
+:::tabs
 ```python
 def max_meetings(intervals):
     intervals.sort(key=lambda x: x[1])   # sort by END
@@ -514,6 +808,18 @@ def max_meetings(intervals):
         if s >= end: cnt += 1; end = e
     return cnt
 ```
+
+```javascript
+function maxMeetings(intervals) {
+  intervals.sort((a, b) => a[1] - b[1]);   // sort by END
+  let end = -Infinity, cnt = 0;
+  for (const [s, e] of intervals) {
+    if (s >= end) { cnt++; end = e; }
+  }
+  return cnt;
+}
+```
+:::
 **Classic problems.** Activity Selection, Jump Game II, Gas Station, Task Scheduler, Minimum Number of Arrows to Burst Balloons.
 **Pitfall.** Untested greediness — most "obvious" greedy ideas are wrong (counterexample: coin change with coins {1,3,4} for amount 6).
 **Bridge → 2.9:** sometimes the operations themselves are bitwise.
@@ -529,12 +835,22 @@ def max_meetings(intervals):
 - Iterate subsets of mask: `s = m; while s > 0: ...; s = (s - 1) & m`.
 
 **Example (single number — every other appears twice).**
+:::tabs
 ```python
 def single_number(a):
     r = 0
     for x in a: r ^= x
     return r
 ```
+
+```javascript
+function singleNumber(a) {
+  let r = 0;
+  for (const x of a) r ^= x;
+  return r;
+}
+```
+:::
 **Classic problems.** Single Number I/II/III, Number of 1 Bits, Counting Bits, Sum of Two Integers without `+`, Maximum XOR (with trie).
 **Pitfall.** Negative numbers in Python are arbitrary precision — use `& 0xFFFFFFFF` for fixed-width emulation.
 **Bridge → 2.10:** XOR is to addition what...
@@ -545,6 +861,7 @@ def single_number(a):
 **Difference array** is the *inverse*: range update in `O(1)`, point query at end in `O(n)`.
 
 **Example (subarray sum equals K).**
+:::tabs
 ```python
 from collections import defaultdict
 def subarray_sum(a, k):
@@ -556,6 +873,20 @@ def subarray_sum(a, k):
         cnt[s] += 1
     return ans
 ```
+
+```javascript
+function subarraySum(a, k) {
+  const cnt = new Map([[0, 1]]);
+  let s = 0, ans = 0;
+  for (const x of a) {
+    s += x;
+    ans += cnt.get(s - k) || 0;
+    cnt.set(s, (cnt.get(s) || 0) + 1);
+  }
+  return ans;
+}
+```
+:::
 **Classic problems.** Subarray Sum = K, Range Sum Query Immutable, Range Sum 2D, Number of Subarrays with Bounded Max, Continuous Subarray Sum.
 **Pitfall.** Mixing 0-indexed and 1-indexed prefix sums in your head. Use `P[0] = 0`.
 **Bridge → 2.11:** what about *grouping* values rather than summing?
@@ -564,6 +895,7 @@ def subarray_sum(a, k):
 **Mental model.** Disjoint sets supporting `find(x)` (which set?) and `union(x, y)` (merge). With path compression + union by rank/size, both `O(α(n))` ≈ `O(1)`.
 
 **Example.**
+:::tabs
 ```python
 class DSU:
     def __init__(self, n):
@@ -580,6 +912,31 @@ class DSU:
         self.p[b] = a; self.sz[a] += self.sz[b]
         return True
 ```
+
+```javascript
+class DSU {
+  constructor(n) {
+    this.p = Array.from({ length: n }, (_, i) => i);
+    this.sz = new Array(n).fill(1);
+  }
+  find(x) {
+    while (this.p[x] !== x) {
+      this.p[x] = this.p[this.p[x]];  // path compression
+      x = this.p[x];
+    }
+    return x;
+  }
+  union(a, b) {
+    a = this.find(a); b = this.find(b);
+    if (a === b) return false;
+    if (this.sz[a] < this.sz[b]) [a, b] = [b, a];
+    this.p[b] = a;
+    this.sz[a] += this.sz[b];
+    return true;
+  }
+}
+```
+:::
 **Classic problems.** Number of Connected Components, Redundant Connection, Accounts Merge, Most Stones Removed, Kruskal's MST.
 **Pitfall.** Forgetting path compression makes it `O(log n)` per op. Don't use rank *and* size — pick one.
 **Bridge → 2.12:** strings are also a kind of tree.
@@ -588,6 +945,7 @@ class DSU:
 **Mental model.** A 26-ary tree (or more) where each path from root encodes a string. Insert/lookup/prefix in `O(L)` where `L` is word length.
 
 **Example.**
+:::tabs
 ```python
 class Trie:
     def __init__(self): self.r = {}
@@ -602,6 +960,29 @@ class Trie:
             n = n[c]
         return True
 ```
+
+```javascript
+class Trie {
+  constructor() { this.r = {}; }
+  insert(w) {
+    let n = this.r;
+    for (const c of w) {
+      if (!n[c]) n[c] = {};
+      n = n[c];
+    }
+    n.$ = true;
+  }
+  startsWith(p) {
+    let n = this.r;
+    for (const c of p) {
+      if (!n[c]) return false;
+      n = n[c];
+    }
+    return true;
+  }
+}
+```
+:::
 **Classic problems.** Implement Trie, Word Search II, Replace Words, Maximum XOR (binary trie), Design Search Autocomplete.
 **Pitfall.** Memory blowup — use arrays of 26 only when alphabet is fixed and small. Else use dict.
 **Bridge → 2.13:** sometimes the data structure tracks *order* rather than membership.
@@ -612,6 +993,7 @@ class Trie:
 **When.** "Next greater/smaller element," "max in sliding window," largest rectangle in histogram, stock span.
 
 **Example (next greater element).**
+:::tabs
 ```python
 def next_greater(a):
     n = len(a); res = [-1]*n; st = []
@@ -621,7 +1003,22 @@ def next_greater(a):
         st.append(i)
     return res
 ```
+
+```javascript
+function nextGreater(a) {
+  const n = a.length, res = new Array(n).fill(-1), st = [];
+  for (let i = 0; i < n; i++) {
+    while (st.length && a[st[st.length - 1]] < a[i]) {
+      res[st.pop()] = a[i];
+    }
+    st.push(i);
+  }
+  return res;
+}
+```
+:::
 **Example (sliding window max — monotonic deque).**
+:::tabs
 ```python
 from collections import deque
 def max_window(a, k):
@@ -633,6 +1030,21 @@ def max_window(a, k):
         if i >= k - 1: out.append(a[dq[0]])
     return out
 ```
+
+```javascript
+function maxWindow(a, k) {
+  const dq = [], out = [];
+  let head = 0;
+  for (let i = 0; i < a.length; i++) {
+    while (dq.length > head && a[dq[dq.length - 1]] <= a[i]) dq.pop();
+    dq.push(i);
+    if (dq[head] <= i - k) head++;
+    if (i >= k - 1) out.push(a[dq[head]]);
+  }
+  return out;
+}
+```
+:::
 **Classic problems.** Daily Temperatures, Next Greater II, Largest Rectangle in Histogram, Sliding Window Max, Sum of Subarray Minimums.
 **Pitfall.** Mixing strict/non-strict comparisons changes which duplicates are kept.
 **Bridge → 2.14:** intervals are 1D ranges with extra structure.
@@ -644,6 +1056,7 @@ def max_window(a, k):
 3. **Sweep line / events** — sort `(point, +1/−1)`, scan, accumulate.
 
 **Example (merge intervals).**
+:::tabs
 ```python
 def merge(iv):
     iv.sort()
@@ -653,7 +1066,22 @@ def merge(iv):
         else: out.append([s, e])
     return out
 ```
+
+```javascript
+function merge(iv) {
+  iv.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  const out = [];
+  for (const [s, e] of iv) {
+    if (out.length && s <= out[out.length - 1][1]) {
+      out[out.length - 1][1] = Math.max(out[out.length - 1][1], e);
+    } else out.push([s, e]);
+  }
+  return out;
+}
+```
+:::
 **Example (meeting rooms II — sweep line).**
+:::tabs
 ```python
 def min_rooms(iv):
     ev = []
@@ -663,6 +1091,18 @@ def min_rooms(iv):
     for _, d in ev: cur += d; best = max(best, cur)
     return best
 ```
+
+```javascript
+function minRooms(iv) {
+  const ev = [];
+  for (const [s, e] of iv) { ev.push([s, +1]); ev.push([e, -1]); }
+  ev.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  let cur = 0, best = 0;
+  for (const [, d] of ev) { cur += d; best = Math.max(best, cur); }
+  return best;
+}
+```
+:::
 **Classic problems.** Merge Intervals, Insert Interval, Meeting Rooms I & II, Non-overlapping Intervals, Employee Free Time.
 **Pitfall.** Tie-breaking when start == end; decide whether closed/open.
 **Bridge → Tier 3:** what if the optimal answer requires combining many sub-decisions?
@@ -679,6 +1119,7 @@ def min_rooms(iv):
 **The 1-line test.** *Can the optimal answer be reconstructed from optimal answers to smaller versions of the same problem?* If yes, DP. If "smallest" is hard to define, you don't have a DP yet.
 
 **Example (Fibonacci, both styles).**
+:::tabs
 ```python
 def fib_top(n, memo={}):
     if n < 2: return n
@@ -691,6 +1132,23 @@ def fib_bot(n):
     for _ in range(n - 1): a, b = b, a + b
     return b
 ```
+
+```javascript
+function fibTop(n, memo = new Map()) {
+  if (n < 2) return n;
+  if (memo.has(n)) return memo.get(n);
+  const v = fibTop(n - 1, memo) + fibTop(n - 2, memo);
+  memo.set(n, v); return v;
+}
+
+function fibBot(n) {
+  if (n < 2) return n;
+  let a = 0, b = 1;
+  for (let i = 0; i < n - 1; i++) [a, b] = [b, a + b];
+  return b;
+}
+```
+:::
 **Pitfall.** Wrong state. Add or remove a dimension *deliberately* (see M.8).
 **Bridge → 3.2:** simplest case is a 1D state.
 
@@ -698,6 +1156,7 @@ def fib_bot(n):
 **Mental model.** State = single index; recurrence looks back O(1) or O(n) steps.
 
 **Example (House Robber).**
+:::tabs
 ```python
 def rob(nums):
     p, c = 0, 0
@@ -705,7 +1164,17 @@ def rob(nums):
         p, c = c, max(c, p + x)
     return c
 ```
+
+```javascript
+function rob(nums) {
+  let p = 0, c = 0;
+  for (const x of nums) [p, c] = [c, Math.max(c, p + x)];
+  return c;
+}
+```
+:::
 **Example (Longest Increasing Subsequence — `O(n log n)`).**
+:::tabs
 ```python
 from bisect import bisect_left
 def lis(a):
@@ -716,6 +1185,23 @@ def lis(a):
         else: tails[i] = x
     return len(tails)
 ```
+
+```javascript
+function lis(a) {
+  const tails = [];
+  for (const x of a) {
+    let lo = 0, hi = tails.length;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      if (tails[mid] < x) lo = mid + 1; else hi = mid;
+    }
+    if (lo === tails.length) tails.push(x);
+    else tails[lo] = x;
+  }
+  return tails.length;
+}
+```
+:::
 **Classic problems.** House Robber I/II, Climbing Stairs, Decode Ways, LIS, Word Break, Coin Change (1D).
 **Pitfall.** Using only the last value when you actually need 2 prior states (Robber needs `p` *and* `c`).
 **Bridge → 3.3:** add a dimension.
@@ -724,6 +1210,7 @@ def lis(a):
 **Mental model.** State = `(i, j)`; transitions usually from neighbors `(i-1, j)` or `(i, j-1)`.
 
 **Example (Unique Paths).**
+:::tabs
 ```python
 def unique_paths(m, n):
     dp = [[1]*n for _ in range(m)]
@@ -732,7 +1219,19 @@ def unique_paths(m, n):
             dp[i][j] = dp[i-1][j] + dp[i][j-1]
     return dp[-1][-1]
 ```
+
+```javascript
+function uniquePaths(m, n) {
+  const dp = Array.from({ length: m }, () => new Array(n).fill(1));
+  for (let i = 1; i < m; i++)
+    for (let j = 1; j < n; j++)
+      dp[i][j] = dp[i - 1][j] + dp[i][j - 1];
+  return dp[m - 1][n - 1];
+}
+```
+:::
 **Example (Edit Distance).**
+:::tabs
 ```python
 def edit(a, b):
     n, m = len(a), len(b)
@@ -745,6 +1244,23 @@ def edit(a, b):
             else: dp[i][j] = 1 + min(dp[i-1][j-1], dp[i-1][j], dp[i][j-1])
     return dp[n][m]
 ```
+
+```javascript
+function edit(a, b) {
+  const n = a.length, m = b.length;
+  const dp = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
+  for (let i = 0; i <= n; i++) dp[i][0] = i;
+  for (let j = 0; j <= m; j++) dp[0][j] = j;
+  for (let i = 1; i <= n; i++) {
+    for (let j = 1; j <= m; j++) {
+      if (a[i - 1] === b[j - 1]) dp[i][j] = dp[i - 1][j - 1];
+      else dp[i][j] = 1 + Math.min(dp[i - 1][j - 1], dp[i - 1][j], dp[i][j - 1]);
+    }
+  }
+  return dp[n][m];
+}
+```
+:::
 **Classic problems.** Unique Paths I/II, Min Path Sum, Edit Distance, Longest Common Subsequence, Maximal Square, Dungeon Game.
 **Pitfall.** Off-by-one on boundaries; allocate `(n+1) × (m+1)` and treat row/col 0 as base case.
 **Bridge → 3.4:** what if each item has a "weight"?
@@ -755,6 +1271,7 @@ def edit(a, b):
 - **Unbounded** — unlimited copies. Inner loop *ascending* on capacity.
 
 **Example (0/1 Knapsack, 1D space).**
+:::tabs
 ```python
 def knapsack(W, items):
     dp = [0]*(W+1)
@@ -763,7 +1280,19 @@ def knapsack(W, items):
             dp[c] = max(dp[c], dp[c-w] + v)
     return dp[W]
 ```
+
+```javascript
+function knapsack(W, items) {
+  const dp = new Array(W + 1).fill(0);
+  for (const [w, v] of items)
+    for (let c = W; c >= w; c--)
+      dp[c] = Math.max(dp[c], dp[c - w] + v);
+  return dp[W];
+}
+```
+:::
 **Example (Coin Change unbounded — min coins).**
+:::tabs
 ```python
 def coin_change(coins, amt):
     INF = float('inf')
@@ -773,6 +1302,19 @@ def coin_change(coins, amt):
             dp[x] = min(dp[x], dp[x-c] + 1)
     return -1 if dp[amt] == INF else dp[amt]
 ```
+
+```javascript
+function coinChange(coins, amt) {
+  const INF = Infinity;
+  const dp = new Array(amt + 1).fill(INF);
+  dp[0] = 0;
+  for (const c of coins)
+    for (let x = c; x <= amt; x++)
+      dp[x] = Math.min(dp[x], dp[x - c] + 1);
+  return dp[amt] === INF ? -1 : dp[amt];
+}
+```
+:::
 **Classic problems.** 0/1 Knapsack, Partition Equal Subset Sum, Target Sum, Coin Change I/II, Last Stone Weight II.
 **Pitfall.** Loop order swap (0/1 ↔ unbounded) is the most common bug.
 **Bridge → 3.5:** what if intervals matter?
@@ -781,6 +1323,7 @@ def coin_change(coins, amt):
 **Mental model.** State = `dp[l][r]` for the subproblem on `a[l..r]`. Transition: choose a split point `k` between `l` and `r`. `O(n³)` typical.
 
 **Example (Matrix Chain / Burst Balloons).**
+:::tabs
 ```python
 def max_coins(a):
     a = [1] + a + [1]; n = len(a)
@@ -792,6 +1335,24 @@ def max_coins(a):
                 dp[l][r] = max(dp[l][r], dp[l][k] + dp[k][r] + a[l]*a[k]*a[r])
     return dp[0][n-1]
 ```
+
+```javascript
+function maxCoins(a) {
+  a = [1, ...a, 1];
+  const n = a.length;
+  const dp = Array.from({ length: n }, () => new Array(n).fill(0));
+  for (let length = 2; length < n; length++) {
+    for (let l = 0; l < n - length; l++) {
+      const r = l + length;
+      for (let k = l + 1; k < r; k++) {
+        dp[l][r] = Math.max(dp[l][r], dp[l][k] + dp[k][r] + a[l] * a[k] * a[r]);
+      }
+    }
+  }
+  return dp[0][n - 1];
+}
+```
+:::
 **Classic problems.** Matrix Chain Multiplication, Burst Balloons, Stone Game, Strange Printer, Remove Boxes.
 **Pitfall.** Iteration order — increasing length, then left endpoint.
 **Bridge → 3.6:** what if the structure is a tree?
@@ -800,6 +1361,7 @@ def max_coins(a):
 **Mental model.** Compute `f(u)` from `f(v)` for children. Process post-order. Often two values per node ("with u" / "without u").
 
 **Example (House Robber III).**
+:::tabs
 ```python
 def rob_tree(root):
     def go(u):
@@ -810,6 +1372,20 @@ def rob_tree(root):
         return (take, skip)
     return max(go(root))
 ```
+
+```javascript
+function robTree(root) {
+  const go = u => {
+    if (!u) return [0, 0];
+    const L = go(u.left), R = go(u.right);
+    const take = u.val + L[1] + R[1];      // take u → cannot take children
+    const skip = Math.max(...L) + Math.max(...R); // skip u → free to take or not
+    return [take, skip];
+  };
+  return Math.max(...go(root));
+}
+```
+:::
 **Classic problems.** Diameter of Binary Tree, House Robber III, Binary Tree Cameras, Distribute Coins, Sum of Distances in Tree (rerooting).
 **Pitfall.** *Rerooting* — when you need `f(v rooted at v)` for every `v`, do two DFS passes.
 **Bridge → 3.7:** tree DP states are simple; sometimes you need *subset* states.
@@ -818,6 +1394,7 @@ def rob_tree(root):
 **Mental model.** Use a bitmask to encode which elements of a small set (≤ 20) have been used. State = `(mask, ...)`. `2ⁿ` states; transitions per state.
 
 **Example (Travelling Salesman, n ≤ 20).**
+:::tabs
 ```python
 def tsp(dist):
     n = len(dist); INF = float('inf')
@@ -834,6 +1411,31 @@ def tsp(dist):
                     dp[nm][v] = dp[mask][u] + dist[u][v]
     return min(dp[(1<<n)-1][u] + dist[u][0] for u in range(n))
 ```
+
+```javascript
+function tsp(dist) {
+  const n = dist.length, INF = Infinity;
+  const dp = Array.from({ length: 1 << n }, () => new Array(n).fill(INF));
+  dp[1][0] = 0;
+  for (let mask = 0; mask < (1 << n); mask++) {
+    for (let u = 0; u < n; u++) {
+      if (!((mask >> u) & 1)) continue;
+      if (dp[mask][u] === INF) continue;
+      for (let v = 0; v < n; v++) {
+        if ((mask >> v) & 1) continue;
+        const nm = mask | (1 << v);
+        if (dp[mask][u] + dist[u][v] < dp[nm][v]) {
+          dp[nm][v] = dp[mask][u] + dist[u][v];
+        }
+      }
+    }
+  }
+  let best = INF;
+  for (let u = 0; u < n; u++) best = Math.min(best, dp[(1 << n) - 1][u] + dist[u][0]);
+  return best;
+}
+```
+:::
 **Classic problems.** TSP, Partition to K Equal Sum Subsets, Min Cost to Connect, Smallest Sufficient Team, Beautiful Arrangement.
 **Pitfall.** `n > 20` blows up. Submask enumeration uses `s = (s-1) & mask`.
 **Bridge → 3.8:** all these were on graphs — let's get serious about shortest paths.
@@ -870,6 +1472,7 @@ vector<long long> dijkstra(int n, vector<vector<pair<int,int>>>& g, int s) {
 **SPFA** = queue-based optimization; same worst case but often fast in practice. Susceptible to specially-crafted graphs.
 
 **Example.**
+:::tabs
 ```python
 def bf(n, edges, s):
     INF = float('inf'); d = [INF]*n; d[s] = 0
@@ -881,6 +1484,25 @@ def bf(n, edges, s):
         if d[u] + w < d[v]: return None
     return d
 ```
+
+```javascript
+function bf(n, edges, s) {
+  const INF = Infinity;
+  const d = new Array(n).fill(INF);
+  d[s] = 0;
+  for (let i = 0; i < n - 1; i++) {
+    for (const [u, v, w] of edges) {
+      if (d[u] + w < d[v]) d[v] = d[u] + w;
+    }
+  }
+  // negative cycle?
+  for (const [u, v, w] of edges) {
+    if (d[u] + w < d[v]) return null;
+  }
+  return d;
+}
+```
+:::
 **Classic problems.** Detect Negative Cycle, Cheapest Flights with K Stops, Currency Arbitrage.
 **Pitfall.** Don't use SPFA in problems where adversarial inputs are possible — it can degrade to `O(VE)`.
 **Bridge → 3.10:** all-pairs shortest paths.
@@ -889,6 +1511,7 @@ def bf(n, edges, s):
 **Mental model.** `O(V³)` all-pairs shortest path via `d[i][j] = min(d[i][j], d[i][k] + d[k][j])`. Works with negative edges (no negative cycle).
 
 **Example.**
+:::tabs
 ```python
 def fw(n, edges):
     INF = float('inf')
@@ -902,6 +1525,21 @@ def fw(n, edges):
                     d[i][j] = d[i][k] + d[k][j]
     return d
 ```
+
+```javascript
+function fw(n, edges) {
+  const INF = Infinity;
+  const d = Array.from({ length: n }, () => new Array(n).fill(INF));
+  for (let i = 0; i < n; i++) d[i][i] = 0;
+  for (const [u, v, w] of edges) d[u][v] = Math.min(d[u][v], w);
+  for (let k = 0; k < n; k++)
+    for (let i = 0; i < n; i++)
+      for (let j = 0; j < n; j++)
+        if (d[i][k] + d[k][j] < d[i][j]) d[i][j] = d[i][k] + d[k][j];
+  return d;
+}
+```
+:::
 **Classic problems.** All Pairs Shortest Path, Find the City With Smallest Number of Neighbors, Transitive Closure (boolean version).
 **Pitfall.** Loop order matters — `k` outermost. Wrong order silently gives wrong answers.
 **Bridge → 3.11:** shortest paths versus *spanning* trees.
@@ -912,6 +1550,7 @@ def fw(n, edges):
 - **Prim** — like Dijkstra: grow from a vertex; pick min-weight edge to outside. `O((V+E) log V)`.
 
 **Example (Kruskal with DSU).**
+:::tabs
 ```python
 def kruskal(n, edges):
     edges.sort(key=lambda e: e[2])
@@ -925,6 +1564,24 @@ def kruskal(n, edges):
         if ru != rv: p[ru] = rv; total += w; used += 1
     return total if used == n - 1 else -1
 ```
+
+```javascript
+function kruskal(n, edges) {
+  edges.sort((a, b) => a[2] - b[2]);
+  const p = Array.from({ length: n }, (_, i) => i);
+  const find = x => {
+    while (p[x] !== x) { p[x] = p[p[x]]; x = p[x]; }
+    return x;
+  };
+  let total = 0, used = 0;
+  for (const [u, v, w] of edges) {
+    const ru = find(u), rv = find(v);
+    if (ru !== rv) { p[ru] = rv; total += w; used++; }
+  }
+  return used === n - 1 ? total : -1;
+}
+```
+:::
 **Classic problems.** Min Cost to Connect All Points, Connecting Cities With Minimum Cost, Optimize Water Distribution.
 **Pitfall.** Forgetting to check connectivity (need exactly `n-1` edges).
 **Bridge → 3.12:** range queries on arrays.
@@ -933,6 +1590,7 @@ def kruskal(n, edges):
 **Mental model.** Binary tree over array indices: each node stores the aggregate (sum/min/max/etc.) of a contiguous range. Update/query in `O(log n)`. Build `O(n)`.
 
 **Example (sum, recursive).**
+:::tabs
 ```python
 class SegTree:
     def __init__(self, a):
@@ -955,6 +1613,37 @@ class SegTree:
         m = (l+r)//2
         return self.query(2*node, l, m, ql, qr) + self.query(2*node+1, m+1, r, ql, qr)
 ```
+
+```javascript
+class SegTree {
+  constructor(a) {
+    this.n = a.length;
+    this.t = new Array(4 * this.n).fill(0);
+    this.build(1, 0, this.n - 1, a);
+  }
+  build(node, l, r, a) {
+    if (l === r) { this.t[node] = a[l]; return; }
+    const m = (l + r) >> 1;
+    this.build(2 * node, l, m, a);
+    this.build(2 * node + 1, m + 1, r, a);
+    this.t[node] = this.t[2 * node] + this.t[2 * node + 1];
+  }
+  update(node, l, r, i, v) {
+    if (l === r) { this.t[node] = v; return; }
+    const m = (l + r) >> 1;
+    if (i <= m) this.update(2 * node, l, m, i, v);
+    else        this.update(2 * node + 1, m + 1, r, i, v);
+    this.t[node] = this.t[2 * node] + this.t[2 * node + 1];
+  }
+  query(node, l, r, ql, qr) {
+    if (qr < l || r < ql) return 0;
+    if (ql <= l && r <= qr) return this.t[node];
+    const m = (l + r) >> 1;
+    return this.query(2 * node, l, m, ql, qr) + this.query(2 * node + 1, m + 1, r, ql, qr);
+  }
+}
+```
+:::
 **Classic problems.** Range Sum Query Mutable, Count Smaller After Self, Reverse Pairs, Range Min Query.
 **Pitfall.** Allocate `4n` nodes, not `2n` (recursion-style needs the slack).
 **Bridge → 3.13:** for *prefix* sums only, there's a simpler structure.
@@ -963,6 +1652,7 @@ class SegTree:
 **Mental model.** Stores prefix aggregates implicitly via low-bit indexing. Sum/update in `O(log n)`. Half the constant factor of segment tree, but only for *prefix* queries.
 
 **Example.**
+:::tabs
 ```python
 class BIT:
     def __init__(self, n): self.n = n; self.t = [0]*(n+1)
@@ -974,6 +1664,22 @@ class BIT:
         return s
     def range(self, l, r): return self.query(r) - self.query(l-1)
 ```
+
+```javascript
+class BIT {
+  constructor(n) { this.n = n; this.t = new Array(n + 1).fill(0); }
+  update(i, v) {              // 1-indexed
+    for (; i <= this.n; i += i & -i) this.t[i] += v;
+  }
+  query(i) {
+    let s = 0;
+    for (; i > 0; i -= i & -i) s += this.t[i];
+    return s;
+  }
+  range(l, r) { return this.query(r) - this.query(l - 1); }
+}
+```
+:::
 **Classic problems.** Count of Smaller Numbers After Self, Reverse Pairs, Number of Inversions.
 **Pitfall.** 1-indexed. Forgetting offset is common.
 **Bridge → 3.14:** range *updates*?
@@ -1045,6 +1751,7 @@ vector<int> kmp_search(const string& s, const string& p) {
 **Mental model.** `Z[i]` = length of the longest substring starting at `i` that matches a prefix of `s`. `O(n)`. Substring search: build Z on `pattern + '$' + text`.
 
 **Example.**
+:::tabs
 ```python
 def z_function(s):
     n = len(s); z = [0]*n; l = r = 0
@@ -1054,6 +1761,21 @@ def z_function(s):
         if i + z[i] > r: l, r = i, i + z[i]
     return z
 ```
+
+```javascript
+function zFunction(s) {
+  const n = s.length;
+  const z = new Array(n).fill(0);
+  let l = 0, r = 0;
+  for (let i = 1; i < n; i++) {
+    if (i < r) z[i] = Math.min(r - i, z[i - l]);
+    while (i + z[i] < n && s[z[i]] === s[i + z[i]]) z[i]++;
+    if (i + z[i] > r) { l = i; r = i + z[i]; }
+  }
+  return z;
+}
+```
+:::
 **Classic problems.** Pattern Match (alternative to KMP), Palindromic Decomposition, String Matching with Wildcards.
 **Pitfall.** Many implementations subtly differ — pick one.
 **Bridge → 3.17:** what about hashing?
@@ -1062,6 +1784,7 @@ def z_function(s):
 **Mental model.** Polynomial rolling hash. Slide a window over the text and compare hashes; verify on collision. Average `O(n + m)`; worst `O(nm)` adversarially.
 
 **Example.**
+:::tabs
 ```python
 def rabin_karp(s, p, MOD=(1<<61)-1, BASE=131):
     n, m = len(s), len(p)
@@ -1077,6 +1800,27 @@ def rabin_karp(s, p, MOD=(1<<61)-1, BASE=131):
         if hp == ht and s[i-m+1:i+1] == p: return i - m + 1
     return -1
 ```
+
+```javascript
+function rabinKarp(s, p, MOD = (1n << 61n) - 1n, BASE = 131n) {
+  const n = s.length, m = p.length;
+  if (m > n) return -1;
+  let hp = 0n, ht = 0n, pw = 1n;
+  for (let i = 0; i < m; i++) {
+    hp = (hp * BASE + BigInt(p.charCodeAt(i))) % MOD;
+    ht = (ht * BASE + BigInt(s.charCodeAt(i))) % MOD;
+    if (i < m - 1) pw = (pw * BASE) % MOD;
+  }
+  if (hp === ht && s.slice(0, m) === p) return 0;
+  for (let i = m; i < n; i++) {
+    ht = ((ht - BigInt(s.charCodeAt(i - m)) * pw) * BASE + BigInt(s.charCodeAt(i))) % MOD;
+    ht = (ht % MOD + MOD) % MOD;          // keep non-negative
+    if (hp === ht && s.slice(i - m + 1, i + 1) === p) return i - m + 1;
+  }
+  return -1;
+}
+```
+:::
 **Classic problems.** Find Common Substring, Repeated DNA Sequences, Longest Duplicate Substring (binary search on length + hashing).
 **Pitfall.** Single-modulus collisions exist — for adversarial inputs use double hashing (two mods).
 **Bridge → 3.18:** path-finding with heuristics.
@@ -1219,6 +1963,7 @@ def rabin_karp(s, p, MOD=(1<<61)-1, BASE=131):
 - **Reservoir sampling** — uniform sample of stream of unknown length: keep i-th element with prob `1/i`.
 
 **Example (reservoir sampling).**
+:::tabs
 ```python
 import random
 def reservoir(stream, k=1):
@@ -1229,6 +1974,22 @@ def reservoir(stream, k=1):
             res[random.randrange(k)] = x
     return res
 ```
+
+```javascript
+function reservoir(stream, k = 1) {
+  const res = [];
+  let i = 0;
+  for (const x of stream) {
+    if (i < k) res.push(x);
+    else if (Math.random() < k / (i + 1)) {
+      res[Math.floor(Math.random() * k)] = x;
+    }
+    i++;
+  }
+  return res;
+}
+```
+:::
 **Problems.** Linked List Random Node, Random Pick with Weight; CF problems requiring randomization to avoid worst-case hash collision.
 **Pitfall.** *Cryptographic* randomness vs. PRNG — most CP problems require neither, but use random seed not 0.
 

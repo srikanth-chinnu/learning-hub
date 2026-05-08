@@ -5,6 +5,7 @@
   const LS_RECENT = "lh:recent";
   const LS_OPEN = "lh:open";
   const LS_AUTO_MARK = "lh:auto-mark";
+  const LS_LANG = "lh:lang";
 
   let manifest = null;
   let byId = new Map();   // id -> item
@@ -369,6 +370,7 @@
       highlightSidebar();
       pushRecent(id);
       armAutoMark(item);
+      wireCodeTabs(article);
 
       if (anchor) {
         const el = document.getElementById(anchor);
@@ -745,6 +747,106 @@
   }
 
   // --- bootstrap --- //
+  // --- code tabs (multi-language code blocks) --- //
+  function getPreferredLang() {
+    try { return localStorage.getItem(LS_LANG) || ""; } catch (e) { return ""; }
+  }
+  function setPreferredLang(lang) {
+    try { localStorage.setItem(LS_LANG, lang || ""); } catch (e) {}
+  }
+
+  function activateLang(group, lang) {
+    const tabs = group.querySelectorAll(".codetabs-tab");
+    const panes = group.querySelectorAll(".codetabs-pane");
+    let matched = false;
+    tabs.forEach(t => {
+      const on = t.dataset.lang === lang;
+      t.classList.toggle("is-active", on);
+      t.setAttribute("aria-selected", on ? "true" : "false");
+      if (on) matched = true;
+    });
+    panes.forEach(p => p.classList.toggle("is-active", p.dataset.lang === lang));
+    return matched;
+  }
+
+  function applyPreferredLangToGroup(group) {
+    const pref = getPreferredLang();
+    if (!pref) return;
+    const has = (group.dataset.langs || "").split(",").includes(pref);
+    if (has) activateLang(group, pref);
+  }
+
+  function copyCode(pane, btn) {
+    const code = pane.querySelector("pre code") || pane.querySelector("pre");
+    if (!code) return;
+    const text = code.innerText;
+    const done = () => {
+      btn.classList.add("is-copied");
+      const orig = btn.textContent;
+      btn.textContent = "Copied";
+      setTimeout(() => {
+        btn.classList.remove("is-copied");
+        btn.textContent = orig === "Copied" ? "Copy" : orig;
+      }, 1400);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done).catch(() => {
+        const ta = document.createElement("textarea");
+        ta.value = text; document.body.appendChild(ta); ta.select();
+        try { document.execCommand("copy"); done(); } catch (_) {}
+        ta.remove();
+      });
+    } else {
+      const ta = document.createElement("textarea");
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); done(); } catch (_) {}
+      ta.remove();
+    }
+  }
+
+  function wireCodeTabs(scope) {
+    scope = scope || document;
+    const groups = scope.querySelectorAll(".codetabs");
+    groups.forEach(g => applyPreferredLangToGroup(g));
+    if (document.body.dataset.codetabsBound === "1") return;
+    document.body.dataset.codetabsBound = "1";
+    document.addEventListener("click", e => {
+      const tab = e.target.closest(".codetabs-tab");
+      if (tab) {
+        const group = tab.closest(".codetabs");
+        if (!group) return;
+        const lang = tab.dataset.lang;
+        setPreferredLang(lang);
+        document.querySelectorAll(".codetabs").forEach(g => {
+          if ((g.dataset.langs || "").split(",").includes(lang)) {
+            activateLang(g, lang);
+          }
+        });
+        return;
+      }
+      const copy = e.target.closest(".codetabs-copy");
+      if (copy) {
+        const pane = copy.closest(".codetabs-pane");
+        if (pane) copyCode(pane, copy);
+      }
+    });
+    document.addEventListener("keydown", e => {
+      if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+      const tab = document.activeElement;
+      if (!tab || !tab.classList || !tab.classList.contains("codetabs-tab")) return;
+      const group = tab.closest(".codetabs");
+      if (!group) return;
+      const tabs = Array.from(group.querySelectorAll(".codetabs-tab"));
+      const i = tabs.indexOf(tab);
+      if (i < 0) return;
+      const j = e.key === "ArrowRight" ? (i + 1) % tabs.length : (i - 1 + tabs.length) % tabs.length;
+      tabs[j].focus();
+      tabs[j].click();
+      e.preventDefault();
+    });
+  }
+
+  // --- bootstrap --- //
   // --- search panel (floating "Ask" widget) --- //
   let searchIndex = null;
   let searchHover = -1;
@@ -1012,6 +1114,7 @@
     wireModals();
     wireSettings();
     wireSearchPanel();
+    wireCodeTabs();
 
     setupKeys();
     route();
