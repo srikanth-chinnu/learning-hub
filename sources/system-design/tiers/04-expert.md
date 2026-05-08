@@ -268,6 +268,6 @@ The best system design teachers learned by **building broken systems and figurin
 
 ---
 
-⚡ **Tip:** As an expert, the [5-minute reads](./5-minute-reads/README.md) become great refreshers before interviews or as teaching tools for juniors.
+⚡ **Tip:** As an expert, the [5-minute reads](../5-minute-reads/README.md) become great refreshers before interviews or as teaching tools for juniors.
 
-← [Previous: Advanced](./03-advanced.md) · [Home](./README.md)
+← [Previous: Advanced](./03-advanced.md) · [Home](../README.md)

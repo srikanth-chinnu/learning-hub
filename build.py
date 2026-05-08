@@ -636,21 +636,22 @@ def build_manifest():
                                             "System Design — Overview", tag="overview"))
 
     tier_files = [
-        ("01-beginner.md",     "sd/tier-beginner",     "Beginner",     "tier-1"),
-        ("02-intermediate.md", "sd/tier-intermediate", "Intermediate", "tier-2"),
-        ("03-advanced.md",     "sd/tier-advanced",     "Advanced",     "tier-3"),
-        ("04-expert.md",       "sd/tier-expert",       "Expert",       "tier-4"),
+        ("tiers/01-beginner.md",     "sd/tier-beginner",     "Beginner",     "tier-1"),
+        ("tiers/02-intermediate.md", "sd/tier-intermediate", "Intermediate", "tier-2"),
+        ("tiers/03-advanced.md",     "sd/tier-advanced",     "Advanced",     "tier-3"),
+        ("tiers/04-expert.md",       "sd/tier-expert",       "Expert",       "tier-4"),
     ]
     tier_items = []
-    for fname, item_id, deflt, tag in tier_files:
-        f = sd_src / fname
+    for relpath, item_id, deflt, tag in tier_files:
+        f = sd_src / relpath
         if f.exists():
             tier_items.append(render_source(f, item_id, deflt, tag=tag))
 
     deepdive_items = []
-    if (sd_src / "tradeoffs-deep-dive.md").exists():
+    tradeoffs_src = sd_src / "deep-dives" / "tradeoffs.md"
+    if tradeoffs_src.exists():
         deepdive_items = render_split_source(
-            sd_src / "tradeoffs-deep-dive.md",
+            tradeoffs_src,
             base_id="sd/tradeoffs",
             master_title="Trade-offs Deep Dive — Index",
             master_tag="deep-dive",
@@ -658,9 +659,9 @@ def build_manifest():
         )
 
     # External references (books / repos / papers) are intentionally NOT
-    # included in the manifest. Source files remain on disk for personal use,
-    # but the hub focuses on internal 5-minute reads so users don't bounce
-    # to long external lists.
+    # included in the manifest. Source files live under
+    # sources/system-design/_archive/ for personal use, but the hub focuses on
+    # internal 5-minute reads so users don't bounce to long external lists.
     ref_items = []
 
     five_dir = sd_src / "5-minute-reads"

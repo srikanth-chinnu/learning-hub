@@ -28,7 +28,7 @@ By the end of Phase 3 you'll be able to:
 - **Network partitions** — they happen; your system must survive them
 - **The two generals problem** — perfect coordination is impossible
 
-📖 *5-minute read: [#15 CAP Theorem](./5-minute-reads/15-cap-theorem.md)*
+📖 *5-minute read: [#15 CAP Theorem](../5-minute-reads/15-cap-theorem.md)*
 
 ### The Famous Theorems
 - **CAP Theorem** — Brewer (2000), proved by Gilbert & Lynch (2002)
@@ -45,7 +45,7 @@ From strongest to weakest:
 5. **Monotonic Reads** — never go backward
 6. **Eventual Consistency** — converge eventually
 
-📖 *5-minute read: [#16 Consistency Models](./5-minute-reads/16-consistency-models.md)*
+📖 *5-minute read: [#16 Consistency Models](../5-minute-reads/16-consistency-models.md)*
 
 📘 **Reference:** [Jepsen Consistency Models](https://jepsen.io/consistency) — the visual canonical reference
 
@@ -76,7 +76,7 @@ From strongest to weakest:
 - **PBFT** (Castro & Liskov 1999)
 - Used in blockchains; rarely needed in standard distributed systems
 
-📖 *5-minute read: [#17 Consensus](./5-minute-reads/17-consensus-raft-paxos.md)*
+📖 *5-minute read: [#17 Consensus](../5-minute-reads/17-consensus-raft-paxos.md)*
 
 ---
 
@@ -98,7 +98,7 @@ From strongest to weakest:
 - Choreography vs Orchestration
 - Used by every modern microservice architecture
 
-📖 *5-minute read: [#18 Event-Driven & Saga](./5-minute-reads/18-event-driven-and-saga.md)*
+📖 *5-minute read: [#18 Event-Driven & Saga](../5-minute-reads/18-event-driven-and-saga.md)*
 
 ### Calvin / Deterministic Concurrency Control
 - Pre-determine ordering, then execute
@@ -333,6 +333,6 @@ If yes → you're ready for [Phase 4: Expert](./04-expert.md), which is more abo
 
 ---
 
-⚡ **Tip:** Read the [5-minute reads](./5-minute-reads/README.md) #15-#20 to keep core concepts fresh as you work through papers.
+⚡ **Tip:** Read the [5-minute reads](../5-minute-reads/README.md) #15-#20 to keep core concepts fresh as you work through papers.
 
-← [Previous: Intermediate](./02-intermediate.md) · [Home](./README.md) · → [Next: Expert](./04-expert.md)
+← [Previous: Intermediate](./02-intermediate.md) · [Home](../README.md) · → [Next: Expert](./04-expert.md)

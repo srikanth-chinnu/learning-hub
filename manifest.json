@@ -887,16 +887,6 @@
                 },
                 {
                   "level": 2,
-                  "id": "top-5-github-repositories-to-bookmark-now",
-                  "text": "🚀 Top 5 GitHub Repositories To Bookmark Now"
-                },
-                {
-                  "level": 2,
-                  "id": "the-4-books-that-cover-beginnerexpert",
-                  "text": "📚 The 4 Books That Cover Beginner→Expert"
-                },
-                {
-                  "level": 2,
                   "id": "how-to-use-this-folder",
                   "text": "🧭 How to Use This Folder"
                 },
@@ -914,8 +904,8 @@
               "summary": "The 5-minute-reads/ folder contains 20 short, focused primers — each designed to be read in 5 minutes or less while giving you a working understanding of one concept.",
               "tag": "overview",
               "difficulty": "all-levels",
-              "words": 890,
-              "read_min": 4,
+              "words": 733,
+              "read_min": 3,
               "order": 21,
               "prev": "dsa/full/footnotes-confidence",
               "next": "sd/tier-beginner"
@@ -4101,7 +4091,7 @@
           ]
         }
       ],
-      "total_min": 141,
+      "total_min": 140,
       "total_items": 38,
       "difficulty_counts": {
         "all-levels": 22,
@@ -4949,16 +4939,6 @@
         },
         {
           "level": 2,
-          "id": "top-5-github-repositories-to-bookmark-now",
-          "text": "🚀 Top 5 GitHub Repositories To Bookmark Now"
-        },
-        {
-          "level": 2,
-          "id": "the-4-books-that-cover-beginnerexpert",
-          "text": "📚 The 4 Books That Cover Beginner→Expert"
-        },
-        {
-          "level": 2,
           "id": "how-to-use-this-folder",
           "text": "🧭 How to Use This Folder"
         },
@@ -4976,8 +4956,8 @@
       "summary": "The 5-minute-reads/ folder contains 20 short, focused primers — each designed to be read in 5 minutes or less while giving you a working understanding of one concept.",
       "tag": "overview",
       "difficulty": "all-levels",
-      "words": 890,
-      "read_min": 4,
+      "words": 733,
+      "read_min": 3,
       "order": 21,
       "prev": "dsa/full/footnotes-confidence",
       "next": "sd/tier-beginner"

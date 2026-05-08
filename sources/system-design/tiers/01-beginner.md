@@ -199,6 +199,6 @@ If yes → ready for [Phase 2: Intermediate](./02-intermediate.md).
 
 ---
 
-⚡ **Tip:** Read the [5-minute reads](./5-minute-reads/README.md) #1-#10 alongside this phase. They reinforce the same concepts in tiny digestible pieces.
+⚡ **Tip:** Read the [5-minute reads](../5-minute-reads/README.md) #1-#10 alongside this phase. They reinforce the same concepts in tiny digestible pieces.
 
-← [Back to System Design home](./README.md) · → [Next: Intermediate](./02-intermediate.md)
+← [Back to System Design home](../README.md) · → [Next: Intermediate](./02-intermediate.md)

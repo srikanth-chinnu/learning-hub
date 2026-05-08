@@ -34,7 +34,7 @@ By the end of Phase 2 you'll be able to:
 - Thundering herd / cache stampede prevention
 - Multi-tier caching (browser → CDN → app cache → DB cache)
 
-📖 *5-minute read: [#7 Caching](./5-minute-reads/07-caching.md)*
+📖 *5-minute read: [#7 Caching](../5-minute-reads/07-caching.md)*
 
 ### 🗄️ Database Scaling
 - **Read replicas** — primary-replica, replica lag, read-after-write consistency
@@ -45,7 +45,7 @@ By the end of Phase 2 you'll be able to:
 - **Replication topologies** — single-leader, multi-leader, leaderless
 - **NoSQL families** — KV, Document, Column-family, Graph
 
-📖 *5-minute reads: [#9 Replication](./5-minute-reads/09-database-replication.md), [#10 Sharding](./5-minute-reads/10-database-sharding.md), [#11 Consistent Hashing](./5-minute-reads/11-consistent-hashing.md)*
+📖 *5-minute reads: [#9 Replication](../5-minute-reads/09-database-replication.md), [#10 Sharding](../5-minute-reads/10-database-sharding.md), [#11 Consistent Hashing](../5-minute-reads/11-consistent-hashing.md)*
 
 ### 📨 Message Queues & Async Patterns
 - **Queue vs Pub/Sub** — fundamentally different patterns
@@ -56,7 +56,7 @@ By the end of Phase 2 you'll be able to:
 - **Outbox pattern** — atomic write to DB + queue
 - **Backpressure & flow control**
 
-📖 *5-minute read: [#13 Message Queues](./5-minute-reads/13-message-queues.md)*
+📖 *5-minute read: [#13 Message Queues](../5-minute-reads/13-message-queues.md)*
 
 ### 🏛️ Microservices vs Monolith
 - The Conway's Law principle
@@ -67,7 +67,7 @@ By the end of Phase 2 you'll be able to:
 - Distributed transactions — 2PC, Saga
 - The "modular monolith" middle ground
 
-📖 *5-minute read: [#12 Microservices](./5-minute-reads/12-microservices.md)*
+📖 *5-minute read: [#12 Microservices](../5-minute-reads/12-microservices.md)*
 
 ### 🌐 Content Delivery Networks (deeper)
 - Pull vs push CDN
@@ -75,7 +75,7 @@ By the end of Phase 2 you'll be able to:
 - Edge compute (Cloudflare Workers, Lambda@Edge)
 - Anycast routing
 
-📖 *5-minute read: [#8 CDN](./5-minute-reads/08-cdn.md)*
+📖 *5-minute read: [#8 CDN](../5-minute-reads/08-cdn.md)*
 
 ### 🛑 Rate Limiting (deeper)
 - Token Bucket, Leaky Bucket, Sliding Window
@@ -83,7 +83,7 @@ By the end of Phase 2 you'll be able to:
 - Per-IP, per-user, per-endpoint, per-API-key
 - Returning rate limit headers properly
 
-📖 *5-minute read: [#14 Rate Limiting](./5-minute-reads/14-rate-limiting.md)*
+📖 *5-minute read: [#14 Rate Limiting](../5-minute-reads/14-rate-limiting.md)*
 
 ### 🔐 Authentication & Authorization
 - Sessions vs JWT — pros and cons
@@ -106,7 +106,7 @@ By the end of Phase 2 you'll be able to:
 - Webhooks — designing for failure
 - Long polling, SSE, WebSockets — when each is right
 
-📖 *5-minute read: [#4 REST vs GraphQL vs gRPC](./5-minute-reads/04-api-styles.md)*
+📖 *5-minute read: [#4 REST vs GraphQL vs gRPC](../5-minute-reads/04-api-styles.md)*
 
 ---
 
@@ -234,6 +234,6 @@ If yes → ready for [Phase 3: Advanced](./03-advanced.md).
 
 ---
 
-⚡ **Tip:** Read the [5-minute reads](./5-minute-reads/README.md) #6-#14 alongside this phase.
+⚡ **Tip:** Read the [5-minute reads](../5-minute-reads/README.md) #6-#14 alongside this phase.
 
-← [Previous: Beginner](./01-beginner.md) · [Home](./README.md) · → [Next: Advanced](./03-advanced.md)
+← [Previous: Beginner](./01-beginner.md) · [Home](../README.md) · → [Next: Advanced](./03-advanced.md)
